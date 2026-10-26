@@ -889,6 +889,7 @@ function ripple(e){if(reduce||stage.querySelectorAll('.ripple').length>4)return;
   const x=(e&&e.clientX?e.clientX-r.left:r.width/2),y=(e&&e.clientY?e.clientY-r.top:r.height*.45);
   const d=document.createElement('span');d.className='ripple';d.style.left=x+'px';d.style.top=y+'px';stage.appendChild(d);setTimeout(()=>d.remove(),700)}
 function chomp(e){
+  if(fight&&fight.phase==='finishing')return;   // taps are ignored during the finisher
   if(fight&&fight.phase==='fight')bossHit(e);
   let v=perClick();S.st.clicks++;
   let label,cls='';const roll=Math.random();
@@ -1473,7 +1474,12 @@ function finisher(){
   const bfEl=$('bf'),artEl=$('art'),bo=$('bfBoss'),base=artTransform();
   stage.querySelectorAll('.tele,.bf-warn,.bf-finish').forEach(n=>n.remove());
   if(bfEl)bfEl.classList.add('fin');
-  const done=()=>{if(bfEl)bfEl.classList.remove('fin');winFight()};
+  const done=()=>{
+    // Belt and braces: any animation left on Jeff is cancelled, so he can never stay enlarged.
+    artEl.getAnimations().forEach(a=>{try{a.cancel()}catch(e){}});
+    if(bfEl)bfEl.classList.remove('fin');
+    winFight();
+  };
   if(reduce){playUlt();setTimeout(done,450);return}
 
   // 1. curtain: letterbox bars close in, vignette darkens the edges, Jeff coils, riser builds
@@ -1482,17 +1488,22 @@ function finisher(){
   vig.animate([{opacity:0},{opacity:1}],{duration:340,easing:'ease-out',fill:'forwards'});
   requestAnimationFrame(()=>bars.forEach(b=>{b.style.height='11%'}));
   riser(560);
-  artEl.animate([{transform:base},{transform:base+' translateY(2%) scale(.92,1.05)'}],{duration:300,easing:'ease-out',fill:'forwards'});
+  // One animation for Jeff's whole arc, ending back at his real transform. Three separate
+  // fills used to stack and leave him stuck at lunge size, fighting every click afterwards.
+  artEl.animate([
+    {transform:base,offset:0,easing:'ease-out'},
+    {transform:base+' translateY(2%) scale(.92,1.05)',offset:.115},                      // coil
+    {transform:base+' translateY(2%) scale(.92,1.05)',offset:.215,easing:'cubic-bezier(.5,0,.9,.55)'}, // lunge
+    {transform:base+' translate(15%,-9%) scale(1.44)',offset:.338,easing:'ease-out'},
+    {transform:base+' translate(7%,-4%) scale(1.32)',offset:.40},                       // settle
+    {transform:base+' translate(7%,-4%) scale(1.32)',offset:.69},                       // hold
+    {transform:base+' scale(1.06,1.16)',offset:.75,easing:'ease-in-out'},               // chew
+    {transform:base+' scale(1.14,1.05)',offset:.82,easing:'ease-in-out'},
+    {transform:base,offset:1}
+  ],{duration:2600,easing:'linear'});
 
-  // 2. his line, and the lunge
-  setTimeout(()=>{
-    playUlt();
-    artEl.animate([
-      {transform:base+' translateY(2%) scale(.92,1.05)'},
-      {transform:base+' translate(15%,-9%) scale(1.44)',offset:.7},
-      {transform:base+' translate(7%,-4%) scale(1.32)'}
-    ],{duration:320,easing:'cubic-bezier(.5,0,.9,.55)',fill:'forwards'});
-  },560);
+  // 2. his line, on the lunge
+  setTimeout(()=>playUlt(),560);
 
   // 3. impact: hit-stop, flash, rays, double shockwave, slam, bar to zero, boss swallowed
   setTimeout(()=>{
@@ -1528,12 +1539,6 @@ function finisher(){
   // 4. it goes down, Jeff lands and chews
   setTimeout(()=>{
     blip(190,'sine',.1,.075);setTimeout(()=>blip(120,'sine',.16,.06),95);
-    artEl.animate([
-      {transform:base+' translate(7%,-4%) scale(1.32)'},
-      {transform:base+' scale(1.06,1.16)',offset:.3},
-      {transform:base+' scale(1.14,1.05)',offset:.62},
-      {transform:base,offset:1}
-    ],{duration:700,easing:'ease-in-out'});
   },1800);
 
   setTimeout(done,2600);
