@@ -401,6 +401,17 @@ footer p{margin:0;max-width:62ch}
 .els{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px}
 .elchip{border:2px solid var(--line);background:var(--panel2);border-radius:999px;padding:4px 10px;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
 .elchip.on{color:var(--ink);box-shadow:0 0 0 2px color-mix(in srgb,var(--water2) 35%,transparent)}
+.bcard.ally{border-color:var(--good)}
+.teamrow{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:9px;align-items:center;border:2px solid var(--line);border-radius:13px;background:var(--panel2);padding:7px 9px}
+.teamrow.on{border-color:var(--sun)}
+.teamrow .bimg{width:44px;height:44px;object-fit:contain}
+.teamrow b{display:block;font-size:13px;line-height:1.2}
+.bf-actives{display:flex;gap:6px;padding:7px 11px 0;pointer-events:auto;flex-wrap:wrap}
+.bf-actives .act{display:flex;align-items:center;gap:5px;border:2px solid color-mix(in srgb,var(--sun) 55%,transparent);background:rgba(6,26,34,.75);color:#fff;border-radius:10px;padding:3px 8px 3px 3px;font-size:10px;font-weight:900;line-height:1.1;pointer-events:auto}
+.bf-actives .act img{width:22px;height:22px;object-fit:contain}
+.bf-actives .act b{display:block;font-size:10px}
+.bf-actives .act small{display:block;font-size:8px;color:var(--sun);text-transform:uppercase;letter-spacing:.05em}
+.bf-actives .act[disabled]{opacity:.35;filter:grayscale(.7)}
 @media (max-width:520px){.bf-boss{width:19%;max-width:78px;top:32px;right:0}.bf-top{padding:8px 8px}.bf-clock{margin:0 8px}}
 @media (max-width:430px){.tab{font-size:12px;padding:8px 2px;white-space:nowrap}.bf-name{font-size:11px}.bf-combo{font-size:18px;bottom:8px}}
 
@@ -586,6 +597,10 @@ footer p{margin:0;max-width:62ch}
         <p class="hint">They were down here the whole time. Trophies: <b id="bossTrophies">0</b></p>
         <div class="els" id="bossEls"></div>
         <div class="bossrow" id="bossList"></div>
+        <div id="bossTeamWrap" hidden>
+          <h3 style="margin:14px 0 0">Your team</h3>
+          <div class="bossrow" id="bossTeam"></div>
+        </div>
       </div>
     </aside>
 
@@ -756,7 +771,7 @@ const ACH=[
 /* ---------- state ---------- */
 function fresh(){return{eaten:0,run:0,life:0,owned:{},bought:{},ult:0,gems:0,good:0,menace:0,align:0,snap:false,buffs:[],diff:'normal',
   tok:30,tokFrac:0,vol:.6,voVol:.35,music:false,musVol:.3,skins:{default:1},dupes:0,art:'default',perk:'default',wardMode:'look',pity:0,ach:{},chompN:0,
-  boss:{unlocked:false,trophies:0,cleared:{},best:{},els:{},el:''},
+  boss:{unlocked:false,trophies:0,cleared:{},best:{},els:{},el:'',recruited:{},team:[]},
   st:{wipes:0,mates:0,ults:0,events:0,clicks:0,pulls:0,pops:0},muted:false,last:Date.now()}}
 let S=fresh();
 // Old saves used fantasy costume ids. Keep the ones with an official equivalent, drop
@@ -1174,13 +1189,16 @@ const BOSSES=[
   {id:'adam-warlock',nm:'ADAM WARLOCK',el:'cosmic',role:'Strategist',hp:90,clock:24,
    channel:{at:.22,time:3.5,healTo:.42},
    taunt:'He has already seen how this ends.',
-   teach:'When he glows gold he is coming back. Keep tapping.'},
+   teach:'When he glows gold he is coming back. Keep tapping.',
+   rec:{pas:'Mercy',ds:'your first mistake in a fight costs no time',act:'Born Again',actDs:'+5s on the clock'}},
   {id:'storm',nm:'STORM',el:'lightning',role:'Duelist',hp:120,clock:20,tele:{every:4,window:1.4,icon:'storm-move'},
    taunt:'The sky answers to her.',
-   teach:'Tap the red ring before it closes to counter.'},
+   teach:'Tap the red ring before it closes to counter.',
+   rec:{pas:'Tailwind',ds:'telegraph rings last 25% longer',act:'Eye of the Storm',actDs:'3s with no boss mechanics'}},
   {id:'hulk',nm:'THE HULK',el:'earth',role:'Vanguard',hp:110,clock:20,stomp:{every:5.5,warn:1,window:.6,grace:.2},
    taunt:'Hulk hates little shark.',
-   teach:'Stop tapping the moment he glows.'},
+   teach:'Stop tapping the moment he glows.',
+   rec:{pas:'Thick Hide',ds:'+4s on the clock',act:'Hulk Smash',actDs:'20 damage, instantly'}},
 ];
 // Boss voice lines live in assets/audio/voice/. Missing files fail silently.
 const VOX={};
@@ -1188,10 +1206,22 @@ function playVoice(name){
   try{
     const a=VOX[name]||(VOX[name]=new Audio('assets/audio/voice/'+name+'.mp3'));
     a.volume=Math.min(1,.95*S.vol*Math.max(.4,S.voVol));a.currentTime=0;
+    // Duck the boss theme under the line. Without this, "BORN AGAIN" is fighting the
+    // music in the same frequencies and loses.
+    if(bossAudio&&!bossAudio.paused){
+      bossAudio.volume=Math.min(1,S.vol*S.musVol*.3);
+      setTimeout(()=>{if(bossAudio&&!bossAudio.paused)bossAudio.volume=Math.min(1,S.vol*S.musVol)},2000);
+    }
     const p=a.play();if(p&&p.catch)p.catch(()=>{});
   }catch(e){}
 }
 const bs=()=>S.boss;
+// Recruiting: passives are always on once a hero is recruited (utility only, never damage,
+// so the ladder can't be melted). Actives only exist while the hero is slotted in the team.
+const recruited=()=>bs().recruited||(bs().recruited={});
+const team=()=>bs().team||(bs().team=[]);
+const isRec=id=>!!recruited()[id];
+const TEAM_MAX=3;
 const bossArt=b=>`assets/img/heroes/${b.id}.webp`;
 const bossArtSm=b=>`assets/img/heroes/${b.id}-sm.webp`;
 const nowMs=()=>performance.now();
@@ -1201,18 +1231,27 @@ let fight=null,bossAudio=null;
 
 function startFight(id){
   const b=BOSSES.find(x=>x.id===id);if(!b||fight)return;
-  fight={b,hp:b.hp,max:b.hp,combo:1,lastTap:0,maxCombo:1,left:b.clock,elapsed:0,phase:'intro',tele:null,
-    nextTele:0,nextStomp:0,revived:false,quietUntil:0,pendingHold:false,finish:false};
+  // The second fight against a boss is the rematch: a fifth less clock, 15% more HP,
+  // mechanics fire 20% faster, and no FINISH IT button — you tap the last fifth yourself.
+  const rematch=!!bs().cleared[id]&&!isRec(id);
+  const hp=Math.round(b.hp*(rematch?1.15:1));
+  const clockMax=b.clock*(rematch?.8:1)+(isRec('hulk')?4:0);
+  fight={b,rematch,hp,max:hp,clockMax,combo:1,lastTap:0,maxCombo:1,left:clockMax,elapsed:0,phase:'intro',tele:null,
+    nextTele:0,nextStomp:0,revived:false,quietUntil:0,pendingHold:false,finish:false,
+    mechScale:rematch?.8:1,teleWin:b.tele?b.tele.window*(isRec('storm')?1.25:1):0,
+    mercy:isRec('adam-warlock'),used:{}};
   const el=$('bf');el.hidden=false;
   el.innerHTML=`<div class="bf-top"><span class="bf-name">${b.nm}</span>
       <div class="bf-hp"><u id="bfGhost"></u><b id="bfFill"></b></div>
       <button class="bf-flee" id="bfFlee">Flee</button></div>
     <div class="bf-clock"><i id="bfClock"></i></div>
     <div class="bf-channel" id="bfChannel" hidden><i id="bfChannelFill"></i></div>
+    <div class="bf-actives" id="bfActives" hidden></div>
     <img class="bf-boss" id="bfBoss" src="${bossArt(b)}" alt="">
     <div class="bf-combo"><span id="bfCombo">×1.00</span><small>combo</small><div class="m"><i id="bfMeter"></i></div></div>
-    <div class="bf-card" id="bfCard"><h3>${b.nm}</h3><p>${b.taunt}</p><p class="teach">${b.teach||''}</p></div>`;
+    <div class="bf-card" id="bfCard"><h3>${b.nm}</h3>${rematch?'<p class="teach" style="color:var(--sun)">REMATCH · beat them again and they join you</p>':''}<p>${b.taunt}</p><p class="teach">${b.teach||''}</p></div>`;
   $('bfFlee').onclick=fleeFight;
+  paintActives();
   playBossMusic(true);
   paintBars();
   setTimeout(()=>{
@@ -1247,7 +1286,7 @@ function paintBars(){
   const fill=$('bfFill'),ghost=$('bfGhost'),clock=$('bfClock');
   if(fill)fill.style.width=pct+'%';
   if(ghost)ghost.style.width=pct+'%';
-  if(clock)clock.style.width=Math.max(0,f.left/f.b.clock*100)+'%';
+  if(clock)clock.style.width=Math.max(0,f.left/f.clockMax*100)+'%';
 }
 function bossHit(e){
   const f=fight;if(!f||f.phase!=='fight')return;
@@ -1276,7 +1315,7 @@ function hitBoss(d,e){
   if(f.hp<=0){endChannel(false);winFight();return}
   const ch=f.b.channel;
   if(ch&&!f.revived&&!f.channeling&&f.hp<=f.max*ch.at)beginChannel();
-  else if(!f.channeling&&f.hp<=f.max*.2&&!f.finish){f.finish=true;showFinish()}
+  else if(!f.channeling&&!f.rematch&&f.hp<=f.max*.2&&!f.finish){f.finish=true;showFinish()}
 }
 // Adam's ult: a channel you can beat by out-tapping it, not an instant free revive.
 function beginChannel(){
@@ -1305,6 +1344,8 @@ function endChannel(healed){
 }
 function penalty(msg){
   const f=fight;if(!f||f.phase!=='fight')return;
+  // Adam's passive: the first slip of the fight is forgiven outright.
+  if(f.mercy){f.mercy=false;f.pendingHold=false;toast('MERCY · nothing lost');log('Adam Warlock quietly took that one for you.');blip(520,'triangle',.09,.05);return}
   f.left-=3;f.combo=1;f.pendingHold=false;
   const c=$('bfCombo');if(c)c.textContent='×1.00';
   const m=$('bfMeter');if(m)m.style.width='0%';
@@ -1323,8 +1364,8 @@ function spawnTele(){
   el.style.top=(32+Math.random()*30)+'%';
   if(b.tele.icon)el.innerHTML=`<img src="assets/img/heroes/${b.tele.icon}.webp" alt="">`;
   stage.appendChild(el);
-  f.tele={el,size,end:nowMs()+b.tele.window*1000,window:b.tele.window};
-  f.nextTele=nowMs()+b.tele.every*1000+Math.random()*800;
+  f.tele={el,size,end:nowMs()+f.teleWin*1000,window:f.teleWin};
+  f.nextTele=nowMs()+b.tele.every*1000*f.mechScale+Math.random()*800;
   blip(880,'sine',.06,.05);
 }
 function interrupt(){
@@ -1349,7 +1390,7 @@ function doStomp(){
   f.warnUntil=now+b.stomp.warn*1000;
   f.quietUntil=f.warnUntil+b.stomp.window*1000;
   f.pendingHold=true;
-  f.nextStomp=now+b.stomp.every*1000;
+  f.nextStomp=now+b.stomp.every*1000*f.mechScale;
   const bo=$('bfBoss');if(bo)bo.classList.add('golden');
   const w=document.createElement('div');w.className='bf-warn warn';
   w.innerHTML='<b>HULK IS WINDING UP</b><small>stop tapping</small>';
@@ -1370,6 +1411,29 @@ function showFinish(){
   el.onclick=()=>{el.remove();winFight()};
   stage.appendChild(el);
   jingle([784,988]);
+}
+/* recruited heroes: actives need a slot and can be used once per fight */
+function paintActives(){
+  const el=$('bfActives');if(!el)return;
+  const ids=team().filter(isRec);
+  if(!ids.length||!fight){el.hidden=true;el.innerHTML='';return}
+  el.hidden=false;
+  el.innerHTML=ids.map(id=>{const b=BOSSES.find(x=>x.id===id);if(!b||!b.rec)return'';
+    const used=!!(fight.used&&fight.used[id]);
+    return `<button class="act" data-act="${id}"${used?' disabled':''}><img src="${bossArtSm(b)}" alt=""><span><b>${b.rec.act}</b><small>${used?'used':'ready'}</small></span></button>`}).join('');
+}
+function useActive(id){
+  const f=fight;if(!f||f.phase!=='fight'||f.used[id]||!isRec(id))return;
+  const b=BOSSES.find(x=>x.id===id);if(!b||!b.rec)return;
+  f.used[id]=true;
+  if(id==='adam-warlock'){f.left=Math.min(f.clockMax,f.left+5);toast('BORN AGAIN · +5s');jingle([392,523,659])}
+  else if(id==='storm'){
+    if(f.tele){const tel=f.tele.el;f.tele=null;tel.classList.add('pop');setTimeout(()=>tel.remove(),220)}
+    if(f.nextTele)f.nextTele+=3000;if(f.nextStomp)f.nextStomp+=3000;
+    toast('EYE OF THE STORM · 3s of quiet');blip(1200,'sine',.12,.05);
+  }
+  else if(id==='hulk'){toast('HULK SMASH');hitBoss(20,null)}
+  paintActives();paintBars();
 }
 function fightTick(dt){
   const f=fight;if(!f||f.phase!=='fight')return;
@@ -1398,15 +1462,21 @@ function winFight(){
   const f=fight;if(!f||f.phase!=='fight')return;
   f.phase='won';
   const st=bs(),b=f.b,first=!st.cleared[b.id];
-  st.cleared[b.id]=true;st.trophies=(st.trophies||0)+(first?3:1);
-  if(first)st.els[b.el]=Math.max(1,st.els[b.el]||0);
+  // Beat them twice: the second win recruits them. Passives go live immediately, and they
+  // take a team slot if there is room, so the reward shows up in the next fight.
+  const joins=f.rematch&&!isRec(b.id);
+  st.cleared[b.id]=true;
+  if(first){st.trophies=(st.trophies||0)+3;st.els[b.el]=Math.max(1,st.els[b.el]||0)}
+  else if(joins){st.trophies=(st.trophies||0)+2;recruited()[b.id]=true;if(team().length<TEAM_MAX)team().push(b.id)}
+  else st.trophies=(st.trophies||0)+1;
   const t=f.elapsed;
   if(!st.best[b.id]||t<st.best[b.id])st.best[b.id]=t;
   save();playSfx('celebratory');jingle([523,659,784,1047]);
   stage.querySelectorAll('.tele,.bf-warn,.bf-finish').forEach(n=>n.remove());
   const card=document.createElement('div');card.className='bf-card';
   card.innerHTML=`<h3>${b.nm} DOWN</h3><div class="big">${t.toFixed(1)}s</div>
-    <p>Best combo ×${f.maxCombo.toFixed(2)} · ${first?'+3 trophies · '+ELS[b.el].nm+' unlocked':'+1 trophy'}</p>
+    <p>Best combo ×${f.maxCombo.toFixed(2)} · ${first?'+3 trophies · '+ELS[b.el].nm+' unlocked':joins?'+2 trophies · they join you':'+1 trophy'}</p>
+    ${joins?`<p class="teach" style="color:var(--sun)">${b.rec.pas} is yours — always on. ${b.rec.act} needs a team slot.</p>`:''}
     <div class="row"><button class="btn hot" id="bfAgain">Again</button><button class="btn" id="bfDone">Done</button></div>`;
   $('bf').append(card);
   log(`Beat ${b.nm} in ${t.toFixed(1)}s.`);
@@ -1439,12 +1509,28 @@ function renderBossTab(){
   }
   const list=$('bossList');
   if(list)list.innerHTML=BOSSES.map(b=>{
-    const done=!!st.cleared[b.id],best=st.best[b.id];
-    return `<div class="bcard ${done?'done':''}"><img class="bimg" src="${bossArtSm(b)}" alt="">
-      <div><b>${b.nm}</b><div class="meta">${b.role} · ${ELS[b.el].nm}${best?' · best '+best.toFixed(1)+'s':''}</div>
+    const done=!!st.cleared[b.id],best=st.best[b.id],rec=isRec(b.id);
+    const label=!done?'Fight':rec?'Again':'Rematch';
+    const tag=rec?' · on your side':done?' · rematch to recruit':'';
+    return `<div class="bcard ${done?'done':''} ${rec?'ally':''}"><img class="bimg" src="${bossArtSm(b)}" alt="">
+      <div><b>${b.nm}</b><div class="meta">${b.role} · ${ELS[b.el].nm}${best?' · best '+best.toFixed(1)+'s':''}${tag}</div>
       <div class="taunt">${b.taunt}</div></div>
-      <button class="btn ${done?'alt':'hot'}" data-fight="${b.id}">${done?'Rematch':'Fight'}</button></div>`;
+      <button class="btn ${done?'alt':'hot'}" data-fight="${b.id}">${label}</button></div>`;
   }).join('');
+  const wrap=$('bossTeamWrap');
+  if(wrap){
+    // Hidden until the first kill, so the roster is a discovery rather than a menu.
+    wrap.hidden=!Object.keys(st.cleared||{}).length;
+    const cur=team(),recs=BOSSES.filter(b=>isRec(b.id));
+    $('bossTeam').innerHTML=recs.length
+      ? `<p class="hint">${cur.length}/${TEAM_MAX} fielded · passives always on · actives once per fight</p>`+recs.map(b=>{
+          const on=cur.includes(b.id);
+          return `<div class="teamrow ${on?'on':''}"><img class="bimg" src="${bossArtSm(b)}" alt="">
+            <div><b>${b.nm}</b><div class="meta">Passive · ${b.rec.pas} — ${b.rec.ds}</div>
+            <div class="taunt">Active · ${b.rec.act} — ${b.rec.actDs}</div></div>
+            <button class="btn ${on?'alt':'hot'}" data-slot="${b.id}">${on?'Fielded':'Field'}</button></div>`}).join('')
+      : `<p class="hint">Beat a boss a second time and they fight for you.</p>`;
+  }
 }
 function unlockBoss(){
   const st=bs();if(st.unlocked)return;
@@ -1457,6 +1543,12 @@ function unlockBoss(){
   if(!reduce)$('readyFlash').animate([{transform:'scale(.3)',opacity:0},{transform:'scale(1.4)',opacity:.9,offset:.4},{transform:'scale(1.9)',opacity:0}],{duration:1400,easing:'ease-out'});
 }
 $('bossList').addEventListener('click',e=>{const b=e.target.closest('[data-fight]');if(!b||fight)return;startFight(b.dataset.fight)});
+$('bossTeam').addEventListener('click',e=>{const b=e.target.closest('[data-slot]');if(!b)return;
+  const id=b.dataset.slot,t=team(),i=t.indexOf(id);
+  if(i>-1)t.splice(i,1);
+  else{if(t.length>=TEAM_MAX){toast('Team is full — three at a time.');return}t.push(id)}
+  blip(600,'triangle');save();renderBossTab()});
+$('bf').addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;useActive(b.dataset.act)});
 $('bossEls').addEventListener('click',e=>{const b=e.target.closest('[data-el]');if(!b)return;bs().el=b.dataset.el;save();renderBossTab();blip(600,'triangle')});
 stage.addEventListener('click',e=>{
   const t=e.target.closest('[data-tele]');

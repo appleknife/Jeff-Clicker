@@ -81,8 +81,37 @@ five-minute save and a five-hour save get the same fight. Tap fast to build a co
 - First clear: **+2% to everything, permanently**, and unlocks that hero's element.
 - Elements cycle: cosmic beats earth beats lightning beats cosmic. They only matter in fights,
   so the costume you *wear* stays purely cosmetic.
-- Trophies are earned per win; they are the currency for recruiting later.
+- Trophies: 3 for a first kill, 2 for a recruit, 1 for a repeat. A tally for now.
 - `?deep=1` on the URL reveals the tab for testing without unlocking it in your save.
+
+### Recruiting
+
+**Beat them twice.** The first win takes their element. The second fight against the same hero
+is a **rematch**: a fifth less clock, 15% more HP, mechanics fire 20% faster, and no FINISH IT
+button — you have to tap the last fifth yourself. Win that and they join you.
+
+*Passives are always on once recruited, and they are utility only — never damage, so the ladder
+can't be melted by your own roster:*
+
+| Hero | Passive |
+|---|---|
+| Adam Warlock | **Mercy** — your first mistake in a fight costs no time |
+| Storm | **Tailwind** — telegraph rings last 25% longer |
+| The Hulk | **Thick Hide** — +4s on the clock |
+
+*Actives need one of three team slots and work once per fight:*
+
+| Hero | Active |
+|---|---|
+| Adam Warlock | **Born Again** — +5s on the clock |
+| Storm | **Eye of the Storm** — 3s with no boss mechanics |
+| The Hulk | **Hulk Smash** — 20 damage, instantly |
+
+Adam's *"Born again!"* line plays from `assets/audio/voice/adam-born-again.mp3` (mono, 64 kbps,
+1.66s) and the boss theme ducks to 30% underneath it. A missing file falls back to a chord.
+
+The roster appears under the boss list once you have a first kill, and a recruit takes a free
+team slot automatically. Team fights are **not** built yet.
 
 ## Disclaimer
 
