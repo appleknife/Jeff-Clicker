@@ -6,6 +6,22 @@
 <title>Jeff Clicker</title>
 <meta name="description" content="Unofficial Jeff the Land Shark fan clicker game. Chomp heroes, pull costume capsules, collect Sharknos gems.">
 <link rel="icon" type="image/png" href="assets/img/ult-icon.png">
+<link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#e4f2ef" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#08171e" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Jeff Clicker">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Jeff Clicker">
+<meta property="og:description" content="An unofficial Jeff the Land Shark fan clicker. Chomp heroes, pull costumes, spit teams off cliffs.">
+<meta property="og:url" content="https://appleknife.github.io/Jeff-Clicker/">
+<meta property="og:image" content="https://appleknife.github.io/Jeff-Clicker/assets/img/jeff.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Jeff Clicker">
+<meta name="twitter:description" content="An unofficial Jeff the Land Shark fan clicker. Chomp heroes, pull costumes, spit teams off cliffs.">
+<meta name="twitter:image" content="https://appleknife.github.io/Jeff-Clicker/assets/img/jeff.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Nunito:wght@500;700;800;900&display=swap">
@@ -58,7 +74,7 @@ button:focus-visible,label:focus-within{outline:3px solid var(--sun);outline-off
 .count.big .val{font-size:clamp(30px,5vw,40px);color:var(--accent)}
 .count.tok .val{color:var(--rL)}
 
-.grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:16px}
+.grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:16px;align-items:start}
 .panel{background:var(--panel);border:1.5px solid var(--line);border-radius:var(--r);padding:16px;min-width:0}
 .panel h2{font-size:20px;margin-bottom:10px}
 .panel h3{font-size:15px;margin:2px 0 8px;color:var(--muted)}
@@ -219,6 +235,95 @@ footer p{margin:0;max-width:62ch}
 .vol{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:var(--muted)}
 .vol input{width:120px;max-width:32vw;accent-color:var(--accent)}
 .toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--panel);padding:10px 16px;border-radius:12px;font-weight:800;z-index:20;max-width:calc(100% - 32px);text-align:center}
+
+/* ---------- polish pass ---------- */
+/* One consistent "sticker" outline + hard shadow, instead of a mix of soft and flat. */
+.panel,.soundbar,.item,.up1,.card,.tabs,.eventbar,.choice,.share,.runcard,.mobilebar{box-shadow:0 4px 0 color-mix(in srgb,var(--ink) 9%,transparent)}
+.panel,.soundbar,.item,.up1,.card,.tabs,.eventbar,.choice,.share,.runcard{border-width:2px}
+.btn{box-shadow:0 3px 0 color-mix(in srgb,var(--ink) 14%,transparent)}
+.btn:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 color-mix(in srgb,var(--ink) 14%,transparent)}
+.item{box-shadow:0 3px 0 color-mix(in srgb,var(--ink) 9%,transparent)}
+.item:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 color-mix(in srgb,var(--ink) 9%,transparent)}
+
+/* Stage: water with a surface, a sandy floor and slow caustics. */
+.stage{background:radial-gradient(120% 70% at 50% -12%,color-mix(in srgb,var(--water2) 62%,#fff) 0%,transparent 55%),linear-gradient(180deg,var(--water2) 0%,var(--water) 52%,color-mix(in srgb,var(--water) 72%,#001018) 100%);
+  box-shadow:inset 0 0 70px rgba(0,12,22,.35),inset 0 2px 0 rgba(255,255,255,.22)}
+.stage::before{content:"";position:absolute;left:-15%;right:-15%;bottom:-24%;height:52%;z-index:0;pointer-events:none;opacity:.45;
+  background:radial-gradient(60% 100% at 50% 0%,color-mix(in srgb,var(--sun) 32%,var(--water)) 0%,transparent 72%)}
+.stage::after{content:"";position:absolute;inset:-25%;z-index:0;pointer-events:none;opacity:.16;filter:blur(16px);
+  background:radial-gradient(closest-side at 32% 34%,#fff,transparent 72%),radial-gradient(closest-side at 68% 58%,#fff,transparent 72%);
+  background-size:64% 64%,52% 52%;background-repeat:no-repeat;animation:caustic 16s ease-in-out infinite alternate}
+@keyframes caustic{from{transform:translate3d(-3%,-2%,0) scale(1)}to{transform:translate3d(4%,3%,0) scale(1.1)}}
+.depth{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.depth i{position:absolute;display:block;border-radius:50% 50% 44% 44%;background:color-mix(in srgb,var(--water2) 50%,transparent);filter:blur(7px);opacity:.45;animation:drift 22s ease-in-out infinite alternate}
+.depth i:nth-child(1){width:150px;height:92px;left:5%;top:22%;animation-duration:26s}
+.depth i:nth-child(2){width:112px;height:70px;right:7%;top:36%;animation-duration:19s;animation-delay:-4s}
+.depth i:nth-child(3){width:84px;height:54px;left:24%;bottom:14%;animation-duration:23s;animation-delay:-9s}
+.depth i:nth-child(4){width:132px;height:82px;right:20%;bottom:8%;animation-duration:29s;animation-delay:-14s}
+@keyframes drift{from{transform:translate3d(-8px,6px,0) rotate(-4deg)}to{transform:translate3d(14px,-10px,0) rotate(4deg)}}
+.scrim{position:absolute;inset:0;z-index:3;background:rgba(0,12,22,.5);opacity:0;transition:opacity .2s;pointer-events:none}
+.stage.acting .scrim{opacity:1}
+.ripple{position:absolute;z-index:2;border-radius:50%;border:2px solid rgba(255,255,255,.72);pointer-events:none;animation:rip .65s ease-out forwards}
+@keyframes rip{from{width:20px;height:20px;margin:-10px 0 0 -10px;opacity:.85}to{width:270px;height:270px;margin:-135px 0 0 -135px;opacity:0}}
+.shake{animation:shake .18s ease-in-out}
+@keyframes shake{25%{transform:translate(-3px,2px)}50%{transform:translate(3px,-2px)}75%{transform:translate(-2px,-1px)}}
+
+/* Semantic pills: stage / costume / alignment stop looking identical. */
+.pill-stage{background:var(--water2);color:#fff;border-color:transparent}
+.pill-skin{border-color:var(--rL);background:var(--panel);color:var(--ink)}
+
+/* Sliders that follow the theme instead of the browser default. */
+.vol input[type=range]{-webkit-appearance:none;appearance:none;width:120px;max-width:32vw;height:6px;border-radius:999px;background:var(--line);accent-color:var(--accent)}
+.vol input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid var(--panel);box-shadow:0 2px 0 rgba(0,0,0,.25);cursor:pointer}
+.vol input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--accent);border:2px solid var(--panel);cursor:pointer}
+.soundbar{display:block;padding:0}
+.soundbar>summary{display:flex;align-items:center;gap:8px;padding:9px 14px;font-size:13px;font-weight:900;color:var(--muted);cursor:pointer;list-style:none}
+.soundbar>summary::-webkit-details-marker{display:none}
+.soundbar>summary::after{content:"▾";margin-left:auto;transition:transform .2s}
+.soundbar[open]>summary::after{transform:rotate(180deg)}
+.soundbar .row{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:0 14px 12px}
+
+/* Shop rows: readable when locked, green when affordable, with tier pips. */
+.item:disabled{opacity:1;background:var(--panel);border-color:var(--line);cursor:not-allowed}
+.item:disabled .nm{color:var(--muted)}
+.item:disabled .cost{color:var(--muted)}
+.item:disabled .own{color:color-mix(in srgb,var(--muted) 40%,var(--panel))}
+.item .cost,.item .pips{grid-column:1}
+.up1:not(:disabled) em{color:var(--good)}
+.item.afford{border-color:color-mix(in srgb,var(--good) 50%,var(--line))}
+.item.afford .cost{color:var(--good)}
+.pips{display:flex;gap:3px;margin-top:4px}
+.pips i{display:block;width:16px;height:4px;border-radius:2px;background:var(--line)}
+.pips i.on{background:var(--sun)}
+.buyrow{display:flex;gap:6px;margin:0 0 10px}
+.qbtn{flex:1;border:1.5px solid var(--line);background:var(--panel2);border-radius:10px;padding:6px 0;font-weight:900;font-size:13px;color:var(--muted)}
+.qbtn[aria-pressed="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.ups-teaser{display:grid;gap:6px;margin-bottom:10px}
+.ups-teaser .lock{display:flex;flex-direction:column;gap:1px;border:1.5px dashed var(--line);border-radius:11px;padding:7px 10px;opacity:.85}
+.ups-teaser .lock b{font-size:13px;color:var(--muted)}
+.ups-teaser .lock span{font-size:11px;font-weight:700;color:var(--muted)}
+
+/* Left column filler so the stage does not sit in a white void on desktop. */
+.runcard{margin-top:12px;background:var(--panel2);border-radius:14px;padding:12px 14px;display:grid;gap:9px}
+.runcard h4{margin:0;font-family:var(--display);font-size:15px;font-weight:400}
+.runcard .prog{margin:0}
+.runcard .row{display:flex;gap:8px;flex-wrap:wrap}
+.runcard .hint{margin:0}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+
+/* Thumb-zone bar on phones. */
+.mobilebar{display:none}
+@media (max-width:820px){
+  .mobilebar{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center;position:fixed;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom,0px));z-index:30;
+    background:var(--panel);border:2px solid var(--ink);border-radius:16px;padding:8px 10px;box-shadow:0 6px 0 rgba(0,0,0,.22)}
+  .mmeter{height:12px;border-radius:999px;background:var(--panel2);border:1.5px solid var(--line);overflow:hidden}
+  .mmeter i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--water2),var(--water));transition:width .15s linear}
+  .mchomp,.mult{border:0;border-radius:11px;padding:9px 14px;font-family:var(--display);font-size:15px;background:var(--accent);color:#fff}
+  .mult{background:var(--panel2);color:var(--muted)}
+  .mult.ready{background:var(--accent);color:#fff;animation:pulse .6s ease-in-out infinite alternate}
+  body{padding-bottom:96px}
+  .toast{bottom:calc(86px + env(safe-area-inset-bottom,0px))}
+}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -236,17 +341,22 @@ footer p{margin:0;max-width:62ch}
       <div class="count tok"><div class="lbl">Fish tokens</div><div class="val num" id="cTok">0</div></div>
     </div>
   </header>
-  <div class="soundbar" role="group" aria-label="Sound settings">
+  <details class="soundbar" id="soundWrap">
+    <summary>Sound settings</summary>
+    <div class="row" role="group" aria-label="Sound settings">
       <label class="vol" for="volAll">Volume <input type="range" id="volAll" min="0" max="100" step="5"></label>
       <label class="vol" for="volVo">Jeff voice <input type="range" id="volVo" min="0" max="100" step="5"></label>
       <label class="vol" for="volMus">Music <input type="range" id="volMus" min="0" max="100" step="5"></label>
       <button class="btn alt" id="musicBtn">Music: off</button>
       <button class="btn alt" id="muteBtn">Sound: on</button>
-  </div>
+    </div>
+  </details>
 
   <main class="grid">
     <section class="panel">
       <div class="stage" id="stage">
+        <div class="depth" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+        <div class="scrim" aria-hidden="true"></div>
         <div class="eventbar" id="eventBar" hidden></div>
         <div class="readyflash" id="readyFlash"></div>
         <button class="jeff" id="jeff" aria-label="Chomp a hero">
@@ -256,7 +366,7 @@ footer p{margin:0;max-width:62ch}
           </div>
           <span class="acc" id="acc"></span>
         </button>
-        <div class="stagebadge"><span class="pill" id="stageName">Snack Size</span><span class="pill" id="skinPill"></span><span class="pill" id="alignPill">Just a Little Guy</span></div>
+        <div class="stagebadge"><span class="pill pill-stage" id="stageName">Snack Size</span><span class="pill pill-skin" id="skinPill"></span><span class="pill" id="alignPill" hidden>Goodest Boy</span></div>
       </div>
 
       <div class="ult">
@@ -275,6 +385,16 @@ footer p{margin:0;max-width:62ch}
         <button class="btn alt" id="artClear" hidden>Back to default Jeff</button>
         <span>Custom art stays in this browser. Costumes tint Jeff and he gets chunkier as he eats.</span>
       </div>
+      <div class="runcard">
+        <h4>This run</h4>
+        <div class="prog"><i id="runFill"></i></div>
+        <p class="hint num" id="runTxt"></p>
+        <p class="hint" id="nextTxt"></p>
+        <div class="row">
+          <button class="btn alt" id="saveOut">Save a backup</button>
+          <label class="btn alt" for="saveIn">Restore a save<input type="file" id="saveIn" accept="application/json,.json" hidden></label>
+        </div>
+      </div>
     </section>
 
     <aside class="panel">
@@ -285,10 +405,15 @@ footer p{margin:0;max-width:62ch}
       </div>
 
       <div data-pane="shop">
-        <h3>One-time upgrades</h3>
+        <h3 id="upsHead">One-time upgrades</h3>
         <div class="ups" id="ups"></div>
-        <p class="hint" id="upsHint" hidden>More unlock as you buy 10, 25, 50 and 100 of each upgrade.</p>
+        <div class="ups-teaser" id="upsTeaser"></div>
         <h3>Upgrades</h3>
+        <div class="buyrow" role="group" aria-label="How many to buy">
+          <button class="qbtn" data-q="1" aria-pressed="true">Buy ×1</button>
+          <button class="qbtn" data-q="10" aria-pressed="false">Buy ×10</button>
+          <button class="qbtn" data-q="max" aria-pressed="false">Buy max</button>
+        </div>
         <div class="shop" id="shop"></div>
       </div>
 
@@ -363,6 +488,13 @@ footer p{margin:0;max-width:62ch}
       <button class="btn alt" id="resetBtn">Reset save</button>
     </div>
   </footer>
+
+  <div class="mobilebar" id="mbar">
+    <div class="mmeter" aria-hidden="true"><i id="mFill"></i></div>
+    <button class="mchomp" id="mChomp">CHOMP</button>
+    <button class="mult" id="mUlt" aria-label="Use ult">ULT</button>
+  </div>
+  <div class="sr" id="live" aria-live="polite"></div>
 </div>
 <div class="toast" id="toast" hidden></div>
 
@@ -396,13 +528,13 @@ const UP=[
 const TIER_AT=[10,25,50,100], TIER_COST=[20,150,1500,20000], TIER_NM=['Extra','Super','Mega','Ultra'];
 const ONE=[];
 UP.filter(u=>u.kind==='ps'||u.kind==='click').forEach(u=>TIER_AT.forEach((t,i)=>ONE.push({
-  id:`${u.id}_t${i}`,nm:`${TIER_NM[i]} ${u.nm}`,ds:`${u.nm} ×2`,cost:u.base*TIER_COST[i],need:()=>own(u.id)>=t,bld:u.id})));
+  id:`${u.id}_t${i}`,nm:`${TIER_NM[i]} ${u.nm}`,ds:`${u.nm} ×2`,cost:u.base*TIER_COST[i],need:()=>own(u.id)>=t,bld:u.id,req:`Own ${t} ${u.nm}`})));
 ONE.push(
-  {id:'crit', nm:'Chomp Crits',      ds:'5% of chomps hit ×10',              cost:5000,   need:()=>S.st.clicks>=200},
-  {id:'belly',nm:'Golden Belly',     ds:'A token every 25 chomps',           cost:20000,  need:()=>S.life>=5000},
-  {id:'radar',nm:'Fin Radar',        ds:'Events show up twice as often',     cost:50000,  need:()=>S.st.events>=2},
-  {id:'tank', nm:'Bottomless Tank',  ds:'Full-speed offline snacking, 4 hrs',cost:250000, need:()=>S.life>=1e5},
-  {id:'lucky',nm:'Lucky Bubble',     ds:'Crits hit ×25 instead',             cost:2e6,    need:()=>S.bought.crit},
+  {id:'crit', nm:'Chomp Crits',      ds:'5% of chomps hit ×10',              cost:5000,   need:()=>S.st.clicks>=200, req:'Chomp 200 times'},
+  {id:'belly',nm:'Golden Belly',     ds:'A token every 25 chomps',           cost:20000,  need:()=>S.life>=5000,     req:'Eat 5,000 heroes in total'},
+  {id:'radar',nm:'Fin Radar',        ds:'Events show up twice as often',     cost:50000,  need:()=>S.st.events>=2,   req:'Clear 2 events'},
+  {id:'tank', nm:'Bottomless Tank',  ds:'Full-speed offline snacking, 4 hrs',cost:250000, need:()=>S.life>=1e5,      req:'Eat 100,000 heroes in total'},
+  {id:'lucky',nm:'Lucky Bubble',     ds:'Crits hit ×25 instead',             cost:2e6,    need:()=>S.bought.crit,    req:'Own Chomp Crits first'},
 );
 
 const SKINS=[
@@ -514,10 +646,14 @@ function stageInfo(){let s=STAGES[0];for(const x of STAGES)if(S.run>=x[0])s=x;re
 function artTransform(){const s=stageInfo();const extra=S.equip==='chunky'?.12:0;return`scale(${s[2]+extra},${s[3]})`}
 function floatText(txt,x,y,cls){const r=stage.getBoundingClientRect();const el=document.createElement('div');el.className='float '+(cls||'');el.textContent=txt;
   el.style.left=(x-r.left-20)+'px';el.style.top=(y-r.top-20)+'px';stage.appendChild(el);setTimeout(()=>el.remove(),900)}
-$('jeff').addEventListener('click',e=>{
+function ripple(e){if(reduce||stage.querySelectorAll('.ripple').length>4)return;const r=stage.getBoundingClientRect();
+  const x=(e&&e.clientX?e.clientX-r.left:r.width/2),y=(e&&e.clientY?e.clientY-r.top:r.height*.45);
+  const d=document.createElement('span');d.className='ripple';d.style.left=x+'px';d.style.top=y+'px';stage.appendChild(d);setTimeout(()=>d.remove(),700)}
+function chomp(e){
   let v=perClick();S.st.clicks++;
   let label,cls='';const roll=Math.random();
-  if(S.bought.crit&&Math.random()<.05){const m=S.bought.lucky?25:10;v*=m;cls='crit';label=`CRIT ×${m}! +${fmt(v)}`;blip(660,'square',.1,.05)}
+  if(S.bought.crit&&Math.random()<.05){const m=S.bought.lucky?25:10;v*=m;cls='crit';label=`CRIT ×${m}! +${fmt(v)}`;blip(660,'square',.1,.05);
+    if(!reduce){stage.classList.remove('shake');void stage.offsetWidth;stage.classList.add('shake');setTimeout(()=>stage.classList.remove('shake'),220)}}
   if(roll<1/1500){v*=50;label='MY NAME IS JEFF! +'+fmt(v);cls='meow';jingle();log('Golden chomp: "My name is Jeff!" ×50')}
   else if(!label&&roll<1/1500+1/220){label='meow';cls='meow';log('Jeff briefly believed he was a cat.')}
   if(!label)label='+'+fmt(v);
@@ -526,13 +662,14 @@ $('jeff').addEventListener('click',e=>{
   const r=$('jeff').getBoundingClientRect();const x=e.clientX||r.left+r.width/2,y=e.clientY||r.top+r.height/3;
   floatText(label,x+(Math.random()*30-15),y,cls);blip(200+Math.random()*80);
   if(!reduce){const s=stageInfo();const ex=S.equip==='chunky'?.12:0;art.animate([{transform:`scale(${(s[2]+ex)*1.08},${s[3]*.9})`},{transform:artTransform()}],{duration:140,easing:'ease-out'})}
-  draw();
-});
+  ripple(e);draw();
+}
+$('jeff').addEventListener('click',chomp);
 
 /* ---------- ult ---------- */
 const sfxCache={};function playSfx(k){if(S.muted)return;try{const src=SFX[k]||VO[k];if(!src)return;const a=sfxCache[k]||(sfxCache[k]=new Audio(src));const vv=Math.min(1,.9*S.vol*(VO[k]?S.voVol:1));if(vv<=0)return;a.currentTime=0;a.volume=vv;const p=a.play();if(p&&p.catch)p.catch(()=>{})}catch(e){}}
 let ultWasReady=null;
-function ultReadyFx(){playSfx('ready');log('Ult ready. "It\'s Jeff!" is waiting.');if(reduce)return;
+function ultReadyFx(){playSfx('ready');log('Ult ready. "It\'s Jeff!" is waiting.');announce('Ult ready');if(reduce)return;
   $('readyFlash').animate([{transform:'scale(.4)',opacity:0},{transform:'scale(1)',opacity:.95,offset:.35},{transform:'scale(1.25)',opacity:0}],{duration:1100,easing:'ease-out'})}
 let ultAudio;function playUlt(){if(S.muted)return;try{ultAudio=ultAudio||new Audio(ULT_SFX);ultAudio.currentTime=0;ultAudio.volume=Math.min(1,.9*S.vol*S.voVol);if(ultAudio.volume<=0)return;const p=ultAudio.play();if(p&&p.catch)p.catch(()=>blip(120,'sawtooth',.4,.06))}catch(e){blip(120,'sawtooth',.4,.06)}}
 $('ultBtn').onclick=()=>{if(S.ult<100)return;$('spit').hidden=false;$('ultBtn').disabled=true;playUlt();if(S.equip==='fuzzlefin')setTimeout(()=>playSfx('brrPowerful'),1600);log('NOM NOM NOM. Jeff dives into the whirlpool...')};
@@ -552,14 +689,25 @@ document.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.cl
   if(b.dataset.tab==='ward')buildWardrobe();});
 
 /* ---------- shop ---------- */
-$('shop').innerHTML=UP.map(u=>`<button class="item" data-up="${u.id}"><span class="nm">${u.id==='bubble'?`<img class="ico" src="${BUBBLE}" alt="">`:''}${u.nm}</span><span class="own num" data-own></span><span class="ds" data-ds>${u.ds}</span><span class="cost num" data-cost></span></button>`).join('');
-$('shop').addEventListener('click',e=>{const b=e.target.closest('[data-up]');if(!b)return;const u=UP.find(x=>x.id===b.dataset.up);const c=cost(u);
-  if(S.eaten<c||(u.max&&own(u.id)>=u.max))return;S.eaten-=c;S.owned[u.id]=own(u.id)+1;blip(520,'triangle',.08,.05);draw()});
-let upsKey='';
+$('shop').innerHTML=UP.map(u=>`<button class="item" data-up="${u.id}"><span class="nm">${u.nm}</span><span class="own num" data-own></span><span class="ds" data-ds>${u.ds}</span><span class="pips" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="cost num" data-cost></span></button>`).join('');
+let buyQ=1;
+function buyOne(u){const c=cost(u);if(S.eaten<c||(u.max&&own(u.id)>=u.max))return false;S.eaten-=c;S.owned[u.id]=own(u.id)+1;return true}
+function buyUp(u){let n=0;const limit=buyQ==='max'?1000:buyQ;while(n<limit&&buyOne(u))n++;if(n){blip(520,'triangle',.08,.05);draw()}return n}
+document.querySelector('.buyrow').addEventListener('click',e=>{const b=e.target.closest('[data-q]');if(!b)return;
+  buyQ=b.dataset.q==='max'?'max':+b.dataset.q;document.querySelectorAll('[data-q]').forEach(x=>x.setAttribute('aria-pressed',x===b));draw()});
+let holdT=null,holdIv=null;
+function stopHold(){clearTimeout(holdT);if(holdIv){clearInterval(holdIv);holdIv=null}}
+$('shop').addEventListener('pointerdown',e=>{const b=e.target.closest('[data-up]');if(!b||b.disabled)return;const u=UP.find(x=>x.id===b.dataset.up);if(!u)return;
+  buyUp(u);stopHold();holdT=setTimeout(()=>{holdIv=setInterval(()=>{if(!buyUp(u))stopHold()},110)},420)});
+['pointerup','pointercancel','pointerleave'].forEach(ev=>$('shop').addEventListener(ev,stopHold));
+$('shop').addEventListener('click',e=>{const b=e.target.closest('[data-up]');if(!b||e.detail!==0)return;const u=UP.find(x=>x.id===b.dataset.up);if(u)buyUp(u)});
+let upsKey=null;
 function renderUps(){const av=ONE.filter(o=>!S.bought[o.id]&&o.need()).sort((a,b)=>a.cost-b.cost).slice(0,8);
   const key=av.map(o=>o.id).join();if(key!==upsKey){upsKey=key;
     $('ups').innerHTML=av.map(o=>`<button class="up1" data-one="${o.id}"><b>${esc(o.nm)}</b><span>${esc(o.ds)}</span><em class="num">${fmt(o.cost)} heroes</em></button>`).join('');
-    $('upsHint').hidden=av.length>0}
+    const teaser=av.length?[]:ONE.filter(o=>!S.bought[o.id]&&!o.need()).sort((a,b)=>a.cost-b.cost).slice(0,2);
+    $('upsTeaser').innerHTML=teaser.map(o=>`<div class="lock"><b>${esc(o.nm)}</b><span>${esc(o.req||'Locked')} · ${fmt(o.cost)} heroes</span></div>`).join('');
+    $('upsHead').textContent=av.length?'One-time upgrades':'One-time upgrades — nothing unlocked yet'}
   $('ups').querySelectorAll('[data-one]').forEach(b=>{const o=ONE.find(x=>x.id===b.dataset.one);b.disabled=S.eaten<o.cost})}
 $('ups').addEventListener('click',e=>{const b=e.target.closest('[data-one]');if(!b)return;const o=ONE.find(x=>x.id===b.dataset.one);
   if(!o||S.bought[o.id]||S.eaten<o.cost)return;S.eaten-=o.cost;S.bought[o.id]=true;jingle([660,880]);log(`Bought ${o.nm}.`);draw()});
@@ -631,8 +779,8 @@ function startEvent(){
   if(t==='loki')showBar('A Loki copied you and is stealing your heroes! Tap the fake 15 times.','<button class="btn hot" data-ev="fake">Tap the fake (0/15)</button>');
   playSfx(t==='hulk'?'startling':t==='loki'?'urgent':'dun');
 }
-function showBar(msg,acts){bar.innerHTML=`<p>${msg}</p>${acts?`<div class="acts">${acts}</div>`:''}<div class="timer"><i id="evTimer"></i></div>`;bar.hidden=false}
-function endEvent(win,msg){if(!ev)return;if(!ev.sfx)playSfx(win?'enthusiastic':'sad');if(win){S.st.events++;giveTok(3)}if(msg)log(msg);ev=null;bar.hidden=true;bar.innerHTML='';stage.querySelectorAll('.target').forEach(x=>x.remove());
+function showBar(msg,acts){bar.innerHTML=`<p>${msg}</p>${acts?`<div class="acts">${acts}</div>`:''}<div class="timer"><i id="evTimer"></i></div>`;bar.hidden=false;stage.classList.add('acting')}
+function endEvent(win,msg){if(!ev)return;if(!ev.sfx)playSfx(win?'enthusiastic':'sad');if(win){S.st.events++;giveTok(3)}if(msg)log(msg);ev=null;bar.hidden=true;bar.innerHTML='';stage.classList.remove('acting');stage.querySelectorAll('.target').forEach(x=>x.remove());
   nextEv=Date.now()+rnd(35,75)*1000*(S.bought.radar?.5:1);draw()}
 stage.addEventListener('click',e=>{const b=e.target.closest('[data-ev]');if(!b||!ev)return;e.stopPropagation();const a=b.dataset.ev;const em=evMult();
   if(a==='catch'){const n=(ps()*30+perClick()*25+100)*em;gain(n);jingle();endEvent(true,`Caught Iron Man in mid-air. Physics is a suggestion. +${fmt(n)}`)}
@@ -672,16 +820,25 @@ function draw(){
   const P=ps(),C=perClick();
   $('cEaten').textContent=fmt(S.eaten);$('cPs').textContent=fmt(P);$('cClick').textContent=fmt(C);$('cTok').textContent=S.tok;
   $('ultFill').style.width=S.ult+'%';const rdy=S.ult>=100&&$('spit').hidden;if(rdy&&ultWasReady===false)ultReadyFx();ultWasReady=rdy;$('ultBtn').disabled=!rdy;$('ultBtn').classList.toggle('ready',rdy);
-  document.querySelectorAll('[data-up]').forEach(b=>{const u=UP.find(x=>x.id===b.dataset.up);const maxed=u.max&&own(u.id)>=u.max;const bm=bmult(u.id);
-    b.querySelector('[data-own]').textContent=own(u.id);b.querySelector('[data-ds]').textContent=u.ds+(bm>1?` (×${bm})`:'');
-    b.querySelector('[data-cost]').textContent=maxed?'Maxed':fmt(cost(u))+' heroes';b.disabled=maxed||S.eaten<cost(u)});
+  const mu=$('mUlt');if(mu){$('mFill').style.width=S.ult+'%';mu.classList.toggle('ready',rdy);mu.textContent=rdy?'ULT!':'ULT'}
+  document.querySelectorAll('[data-up]').forEach(b=>{const u=UP.find(x=>x.id===b.dataset.up);const maxed=u.max&&own(u.id)>=u.max;const bm=bmult(u.id);const n=own(u.id);
+    b.querySelector('[data-own]').textContent=n;b.querySelector('[data-ds]').textContent=u.ds+(bm>1?` (×${bm})`:'');
+    b.querySelector('[data-cost]').textContent=maxed?'Maxed':fmt(cost(u))+' heroes';
+    b.disabled=maxed||S.eaten<cost(u);b.classList.toggle('afford',!maxed&&S.eaten>=cost(u));
+    b.querySelectorAll('.pips i').forEach((p,i)=>p.classList.toggle('on',n>=TIER_AT[i]))});
   renderUps();
+  const pb=$('prestigeBtn');if(pb)pb.disabled=S.run<need();
   const st=stageInfo();$('stageName').textContent=st[1];art.style.transform=artTransform();
+  const si=STAGES.indexOf(st);
+  if(si>stageIdx){if(stageIdx>=0){toast('New size: '+st[1]+'!');announce('Jeff grew to '+st[1]);jingle([523,659,784,1047])}stageIdx=si}
+  if($('runFill')){$('runFill').style.width=(Math.min(1,S.run/need())*100)+'%';
+    $('runTxt').textContent=`${fmt(S.run)} / ${fmt(need())} heroes for the next gem`;$('nextTxt').textContent=nextTip()}
   const sk=eqSkin(),g=Math.min(S.gems,6);
   art.style.filter=[sk.fx,g?`hue-rotate(${g*11}deg) saturate(${1+g*.08})`:''].filter(Boolean).join(' ')||'';
   $('jeff').style.setProperty('--ring',sk.ring);$('acc').textContent=sk.id==='littleguy'?'':sk.g;
   $('skinPill').textContent=sk.nm;
-  const al=S.align,ap=$('alignPill');ap.textContent=al>20?'Goodest Boy':al<-20?"Satan's Greatest Soldier":'Just a Little Guy';ap.className='pill '+(al>20?'good':al<-20?'menace':'');
+  const al=S.align,ap=$('alignPill');const neutral=Math.abs(al)<=20;ap.hidden=neutral;
+  ap.textContent=al>20?'Goodest Boy':"Satan's Greatest Soldier";ap.className='pill '+(al>20?'good':'menace');
   $('alignMark').style.left=(50+al/2)+'%';
   const nd=need(),pr=Math.min(1,S.run/nd);$('progFill').style.width=(pr*100)+'%';
   $('progTxt').textContent=`This run: ${fmt(S.run)} / ${fmt(nd)} heroes`+(S.good||S.menace?`  ·  Goodest Boy ×${S.good}, Menace ×${S.menace}`:'');
@@ -715,7 +872,7 @@ $('volAll').addEventListener('input',e=>{S.vol=e.target.value/100;updateMusic()}
 $('volAll').addEventListener('change',()=>{blip(520,'triangle',.08,.05);save()});
 $('volVo').addEventListener('input',e=>{S.voVol=e.target.value/100});
 $('volVo').addEventListener('change',()=>{playSfx('chomp1');save()});
-let resetArm=0;$('resetBtn').onclick=()=>{if(Date.now()-resetArm<3000){if(ev)endEvent(false);S=fresh();upsKey='';gemKey='';achKey='';wardKey='';save();$('log').innerHTML='';$('results').innerHTML='';log('Fresh shark. Fresh hunger.');syncVol();updateMusic();$('resetBtn').textContent='Reset save';draw();checkAch();return}
+let resetArm=0;$('resetBtn').onclick=()=>{if(Date.now()-resetArm<3000){if(ev)endEvent(false);S=fresh();upsKey='';gemKey='';achKey='';wardKey='';stageIdx=-1;buyQ=1;save();$('log').innerHTML='';$('results').innerHTML='';log('Fresh shark. Fresh hunger.');syncVol();updateMusic();$('resetBtn').textContent='Reset save';draw();checkAch();return}
   resetArm=Date.now();$('resetBtn').textContent='Tap again to wipe';setTimeout(()=>$('resetBtn').textContent='Reset save',3000)};
 
 function save(){S.last=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
@@ -726,9 +883,47 @@ setInterval(save,5000);document.addEventListener('visibilitychange',()=>{if(docu
   const n=basePs()*gemMult()*(1+.5*S.good)*sec*rate;
   if(sec>60&&n>0){gain(n);log(`While you were gone, Jeff snacked on ${fmt(n)} heroes.`);setTimeout(()=>toast(`Welcome back. Jeff ate ${fmt(n)} heroes while you were away.`),400)}})();
 
+/* ---------- input: keyboard, phone bar, save backups ---------- */
+let stageIdx=-1;
+function announce(t){const l=$('live');if(l)l.textContent=t}
+function nextTip(){
+  const ready=ONE.filter(o=>!S.bought[o.id]&&o.need()).sort((a,b)=>a.cost-b.cost)[0];
+  if(ready&&S.eaten>=ready.cost)return 'Ready to buy: '+ready.nm+' ('+fmt(ready.cost)+').';
+  const up=UP.filter(u=>!(u.max&&own(u.id)>=u.max)).sort((a,b)=>cost(a)-cost(b))[0];
+  if(up&&S.eaten>=cost(up))return 'Next: '+up.nm+' for '+fmt(cost(up))+'.';
+  if(up)return 'Saving up: '+up.nm+' at '+fmt(cost(up))+'.';
+  return 'Every upgrade is maxed. Go wipe a team.';
+}
+document.addEventListener('keydown',e=>{
+  if(e.defaultPrevented||e.metaKey||e.ctrlKey||e.altKey)return;
+  const t=e.target;if(t&&/^(BUTTON|INPUT|TEXTAREA|SELECT|SUMMARY|A)$/.test(t.tagName))return;
+  if(e.code==='Space'&&!e.repeat){e.preventDefault();chomp({clientX:0,clientY:0});return}
+  if(e.key==='1')$('tab-shop').click();
+  if(e.key==='2')$('tab-caps').click();
+  if(e.key==='3')$('tab-ward').click();
+});
+$('mChomp').addEventListener('click',()=>chomp({clientX:0,clientY:0}));
+$('mUlt').addEventListener('click',()=>{const b=$('ultBtn');if(!b.disabled)b.click()});
+$('saveOut').onclick=()=>{try{
+  const blob=new Blob([JSON.stringify(S)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='jeff-clicker-save.json';
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+  toast('Backup downloaded.');}catch(err){toast('Could not save a backup here.')}};
+$('saveIn').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{try{
+    const d=JSON.parse(r.result);
+    if(!d||typeof d!=='object'||typeof d.eaten!=='number')throw new Error('bad');
+    if(!confirm('Replace this browser\'s Jeff with the backup?'))return;
+    const F=fresh();S=Object.assign(F,d);S.st=Object.assign(F.st,d.st||{});
+    upsKey='';gemKey='';achKey='';wardKey='';stageIdx=-1;save();syncVol();updateMusic();draw();toast('Save restored.');
+  }catch(err){toast('That does not look like a Jeff Clicker save.')}};
+  r.readAsText(f);e.target.value=''});
+
 /* loop */
-let prev=performance.now(),achT=0,lastAct=Date.now();
-function tick(){const now=performance.now();const dt=Math.min(1,(now-prev)/1000);prev=now;
+let prev=Date.now(),achT=0,lastAct=Date.now();
+function tick(){const now=Date.now();let dt=(now-prev)/1000;prev=now;
+  // Wall-clock deltas, not frame deltas: a throttled or suspended tab still earns its keep.
+  if(!isFinite(dt)||dt<0)dt=0;if(dt>14400)dt=14400;
   gain(ps()*dt);S.ult=Math.min(100,S.ult+dt*.5*(1+.2*own('whirl'))*skinMult('ult'));
   const t=Date.now();
   if(ev){const f=1-(t-ev.start)/(ev.end-ev.start);const ti=$('evTimer');if(ti)ti.style.width=Math.max(0,f*100)+'%';
@@ -742,6 +937,10 @@ function tick(){const now=performance.now();const dt=Math.min(1,(now-prev)/1000)
 setInterval(tick,100);
 log('Jeff is hungry. Tap to chomp. You have 30 tokens for your first capsules.');
 checkAch();draw();
+
+if('serviceWorker' in navigator&&location.protocol!=='file:'){
+  addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
 })();
 </script>
 </body>

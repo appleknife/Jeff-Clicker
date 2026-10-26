@@ -1,0 +1,16 @@
+{
+  "name": "Jeff Clicker",
+  "short_name": "Jeff Clicker",
+  "description": "An unofficial Jeff the Land Shark fan clicker. Chomp heroes, pull costumes, spit teams off cliffs.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#08171e",
+  "theme_color": "#1f6f86",
+  "icons": [
+    { "src": "assets/img/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/img/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/img/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
