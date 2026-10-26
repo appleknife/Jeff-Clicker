@@ -91,7 +91,8 @@ five-minute save and a five-hour save get the same fight. Tap fast to build a co
   so the costume you *wear* stays purely cosmetic.
 - Trophies: 3 for a first kill, 2 for a recruit, 1 for a repeat. A tally for now.
 - `?deep=1` on the URL reveals the tab for testing without unlocking it in your save; `?ex=1` also adds
-  **EX** buttons to each boss card, which preview the EX transformation (the EX *mode* is not built yet).
+  **EX** buttons to each boss card. Those start the fight at 42% HP so the transformation fires on your
+  first couple of taps; in that mode any fight triggers it at 40%. The EX *mode* itself is not built yet.
 
 ### Recruiting
 

@@ -384,6 +384,7 @@ footer p{margin:0;max-width:62ch}
 .bf-finish{position:absolute;left:50%;bottom:52px;transform:translateX(-50%);z-index:10;pointer-events:auto;border:0;border-radius:14px;padding:10px 20px;font-family:var(--display);font-size:18px;background:var(--accent);color:#fff;animation:pulse .5s ease-in-out infinite alternate;box-shadow:0 5px 0 rgba(0,0,0,.25)}
 /* finisher: all DOM + transform, so it stays 60fps on a phone */
 #bf.fin .bf-top,#bf.fin .bf-clock,#bf.fin .bf-actives,#bf.fin .bf-combo{opacity:.2;transition:opacity .25s ease}
+#bf.excut .bf-top,#bf.excut .bf-clock,#bf.excut .bf-actives,#bf.excut .bf-combo{opacity:.06;transition:opacity .4s ease}
 .bf-flash{position:absolute;inset:-10%;z-index:9;pointer-events:none;background:radial-gradient(circle at 50% 45%,#fff 0%,rgba(255,255,255,.55) 36%,rgba(255,255,255,0) 72%)}
 .bf-wave{position:absolute;left:50%;top:45%;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;border:6px solid rgba(255,255,255,.95);box-shadow:0 0 26px rgba(255,255,255,.55);z-index:9;pointer-events:none}
 .bf-slam{position:absolute;left:50%;top:40%;z-index:10;font-family:var(--display);font-size:clamp(26px,9vw,46px);color:#fff;white-space:nowrap;pointer-events:none;letter-spacing:.01em;text-shadow:0 3px 0 #08222b,0 -2px 0 #08222b,2px 0 0 #08222b,-2px 0 0 #08222b,0 0 30px rgba(255,255,255,.7)}
@@ -789,7 +790,7 @@ const ACH=[
 /* ---------- state ---------- */
 function fresh(){return{eaten:0,run:0,life:0,owned:{},bought:{},ult:0,gems:0,good:0,menace:0,align:0,snap:false,buffs:[],diff:'normal',
   tok:30,tokFrac:0,vol:.6,voVol:.35,music:false,musVol:.3,skins:{default:1},dupes:0,art:'default',perk:'default',wardMode:'look',pity:0,ach:{},chompN:0,
-  boss:{unlocked:false,trophies:0,cleared:{},best:{},els:{},el:'',recruited:{},team:[]},
+  boss:{unlocked:false,trophies:0,cleared:{},best:{},els:{},el:'',recruited:{},team:[],exSeen:{}},
   st:{wipes:0,mates:0,ults:0,events:0,clicks:0,pulls:0,pops:0},muted:false,last:Date.now()}}
 let S=fresh();
 // Old saves used fantasy costume ids. Keep the ones with an official equivalent, drop
@@ -871,15 +872,44 @@ function powerDown(ms=850){const c=getAC();if(!c||S.muted||document.hidden)retur
     lp.type='lowpass';lp.frequency.setValueAtTime(1800,t);lp.frequency.exponentialRampToValueAtTime(190,t+d);
     g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.085*S.vol,t+d*.35);g.gain.exponentialRampToValueAtTime(.0001,t+d);
     o.connect(lp).connect(g).connect(c.destination);o.start(t);o.stop(t+d+.03)}catch(e){}}
-function subDrop(){const c=getAC();if(!c||S.muted||document.hidden)return;
-  try{const t=c.currentTime,o=c.createOscillator(),g=c.createGain();
-    o.type='sine';o.frequency.setValueAtTime(62,t);o.frequency.exponentialRampToValueAtTime(37,t+.48);
-    g.gain.setValueAtTime(.11*S.vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+.55);
-    o.connect(g).connect(c.destination);o.start(t);o.stop(t+.58)}catch(e){}}
 function shimmer(){const c=getAC();if(!c||S.muted||document.hidden)return;
   try{const t=c.currentTime;[880,1320.5].forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain();
     o.type='triangle';o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(.032*S.vol,t);
     g.gain.exponentialRampToValueAtTime(.0001,t+.21);o.connect(g).connect(c.destination);o.start(t);o.stop(t+.24)})}catch(e){}}
+// The EX cue, layered: heartbeat under the runway, a suck-in that cuts to silence, then a
+// three-part hit (sub boom + metal + noise) and a low beating growl under the new form.
+function heartbeat(){const c=getAC();if(!c||S.muted||document.hidden)return;
+  try{const t=c.currentTime;[0,.13].forEach((o,i)=>{const os=c.createOscillator(),g=c.createGain();
+    os.type='sine';os.frequency.setValueAtTime(i?44:52,t+o);os.frequency.exponentialRampToValueAtTime(34,t+o+.16);
+    g.gain.setValueAtTime(.0001,t+o);g.gain.exponentialRampToValueAtTime((i?.07:.10)*S.vol,t+o+.02);g.gain.exponentialRampToValueAtTime(.0001,t+o+.18);
+    os.connect(g).connect(c.destination);os.start(t+o);os.stop(t+o+.2)})}catch(e){}}
+function suck(ms=760){const c=getAC();if(!c||S.muted||document.hidden)return;
+  try{const t=c.currentTime,d=ms/1000,n=Math.floor(c.sampleRate*d),buf=c.createBuffer(1,n,c.sampleRate),ch=buf.getChannelData(0);
+    for(let i=0;i<n;i++){const k=i/n;ch[i]=(Math.random()*2-1)*k*k}
+    const s=c.createBufferSource();s.buffer=buf;
+    const bp=c.createBiquadFilter();bp.type='bandpass';bp.Q.value=1.4;bp.frequency.setValueAtTime(300,t);bp.frequency.exponentialRampToValueAtTime(3200,t+d);
+    const g=c.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.10*S.vol,t+d*.92);g.gain.setValueAtTime(.0001,t+d);
+    s.connect(bp).connect(g).connect(c.destination);s.start(t);s.stop(t+d);
+    const o=c.createOscillator(),g2=c.createGain();
+    o.type='triangle';o.frequency.setValueAtTime(90,t);o.frequency.exponentialRampToValueAtTime(900,t+d);
+    g2.gain.setValueAtTime(.0001,t);g2.gain.exponentialRampToValueAtTime(.05*S.vol,t+d*.95);g2.gain.setValueAtTime(.0001,t+d);
+    o.connect(g2).connect(c.destination);o.start(t);o.stop(t+d)}catch(e){}}
+function boom(){const c=getAC();if(!c||S.muted||document.hidden)return;
+  try{const t=c.currentTime,o=c.createOscillator(),g=c.createGain();
+    o.type='sine';o.frequency.setValueAtTime(46,t);o.frequency.exponentialRampToValueAtTime(28,t+.9);
+    g.gain.setValueAtTime(.18*S.vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+.95);
+    o.connect(g).connect(c.destination);o.start(t);o.stop(t+1)}catch(e){}}
+function clang(){const c=getAC();if(!c||S.muted||document.hidden)return;
+  try{const t=c.currentTime;[183,271,409].forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain();
+    o.type=i?'square':'triangle';o.frequency.setValueAtTime(f,t);o.frequency.exponentialRampToValueAtTime(f*.82,t+.4);
+    g.gain.setValueAtTime((i?.03:.05)*S.vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+.42);
+    o.connect(g).connect(c.destination);o.start(t);o.stop(t+.45)})}catch(e){}}
+function growl(ms=900){const c=getAC();if(!c||S.muted||document.hidden)return;
+  try{const t=c.currentTime,d=ms/1000,lp=c.createBiquadFilter(),g=c.createGain();
+    lp.type='lowpass';lp.frequency.value=240;
+    g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.06*S.vol,t+.25);g.gain.exponentialRampToValueAtTime(.0001,t+d);
+    lp.connect(g).connect(c.destination);
+    [55,56.5].forEach(f=>{const o=c.createOscillator();o.type='sawtooth';o.frequency.value=f;o.connect(lp);o.start(t);o.stop(t+d+.05)})}catch(e){}}
 function noiseHit(dur=.22,vol=.16){const c=getAC();if(!c||S.muted||document.hidden)return;
   try{const t=c.currentTime,n=Math.max(1,Math.floor(c.sampleRate*dur)),buf=c.createBuffer(1,n,c.sampleRate),ch=buf.getChannelData(0);
     for(let i=0;i<n;i++){const k=1-i/n;ch[i]=(Math.random()*2-1)*k*k}
@@ -1282,6 +1312,8 @@ const recruited=()=>bs().recruited||(bs().recruited={});
 const team=()=>bs().team||(bs().team=[]);
 const isRec=id=>!!recruited()[id];
 const TEAM_MAX=3;
+// Once you have watched a boss change form, later attempts skip the cinematic.
+const exSeen=()=>bs().exSeen||(bs().exSeen={});
 const bossArt=b=>`assets/img/heroes/${b.id}.webp`;
 const bossArtSm=b=>`assets/img/heroes/${b.id}-sm.webp`;
 const nowMs=()=>performance.now();
@@ -1298,7 +1330,8 @@ function startFight(id,preview){
   const rematch=!!bs().cleared[id]&&!isRec(id);
   const hp=Math.round(b.hp*(rematch?1.5:1.3));
   const clockMax=b.clock*.8+(isRec('hulk')?4:0);
-  fight={b,rematch,hp,max:hp,clockMax,combo:1,lastTap:0,maxCombo:1,left:clockMax,elapsed:0,phase:'intro',tele:null,
+  const startHp=preview?Math.round(hp*.42):hp;
+  fight={b,rematch,hp:startHp,max:hp,clockMax,combo:1,lastTap:0,maxCombo:1,left:clockMax,elapsed:0,phase:'intro',tele:null,
     nextTele:0,nextStomp:0,revived:false,quietUntil:0,pendingHold:false,finish:false,
     mechScale:rematch?.68:.8,teleWin:b.tele?b.tele.window*(isRec('storm')?1.25:1):0,
     mercy:isRec('adam-warlock'),used:{},exPreview:!!preview,exOn:false};
@@ -1320,8 +1353,6 @@ function startFight(id,preview){
     if(!fight||fight.phase!=='intro')return;
     fight.phase='fight';fight.nextTele=nowMs()+1400;fight.nextStomp=nowMs()+2200;
     const c=$('bfCard');if(c)c.remove();
-    // preview: show the transformation right away instead of making you tap to 50%
-    if(fight.exPreview)setTimeout(()=>{if(fight&&fight.phase==='fight')exForm()},380);
   },1200);
 }
 function playBossMusic(on){
@@ -1339,7 +1370,7 @@ function playBossMusic(on){
 }
 function cleanupFight(){
   stage.querySelectorAll('.tele,.bf-warn,.bf-finish,.bf-flash,.bf-wave,.bf-slam,.bf-bar,.bf-vig,.bf-rays').forEach(n=>n.remove());
-  const el=$('bf');el.hidden=true;el.innerHTML='';el.classList.remove('fin');
+  const el=$('bf');el.hidden=true;el.innerHTML='';el.classList.remove('fin','excut');
   playBossMusic(false);
   fight=null;save();renderBossTab();draw();
 }
@@ -1378,7 +1409,7 @@ function hitBoss(d,e){
   paintBars();
   if(f.hp<=0){endChannel(false);finisher();return}
   // ?ex=1: the transformation fires on the half-health crossing, once per fight
-  if(EX_PREVIEW&&!f.exOn&&f.hp<=f.max*.5)exForm();
+  if(EX_PREVIEW&&!f.exOn&&f.hp<=f.max*.4)exForm();
   const ch=f.b.channel;
   if(ch&&!f.revived&&!f.channeling&&f.hp<=f.max*ch.at)beginChannel();
   else if(!f.channeling&&!f.rematch&&f.hp<=f.max*.2&&!f.finish){f.finish=true;showFinish()}
@@ -1578,55 +1609,83 @@ function finisher(){
 function exForm(){
   const f=fight;if(!f||f.phase!=='fight'||f.exOn)return;
   f.phase='ex';f.exOn=true;
-  const b=f.b,bf=$('bf'),bo=$('bfBoss'),nm=$('bfName');
+  const b=f.b,bf=$('bf'),bo=$('bfBoss'),nm=$('bfName'),fill=$('bfFill');
   stage.querySelectorAll('.tele,.bf-warn,.bf-finish').forEach(n=>n.remove());
-  if(bossAudio&&!bossAudio.paused){
-    bossAudio.volume=Math.min(1,S.vol*S.musVol*.15);
-    setTimeout(()=>{if(bossAudio&&!bossAudio.paused)bossAudio.volume=Math.min(1,S.vol*S.musVol)},1300);
-  }
-  powerDown(850);
-  const tint=document.createElement('div');tint.className='bf-extint';bf.appendChild(tint);
   const glow=ELS[b.el].c;
   const settle=()=>{
     if(bo){bo.classList.remove('sil');bo.style.setProperty('--exglow',glow);bo.classList.add('ex')}
     if(nm){nm.textContent=b.nm+' EX';nm.classList.add('ex')}
+    if(!bf.querySelector('.bf-extint')){const t=document.createElement('div');t.className='bf-extint';t.style.opacity='1';bf.appendChild(t)}
   };
-  if(reduce){settle();tint.style.opacity='1';f.phase='fight';return}
-  tint.animate([{opacity:0},{opacity:1}],{duration:1100,easing:'ease-out',fill:'forwards'});
-  // silhouette jolt: three quick frames of something being wrong
+  const back=ms=>setTimeout(()=>{if(fight===f){f.phase='fight';f.graceUntil=nowMs()+800}},ms);
+
+  // seen it already: just the change and the hit
+  if(exSeen()[b.id]&&!f.exPreview){
+    settle();boom();clang();
+    if(!reduce){stage.classList.add('shake');setTimeout(()=>stage.classList.remove('shake'),220)}
+    back(260);return;
+  }
+  if(!f.exPreview){exSeen()[b.id]=true;save()}
+  if(reduce){settle();powerDown(600);back(500);return}
+
+  // 0. runway: he stops, the bar flickers, music pulls away
+  bf.classList.add('excut');
+  if(bossAudio&&!bossAudio.paused)bossAudio.volume=Math.min(1,S.vol*S.musVol*.12);
+  heartbeat();
+  [0,190].forEach(d=>setTimeout(()=>{
+    if(!fill)return;fill.style.filter='brightness(2.4)';
+    setTimeout(()=>{fill.style.filter=''},120);
+  },d));
+  if(bo)bo.animate([{transform:'scale(1)'},{transform:'scale(.96)',offset:.5},{transform:'scale(1)'}],{duration:420,easing:'ease-in-out'});
+
+  // 1. the drain: suck-in, vignette closes, camera pushes in
   setTimeout(()=>{
-    if(!bo)return;bo.classList.add('sil');
-    bo.animate([{transform:'translateX(0)'},{transform:'translateX(-7px) skewX(-3deg)'},
-      {transform:'translateX(6px) skewX(2deg)'},{transform:'translateX(0)'}],{duration:320,easing:'ease-in-out'});
-  },120);
-  // the hit
+    suck(760);
+    const vig=document.createElement('div');vig.className='bf-vig';stage.appendChild(vig);
+    vig.animate([{opacity:0},{opacity:.92}],{duration:880,easing:'ease-in'});
+    setTimeout(()=>vig.remove(),2700);
+    if(bo)bo.animate([{transform:'scale(1)'},{transform:'scale(1.18)'}],{duration:900,easing:'ease-in-out'});
+  },350);
+
+  // 2. heartbeats, then a black silhouette
   setTimeout(()=>{
-    stage.classList.add('shake');setTimeout(()=>stage.classList.remove('shake'),260);
-    noiseHit(.3,.18);subDrop();
+    heartbeat();heartbeat();
+    if(bo){bo.classList.add('sil');
+      bo.animate([{transform:'translateX(0)'},{transform:'translateX(-7px) skewX(-3deg)'},
+        {transform:'translateX(6px) skewX(2deg)'},{transform:'translateX(0)'}],{duration:300,easing:'ease-in-out'});}
+  },1250);
+
+  // 3. silence, then the hit
+  setTimeout(()=>{
+    stage.classList.add('shake');setTimeout(()=>stage.classList.remove('shake'),320);
+    boom();clang();noiseHit(.26,.16);
     const fl=document.createElement('div');fl.className='bf-flash';stage.appendChild(fl);
-    fl.animate([{opacity:0},{opacity:.9,offset:.12},{opacity:.9,offset:.22},{opacity:0}],{duration:460,easing:'ease-out'});
-    setTimeout(()=>fl.remove(),520);
-    [0,110].forEach((delay,i)=>setTimeout(()=>{
+    fl.animate([{opacity:0},{opacity:.95,offset:.1},{opacity:.95,offset:.26},{opacity:0}],{duration:540,easing:'ease-out'});
+    setTimeout(()=>fl.remove(),580);
+    [0,90,190].forEach((d,i)=>setTimeout(()=>{
       const wv=document.createElement('div');wv.className='bf-wave';stage.appendChild(wv);
-      wv.animate([{transform:'scale(.4)',opacity:.95},{transform:'scale('+(i?6:8)+')',opacity:0}],{duration:620,easing:'cubic-bezier(.15,.85,.3,1)'});
-      setTimeout(()=>wv.remove(),700);
-    },delay));
-    // a held breath rather than the finisher's full letterbox
-    const bars=['t','b'].map(s=>{const d=document.createElement('div');d.className='bf-bar '+s;stage.appendChild(d);return d});
-    requestAnimationFrame(()=>bars.forEach(x=>{x.style.height='6%'}));
-    setTimeout(()=>bars.forEach(x=>{x.style.height='0';setTimeout(()=>x.remove(),260)}),900);
-  },420);
-  // the new form lands
+      wv.animate([{transform:'scale(.35)',opacity:.95},{transform:'scale('+(9-i*2)+')',opacity:0}],{duration:700,easing:'cubic-bezier(.15,.85,.3,1)'});
+      setTimeout(()=>wv.remove(),760);
+    },d));
+  },1600);
+
+  // 4. the new form rises out of the shadow
   setTimeout(()=>{
     settle();
-    if(bo)bo.animate([{transform:'scale(.86)',filter:'brightness(2.4) saturate(0)'},{transform:'scale(1.14)'},{transform:'scale(1)'}],{duration:440,easing:'ease-out'});
-    shimmer();jingle([392,311,262]);
+    if(bo)bo.animate([{transform:'scale(.55)',filter:'brightness(3) saturate(0)'},{transform:'scale(1.18)'},{transform:'scale(1)'}],{duration:540,easing:'ease-out'});
+    shimmer();growl(950);
     const cry=document.createElement('div');cry.className='bf-cry';cry.textContent='EX';stage.appendChild(cry);
     setTimeout(()=>cry.remove(),1000);
     const line=b.exTeach||b.taunt;
     log(b.nm+' changed form. '+line);toast(line);
-  },560);
-  setTimeout(()=>{if(fight===f)f.phase='fight'},1300);
+  },1760);
+
+  // 5. music comes back quieter for the rest of the fight, then control returns
+  setTimeout(()=>{
+    if(bossAudio&&!bossAudio.paused)bossAudio.volume=Math.min(1,S.vol*S.musVol*.4);
+    bf.classList.remove('excut');
+  },2600);
+  back(3000);
 }
 /* recruited heroes: actives need a slot and can be used once per fight */
 function paintActives(){
@@ -1653,8 +1712,10 @@ function useActive(id){
 }
 function fightTick(dt){
   const f=fight;if(!f||f.phase!=='fight')return;
-  f.left-=dt;f.elapsed+=dt;
+  f.elapsed+=dt;
   const t=nowMs();
+  // a short grace after the EX cutscene, so the cinematic never costs you clock
+  if(!f.graceUntil||t>f.graceUntil)f.left-=dt;
   if(f.channeling){
     const rem=f.channelEnd-t,fill=$('bfChannelFill');
     if(fill)fill.style.width=Math.max(0,rem/(f.b.channel.time*1000)*100)+'%';
