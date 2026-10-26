@@ -57,6 +57,11 @@ img{max-width:100%}
 *{box-sizing:border-box}
 /* Phones: every tappable thing opts out of double-tap zoom, not just Jeff. */
 button,label,.item,.up1,.bub,.target,.choice,.card{touch-action:manipulation}
+/* Phone hygiene: no blue tap flash, no long-press text selection, no iOS callout, no image drag. */
+*{-webkit-tap-highlight-color:transparent}
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea{-webkit-user-select:text;user-select:text}
+img{-webkit-user-drag:none}
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{overscroll-behavior-y:contain}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;
@@ -1330,12 +1335,15 @@ function startFight(id,preview){
   const rematch=!!bs().cleared[id]&&!isRec(id);
   const hp=Math.round(b.hp*(rematch?1.5:1.3));
   const clockMax=b.clock*.8+(isRec('hulk')?4:0);
-  const startHp=preview?Math.round(hp*.42):hp;
+  // preview starts at 60%, not just above the 40% line, so it plays like a real fight
+  const startHp=preview?Math.round(hp*.6):hp;
   fight={b,rematch,hp:startHp,max:hp,clockMax,combo:1,lastTap:0,maxCombo:1,left:clockMax,elapsed:0,phase:'intro',tele:null,
     nextTele:0,nextStomp:0,revived:false,quietUntil:0,pendingHold:false,finish:false,
     mechScale:rematch?.68:.8,teleWin:b.tele?b.tele.window*(isRec('storm')?1.25:1):0,
     mercy:isRec('adam-warlock'),used:{},exPreview:!!preview,exOn:false};
   const el=$('bf');el.hidden=false;
+  // On a phone the Deep tab sits below the stage, so the fight can open off-screen above you.
+  try{stage.scrollIntoView({block:'start',behavior:'auto'})}catch(e){try{stage.scrollIntoView()}catch(e2){}}
   el.innerHTML=`<div class="bf-top"><span class="bf-name" id="bfName">${b.nm}</span>
       <div class="bf-hp"><u id="bfGhost"></u><b id="bfFill"></b></div>
       <button class="bf-flee" id="bfFlee">Flee</button></div>
@@ -1371,6 +1379,14 @@ function playBossMusic(on){
 function cleanupFight(){
   stage.querySelectorAll('.tele,.bf-warn,.bf-finish,.bf-flash,.bf-wave,.bf-slam,.bf-bar,.bf-vig,.bf-rays').forEach(n=>n.remove());
   const el=$('bf');el.hidden=true;el.innerHTML='';el.classList.remove('fin','excut');
+  // on a phone, put the player back on the boss list they came from
+  try{
+    const pane=document.querySelector('[data-pane="boss"]');
+    if(pane&&!pane.hidden){
+      const pr=pane.getBoundingClientRect(),sr=stage.getBoundingClientRect();
+      if(pr.top>sr.bottom)pane.scrollIntoView({block:'start',behavior:'auto'});
+    }
+  }catch(e){}
   playBossMusic(false);
   fight=null;save();renderBossTab();draw();
 }
@@ -1794,7 +1810,7 @@ function renderBossTab(){
     return `<div class="bcard ${done?'done':''} ${rec?'ally':''}"><img class="bimg" src="${bossArtSm(b)}" alt="">
       <div><b>${b.nm}</b><div class="meta">${b.role} · ${ELS[b.el].nm}${best?' · best '+best.toFixed(1)+'s':''}${tag}</div>
       <div class="taunt">${b.taunt}</div></div>
-      <div style="display:flex;gap:6px;align-items:center">${EX_PREVIEW?`<button class="btn" data-exprev="${b.id}" title="Preview the EX transformation">EX</button>`:''}<button class="btn ${done?'alt':'hot'}" data-fight="${b.id}">${label}</button></div></div>`;
+      <div style="display:flex;gap:6px;align-items:center">${EX_PREVIEW?`<button class="btn alt" data-exprev="${b.id}" title="Preview: fight from 60% so the form change fires naturally">EX</button>`:''}<button class="btn ${done?'alt':'hot'}" data-fight="${b.id}">${label}</button></div></div>`;
   }).join('');
   const wrap=$('bossTeamWrap');
   if(wrap){
@@ -1821,6 +1837,8 @@ function unlockBoss(){
   jingle([392,523,659,784,1047]);
   if(!reduce)$('readyFlash').animate([{transform:'scale(.3)',opacity:0},{transform:'scale(1.4)',opacity:.9,offset:.4},{transform:'scale(1.9)',opacity:0}],{duration:1400,easing:'ease-out'});
 }
+// long-press on the stage should not pop a text/selection menu
+stage.addEventListener('contextmenu',e=>e.preventDefault());
 $('bossList').addEventListener('click',e=>{
   const x=e.target.closest('[data-exprev]');
   if(x){if(!fight)startFight(x.dataset.exprev,true);return}
