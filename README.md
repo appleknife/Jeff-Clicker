@@ -78,6 +78,11 @@ five-minute save and a five-hour save get the same fight. Tap fast to build a co
 - **Storm** throws red rings. Tap inside one before it closes to counter for +14 damage.
 - **The Hulk** glows for a full second before his quiet window. Stop tapping through it.
 
+- **The finisher:** under 20% HP the **FINISH IT** button appears. Pressing it plays his ult line,
+  Jeff lunges, the screen flashes and shockwaves, and the boss is swallowed as the bar empties.
+  Killing a boss by tapping instead plays the same sequence. It is all transforms and opacity
+  on the existing art — no animation files, no canvas.
+
 - First clear: **+2% to everything, permanently**, and unlocks that hero's element.
 - Elements cycle: cosmic beats earth beats lightning beats cosmic. They only matter in fights,
   so the costume you *wear* stays purely cosmetic.
