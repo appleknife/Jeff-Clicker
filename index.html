@@ -346,6 +346,50 @@ footer p{margin:0;max-width:62ch}
   body{padding-bottom:96px}
   .toast{bottom:calc(86px + env(safe-area-inset-bottom,0px))}
 }
+/* ---------- boss fights ---------- */
+.bf{position:absolute;inset:0;z-index:8;pointer-events:none}
+.bf-top{display:flex;gap:8px;align-items:center;padding:9px 11px}
+.bf-name{font-family:var(--display);font-size:13px;color:#fff;letter-spacing:.05em;white-space:nowrap;text-shadow:0 2px 0 rgba(0,0,0,.4)}
+.bf-hp{flex:1;position:relative;height:15px;border-radius:9px;background:rgba(0,0,0,.45);border:2px solid rgba(255,255,255,.55);overflow:hidden}
+.bf-hp u{position:absolute;inset:0;width:100%;background:rgba(255,255,255,.7);transition:width .5s ease .12s}
+.bf-hp b{position:absolute;inset:0;width:100%;background:var(--accent);transition:width .1s linear}
+.bf-clock{height:6px;margin:0 11px;border-radius:6px;background:rgba(0,0,0,.4);overflow:hidden}
+.bf-clock i{display:block;height:100%;background:var(--sun);width:100%;transition:width .12s linear}
+.bf-flee{pointer-events:auto;border:0;border-radius:9px;background:rgba(0,0,0,.4);color:#fff;font-weight:900;font-size:11px;padding:4px 8px}
+.bf-boss{position:absolute;right:2px;top:38px;width:26%;max-width:120px;transition:transform .1s,opacity .2s;filter:drop-shadow(0 8px 12px rgba(0,0,0,.45))}
+.bf-boss.hit{transform:translateX(-4px) scale(.985)}
+.bf-boss.stagger{transform:translateX(-14px) rotate(-7deg);opacity:.8}
+.bf-combo{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);text-align:center;color:#fff;font-family:var(--display);font-size:21px;text-shadow:0 2px 0 rgba(0,0,0,.4)}
+.bf-combo small{display:block;font-family:var(--body);font-size:9px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;opacity:.75}
+.bf-combo .m{width:110px;height:5px;margin:5px auto 0;border-radius:4px;background:rgba(0,0,0,.45);overflow:hidden}
+.bf-combo .m i{display:block;height:100%;background:var(--sun);width:0;transition:width .1s linear}
+.tele{position:absolute;z-index:9;border-radius:50%;border:3px solid #ff5a4a;background:radial-gradient(circle,rgba(255,90,74,.28),transparent 72%);display:grid;place-items:center;pointer-events:auto;touch-action:manipulation;animation:telePulse .45s ease-in-out infinite alternate}
+.tele img{width:58%;height:58%;object-fit:contain;opacity:.95;pointer-events:none}
+@keyframes telePulse{to{box-shadow:0 0 0 6px rgba(255,90,74,.18)}}
+.bf-warn{position:absolute;inset:0;z-index:8;display:grid;place-items:center;pointer-events:none;font-family:var(--display);font-size:clamp(22px,6vw,34px);color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.4);background:radial-gradient(circle,rgba(226,64,58,.35),transparent 70%)}
+.bf-finish{position:absolute;left:50%;bottom:52px;transform:translateX(-50%);z-index:10;pointer-events:auto;border:0;border-radius:14px;padding:10px 20px;font-family:var(--display);font-size:18px;background:var(--accent);color:#fff;animation:pulse .5s ease-in-out infinite alternate;box-shadow:0 5px 0 rgba(0,0,0,.25)}
+.bf-card{position:absolute;inset:0;z-index:10;display:grid;place-content:center;justify-items:center;text-align:center;gap:6px;background:rgba(4,18,24,.86);color:#fff;pointer-events:auto;padding:18px}
+.bf-card h3{font-family:var(--display);font-size:clamp(20px,5vw,32px);line-height:1.05}
+.bf-card p{margin:0;font-weight:800;opacity:.8;font-size:13px;max-width:30ch}
+.bf-card .big{font-family:var(--display);font-size:clamp(28px,7vw,44px);color:var(--sun);line-height:1}
+.bf-card .row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:6px}
+.fin{position:absolute;z-index:2;border:0;padding:0;background:transparent;width:62px;height:42px;opacity:.11;left:16%;bottom:17%;cursor:pointer;touch-action:manipulation;animation:finDrift 9s ease-in-out infinite alternate}
+.fin::before{content:"";display:block;width:100%;height:100%;background:var(--ink);clip-path:polygon(0% 100%,52% 0%,100% 100%)}
+@keyframes finDrift{from{transform:translate(-12px,4px) rotate(-6deg)}to{transform:translate(28px,-7px) rotate(7deg)}}
+.bossrow{display:flex;flex-direction:column;gap:8px}
+.bcard{display:grid;grid-template-columns:58px minmax(0,1fr) auto;gap:10px;align-items:center;border:2px solid var(--line);border-radius:13px;background:var(--panel2);padding:8px 10px}
+.bcard .bimg{width:58px;height:58px;object-fit:contain;filter:drop-shadow(0 3px 0 rgba(0,0,0,.18))}
+.bcard b{display:block;font-size:14px;line-height:1.2}
+.bcard .meta{font-size:11px;color:var(--muted);font-weight:800}
+.bcard .taunt{font-size:10px;color:var(--muted);font-weight:700;font-style:italic;opacity:.8}
+.bcard.done{border-color:var(--sun)}
+.bcard .btn{padding:7px 12px;white-space:nowrap}
+.els{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px}
+.elchip{border:2px solid var(--line);background:var(--panel2);border-radius:999px;padding:4px 10px;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.elchip.on{color:var(--ink);box-shadow:0 0 0 2px color-mix(in srgb,var(--water2) 35%,transparent)}
+@media (max-width:520px){.bf-boss{width:19%;max-width:78px;top:32px;right:0}.bf-top{padding:8px 8px}.bf-clock{margin:0 8px}}
+@media (max-width:430px){.tab{font-size:12px;padding:8px 2px;white-space:nowrap}.bf-name{font-size:11px}.bf-combo{font-size:18px;bottom:8px}}
+
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -389,6 +433,8 @@ footer p{margin:0;max-width:62ch}
           </div>
           <span class="acc" id="acc"></span>
         </button>
+        <button class="fin" id="fin" hidden aria-label="Something in the water"></button>
+        <div class="bf" id="bf" hidden></div>
         <div class="stagebadge"><span class="pill pill-stage" id="stageName">Snack Size</span><span class="pill pill-skin" id="skinPill"></span><span class="pill" id="alignPill" hidden>Goodest Boy</span></div>
       </div>
 
@@ -430,7 +476,8 @@ footer p{margin:0;max-width:62ch}
       <div class="tabs" role="tablist">
         <button class="tab" role="tab" aria-selected="true" data-tab="shop" id="tab-shop">Upgrades</button>
         <button class="tab" role="tab" aria-selected="false" data-tab="caps" id="tab-caps">Capsules<span class="dot" id="capDot" hidden>!</span></button>
-        <button class="tab" role="tab" aria-selected="false" data-tab="ward" id="tab-ward">The Bubble</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="ward" id="tab-ward">Bubble</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="boss" id="tab-boss" hidden>The Deep</button>
       </div>
 
       <div data-pane="shop">
@@ -518,6 +565,13 @@ footer p{margin:0;max-width:62ch}
         </div>
         <p class="hint num" id="colTxt"></p>
         <div class="wardrobe" id="wardrobe"></div>
+      </div>
+
+      <div data-pane="boss" hidden>
+        <h2 style="margin-bottom:2px">The Deep</h2>
+        <p class="hint">They were down here the whole time. Trophies: <b id="bossTrophies">0</b></p>
+        <div class="els" id="bossEls"></div>
+        <div class="bossrow" id="bossList"></div>
       </div>
     </aside>
 
@@ -683,6 +737,7 @@ const ACH=[
 /* ---------- state ---------- */
 function fresh(){return{eaten:0,run:0,life:0,owned:{},bought:{},ult:0,gems:0,good:0,menace:0,align:0,snap:false,buffs:[],diff:'normal',
   tok:30,tokFrac:0,vol:.6,voVol:.35,music:false,musVol:.3,skins:{default:1},art:'default',perk:'default',wardMode:'look',pity:0,ach:{},chompN:0,
+  boss:{unlocked:false,trophies:0,cleared:{},best:{},els:{},el:''},
   st:{wipes:0,mates:0,ults:0,events:0,clicks:0,pulls:0,pops:0},muted:false,last:Date.now()}}
 let S=fresh();
 // Old saves used fantasy costume ids. Keep the ones with an official equivalent, drop
@@ -712,8 +767,8 @@ function skinMult(k){const s=perkSkin(),st=S.skins[s.id]||1;let m=1;
   if(s.k==='all'||s.k===k)m+=s.v*(1+.5*(st-1));
   if(k==='ps'||k==='click')m*=1+.01*Object.keys(S.skins).length;return m}
 function basePs(){return UP.filter(u=>u.kind==='ps').reduce((s,u)=>s+own(u.id)*u.v*bmult(u.id),0)}
-function ps(){return basePs()*gemMult()*(1+.5*S.good)*skinMult('ps')*buffMult('ps')*alignMult('ps')}
-function perClick(){return ((1+own('fish')*bmult('fish'))*gemMult()*(1+.5*S.menace)*skinMult('click')+own('jaws')*.05*ps())*buffMult('click')*alignMult('click')}
+function ps(){return basePs()*gemMult()*(1+.5*S.good)*skinMult('ps')*buffMult('ps')*alignMult('ps')*bossMult()}
+function perClick(){return ((1+own('fish')*bmult('fish'))*gemMult()*(1+.5*S.menace)*skinMult('click')+own('jaws')*.05*ps())*buffMult('click')*alignMult('click')*bossMult()}
 // These two survive a gem reset: pure feel upgrades, not economy.
 const PERM=['crit','radar'];
 // Alignment: every spit nudges Jeff toward menace (chomps) or goodest boy (per second).
@@ -765,6 +820,7 @@ function ripple(e){if(reduce||stage.querySelectorAll('.ripple').length>4)return;
   const x=(e&&e.clientX?e.clientX-r.left:r.width/2),y=(e&&e.clientY?e.clientY-r.top:r.height*.45);
   const d=document.createElement('span');d.className='ripple';d.style.left=x+'px';d.style.top=y+'px';stage.appendChild(d);setTimeout(()=>d.remove(),700)}
 function chomp(e){
+  if(fight&&fight.phase==='fight')bossHit(e);
   let v=perClick();S.st.clicks++;
   let label,cls='';const roll=Math.random();
   if(S.bought.crit&&Math.random()<.05){const m=S.bought.lucky?25:10;v*=m;cls='crit';label=`CRIT ×${m}! +${fmt(v)}`;blip(660,'square',.1,.05);
@@ -804,7 +860,8 @@ $('ultIcon').src=ULT_ICON;
 document.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(!b)return;
   document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',t===b?'true':'false'));
   document.querySelectorAll('[data-pane]').forEach(p=>p.hidden=p.dataset.pane!==b.dataset.tab);
-  if(b.dataset.tab==='ward')buildWardrobe();});
+  if(b.dataset.tab==='ward')buildWardrobe();
+  if(b.dataset.tab==='boss')renderBossTab();});
 
 /* ---------- shop ---------- */
 $('shop').innerHTML=UP.map(u=>`<button class="item" data-up="${u.id}"><span class="nm">${u.nm}</span><span class="own num" data-own></span><span class="ds" data-ds>${u.ds}</span><span class="pips" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="cost num" data-cost></span></button>`).join('');
@@ -877,7 +934,11 @@ $('paths').addEventListener('click',e=>{const b=e.target.closest('[data-path]');
   const keep={};PERM.forEach(k=>{if(S.bought[k])keep[k]=true});
   S.eaten=0;S.run=0;S.owned={};S.bought=keep;S.ult=0;S.buffs=[];S.snap=false;S.tok+=25;upsKey='';
   $('paths').hidden=true;$('prestigeBtn').hidden=false;jingle();
-  log(S.gems===6?'All six gems. Sharknos is complete. The Snap is ready.':`${gname} claimed (+25 tokens). Jeff is a little more purple now.`);toast(S.gems===6?'SHARKNOS COMPLETE':gname+' claimed');draw()});
+  log(S.gems===6?'All six gems. Sharknos is complete. The Snap is ready.':`${gname} claimed (+25 tokens). Jeff is a little more purple now.`);toast(S.gems===6?'SHARKNOS COMPLETE':gname+' claimed');
+  if(S.gems===3)log('The water past the reef went quiet. Jeff did not like it.');
+  if(S.gems===5)log('Something moved under the sandbar. It did not surface.');
+  if(S.gems>=6)unlockBoss();
+  draw()});
 $('snapBtn').onclick=()=>{if(S.gems<6||S.snap)return;const n=ps()*600+perClick()*600+1e6;gain(n);S.snap=true;S.st.wipes+=6;log(`SNAP. Half the server got swallowed. +${fmt(n)}`);toast('SNAP');jingle();draw()};
 let gemKey='';function buildGems(){$('gems').innerHTML=GEMS.map((g,i)=>`<div class="gem ${S.gems>i?'on':''}" style="--c:${g[1]}" title="${g[0]} gem"><span>${S.gems>i?g[0][0]:''}</span></div>`).join('')}
 
@@ -975,6 +1036,8 @@ function draw(){
   $('progTxt').textContent=`This run: ${fmt(S.run)} / ${fmt(nd)} heroes`+(S.good||S.menace?`  ·  Goodest Boy ×${S.good}, Menace ×${S.menace}`:'');
   $('prestigeBtn').disabled=S.run<nd;$('prestigeBtn').textContent=S.gems<6?`Claim ${GEMS[S.gems][0]} gem`:'Claim bonus gem';
   $('snapBtn').hidden=!(S.gems>=6&&!S.snap);
+  const bTab=$('tab-boss');if(bTab)bTab.hidden=!(bs().unlocked||DEEP_PREVIEW);
+  const finEl=$('fin');if(finEl)finEl.hidden=!(S.gems>=5&&!bs().unlocked);
   if(String(S.gems)!==gemKey){buildGems();gemKey=String(S.gems)}
   const n=Date.now();S.buffs=S.buffs.filter(b=>b.end>n);
   $('buffs').innerHTML=S.buffs.map(b=>`<span class="pill ${b.m<1?'menace':'good'}">${b.name} ×${b.m} · ${Math.ceil((b.end-n)/1000)}s</span>`).join('');
@@ -1055,6 +1118,257 @@ $('saveIn').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return
   }catch(err){toast('That does not look like a Jeff Clicker save.')}};
   r.readAsText(f);e.target.value=''});
 
+/* ---------- the deep: boss fights (endgame) ---------- */
+const BOSS_THEME='assets/audio/boss-theme.mp3';
+const ELS={cosmic:{nm:'Cosmic',c:'#9b47e6'},lightning:{nm:'Lightning',c:'#f7bd2e'},earth:{nm:'Earth',c:'#1f9e63'}};
+// element -> what it beats. cosmic > earth > lightning > cosmic, so the first three
+// bosses quietly teach you the cycle: beat one, wear its element on the next.
+const STRONG={lightning:'cosmic',earth:'lightning',cosmic:'earth'};
+const BOSSES=[
+  {id:'adam-warlock',nm:'ADAM WARLOCK',el:'cosmic',role:'Strategist',hp:90,clock:22,revive:true,
+   taunt:'He has already seen how this ends.'},
+  {id:'storm',nm:'STORM',el:'lightning',role:'Duelist',hp:120,clock:20,tele:{every:4,window:1.4,icon:'storm-move'},
+   taunt:'The sky answers to her.'},
+  {id:'hulk',nm:'THE HULK',el:'earth',role:'Vanguard',hp:110,clock:20,stomp:{every:5,window:.62},
+   taunt:'Hulk hates little shark.'},
+];
+const bs=()=>S.boss;
+const bossArt=b=>`assets/img/heroes/${b.id}.webp`;
+const bossArtSm=b=>`assets/img/heroes/${b.id}-sm.webp`;
+const nowMs=()=>performance.now();
+function bossMult(){return 1+.02*Object.keys(bs().cleared||{}).length}
+function elMultFor(b){return STRONG[bs().el]===b.el?1.35:1}
+let fight=null,bossAudio=null;
+
+function startFight(id){
+  const b=BOSSES.find(x=>x.id===id);if(!b||fight)return;
+  fight={b,hp:b.hp,max:b.hp,combo:1,lastTap:0,maxCombo:1,left:b.clock,elapsed:0,phase:'intro',tele:null,
+    nextTele:0,nextStomp:0,revived:false,quietUntil:0,pendingHold:false,finish:false};
+  const el=$('bf');el.hidden=false;
+  el.innerHTML=`<div class="bf-top"><span class="bf-name">${b.nm}</span>
+      <div class="bf-hp"><u id="bfGhost"></u><b id="bfFill"></b></div>
+      <button class="bf-flee" id="bfFlee">Flee</button></div>
+    <div class="bf-clock"><i id="bfClock"></i></div>
+    <img class="bf-boss" id="bfBoss" src="${bossArt(b)}" alt="">
+    <div class="bf-combo"><span id="bfCombo">×1.00</span><small>combo</small><div class="m"><i id="bfMeter"></i></div></div>
+    <div class="bf-card" id="bfCard"><h3>${b.nm}</h3><p>${b.taunt}</p></div>`;
+  $('bfFlee').onclick=fleeFight;
+  playBossMusic(true);
+  paintBars();
+  setTimeout(()=>{
+    if(!fight||fight.phase!=='intro')return;
+    fight.phase='fight';fight.nextTele=nowMs()+1400;fight.nextStomp=nowMs()+2200;
+    const c=$('bfCard');if(c)c.remove();
+  },1200);
+}
+function playBossMusic(on){
+  try{
+    if(on){
+      if(!bossAudio)bossAudio=new Audio(BOSS_THEME);
+      bossAudio.currentTime=0;bossAudio.loop=false;bossAudio.volume=Math.min(1,S.vol*S.musVol);
+      if(bgm)bgm.volume=Math.min(1,S.vol*S.musVol*.2);
+      const p=bossAudio.play();if(p&&p.catch)p.catch(()=>{});
+    }else{
+      if(bossAudio)bossAudio.pause();
+      if(bgm&&S.music)bgm.volume=Math.min(1,S.vol*S.musVol);
+    }
+  }catch(e){}
+}
+function cleanupFight(){
+  stage.querySelectorAll('.tele,.bf-warn,.bf-finish').forEach(n=>n.remove());
+  const el=$('bf');el.hidden=true;el.innerHTML='';
+  playBossMusic(false);
+  fight=null;save();renderBossTab();draw();
+}
+function fleeFight(){if(!fight||fight.phase==='won'||fight.phase==='lost')return;cleanupFight();log('Jeff backed off. The deep can wait.');}
+function paintBars(){
+  const f=fight;if(!f)return;
+  const pct=Math.max(0,f.hp/f.max*100);
+  const fill=$('bfFill'),ghost=$('bfGhost'),clock=$('bfClock');
+  if(fill)fill.style.width=pct+'%';
+  if(ghost)ghost.style.width=pct+'%';
+  if(clock)clock.style.width=Math.max(0,f.left/f.b.clock*100)+'%';
+}
+function bossHit(e){
+  const f=fight;if(!f||f.phase!=='fight')return;
+  const t=nowMs();
+  if(t<f.quietUntil){penalty('SMASHED');return}
+  f.combo=(t-f.lastTap<560)?Math.min(2,f.combo+.05):1;
+  f.lastTap=t;f.maxCombo=Math.max(f.maxCombo,f.combo);
+  hitBoss(f.combo*elMultFor(f.b),e);
+}
+function hitBoss(d,e){
+  const f=fight;if(!f||f.phase!=='fight')return;
+  f.hp=Math.max(0,f.hp-d);
+  const r=$('jeff').getBoundingClientRect();
+  const x=(e&&e.clientX)||r.left+r.width/2,y=(e&&e.clientY)||r.top+r.height/3;
+  floatText('-'+d.toFixed(0),x+(Math.random()*24-12),y,f.combo>=1.9?'crit':'');
+  blip(200+f.combo*340,'square',.045,.035);
+  const bo=$('bfBoss');
+  if(bo&&!reduce){bo.classList.remove('hit');void bo.offsetWidth;bo.classList.add('hit');setTimeout(()=>bo.classList.remove('hit'),110)}
+  const c=$('bfCombo');if(c)c.textContent='×'+f.combo.toFixed(2);
+  const m=$('bfMeter');if(m)m.style.width=Math.min(100,(f.combo-1)*100)+'%';
+  paintBars();
+  if(f.hp<=0){
+    if(f.b.revive&&!f.revived){
+      f.revived=true;f.hp=f.max*.45;f.left+=2;paintBars();
+      log('Adam Warlock comes back. He always comes back.');toast('HE CAME BACK');
+      if(!reduce){stage.classList.add('shake');setTimeout(()=>stage.classList.remove('shake'),250)}
+      return;
+    }
+    winFight();return;
+  }
+  if(f.hp<=f.max*.2&&!f.finish){f.finish=true;showFinish()}
+}
+function penalty(msg){
+  const f=fight;if(!f||f.phase!=='fight')return;
+  f.left-=3;f.combo=1;f.pendingHold=false;
+  const c=$('bfCombo');if(c)c.textContent='×1.00';
+  const m=$('bfMeter');if(m)m.style.width='0%';
+  toast(msg+' · −3s');playSfx('sad');
+  if(!reduce){stage.classList.add('shake');setTimeout(()=>stage.classList.remove('shake'),250)}
+  paintBars();
+  if(f.left<=0)loseFight();
+}
+function spawnTele(){
+  const f=fight,b=f.b;if(!b.tele||!f)return;
+  const size=Math.min(104,Math.max(64,Math.round(stage.getBoundingClientRect().width*.26)));
+  const el=document.createElement('button');
+  el.className='tele';el.dataset.tele='1';
+  el.style.width=size+'px';el.style.height=size+'px';
+  el.style.left=(5+Math.random()*42)+'%';
+  el.style.top=(32+Math.random()*30)+'%';
+  if(b.tele.icon)el.innerHTML=`<img src="assets/img/heroes/${b.tele.icon}.webp" alt="">`;
+  stage.appendChild(el);
+  f.tele={el,size,end:nowMs()+b.tele.window*1000,window:b.tele.window};
+  f.nextTele=nowMs()+b.tele.every*1000+Math.random()*800;
+  blip(880,'sine',.06,.05);
+}
+function interrupt(){
+  const f=fight;if(!f||!f.tele||f.phase!=='fight')return;
+  const el=f.tele.el;f.tele=null;el.remove();
+  f.left+=1.4;
+  const bo=$('bfBoss');if(bo){bo.classList.add('stagger');setTimeout(()=>bo.classList.remove('stagger'),320)}
+  toast('INTERRUPTED');jingle([660,880]);
+  hitBoss(14*f.combo,null);
+}
+function missTele(){
+  const f=fight;if(!f||!f.tele)return;
+  f.tele.el.remove();f.tele=null;
+  f.nextTele=nowMs()+f.b.tele.every*1000;
+  penalty('TOO SLOW');
+}
+function doStomp(){
+  const f=fight,b=f.b;if(!b.stomp||!f)return;
+  f.quietUntil=nowMs()+b.stomp.window*1000;f.pendingHold=true;
+  f.nextStomp=nowMs()+b.stomp.every*1000;
+  const w=document.createElement('div');w.className='bf-warn';w.textContent='DON\u2019T TAP';
+  stage.appendChild(w);
+  setTimeout(()=>w.remove(),b.stomp.window*1000);
+  blip(120,'sawtooth',.25,.06);
+}
+function showFinish(){
+  const el=document.createElement('button');
+  el.className='bf-finish';el.textContent='FINISH IT';
+  el.onclick=()=>{el.remove();winFight()};
+  stage.appendChild(el);
+  jingle([784,988]);
+}
+function fightTick(dt){
+  const f=fight;if(!f||f.phase!=='fight')return;
+  f.left-=dt;f.elapsed+=dt;
+  const t=nowMs();
+  if(f.pendingHold&&t>f.quietUntil){f.pendingHold=false;f.left+=.6;hitBoss(12,null);toast('HELD')}
+  if(f.tele){
+    if(t>=f.tele.end)missTele();
+    else{
+      const frac=(f.tele.end-t)/(f.tele.window*1000);
+      const sz=Math.max(34,f.tele.size*Math.max(.28,frac));
+      f.tele.el.style.width=sz+'px';f.tele.el.style.height=sz+'px';
+    }
+  }
+  if(f.b.tele&&!f.tele&&t>=f.nextTele)spawnTele();
+  if(f.b.stomp&&t>=f.nextStomp)doStomp();
+  paintBars();
+  if(f.left<=0)loseFight();
+}
+function winFight(){
+  const f=fight;if(!f||f.phase!=='fight')return;
+  f.phase='won';
+  const st=bs(),b=f.b,first=!st.cleared[b.id];
+  st.cleared[b.id]=true;st.trophies=(st.trophies||0)+(first?3:1);
+  if(first)st.els[b.el]=Math.max(1,st.els[b.el]||0);
+  const t=f.elapsed;
+  if(!st.best[b.id]||t<st.best[b.id])st.best[b.id]=t;
+  save();playSfx('celebratory');jingle([523,659,784,1047]);
+  stage.querySelectorAll('.tele,.bf-warn,.bf-finish').forEach(n=>n.remove());
+  const card=document.createElement('div');card.className='bf-card';
+  card.innerHTML=`<h3>${b.nm} DOWN</h3><div class="big">${t.toFixed(1)}s</div>
+    <p>Best combo ×${f.maxCombo.toFixed(2)} · ${first?'+3 trophies · '+ELS[b.el].nm+' unlocked':'+1 trophy'}</p>
+    <div class="row"><button class="btn hot" id="bfAgain">Again</button><button class="btn" id="bfDone">Done</button></div>`;
+  $('bf').append(card);
+  log(`Beat ${b.nm} in ${t.toFixed(1)}s.`);
+  card.querySelector('#bfAgain').onclick=()=>{const id=b.id;cleanupFight();startFight(id)};
+  card.querySelector('#bfDone').onclick=cleanupFight;
+}
+function loseFight(){
+  const f=fight;if(!f||f.phase!=='fight')return;
+  f.phase='lost';
+  playSfx('disappointed');
+  stage.querySelectorAll('.tele,.bf-warn,.bf-finish').forEach(n=>n.remove());
+  const card=document.createElement('div');card.className='bf-card';
+  card.innerHTML=`<h3>${f.b.nm} WINS</h3><div class="big">${Math.max(0,f.left).toFixed(1)}s</div>
+    <p>Tap faster, keep the combo alive, and never tap through a red warning.</p>
+    <div class="row"><button class="btn hot" id="bfRetry">Retry</button><button class="btn" id="bfOut">Back</button></div>`;
+  $('bf').append(card);
+  log(`${f.b.nm} flattened Jeff.`);
+  card.querySelector('#bfRetry').onclick=()=>{const id=f.b.id;cleanupFight();startFight(id)};
+  card.querySelector('#bfOut').onclick=cleanupFight;
+}
+function renderBossTab(){
+  const st=bs();
+  const tr=$('bossTrophies');if(tr)tr.textContent=st.trophies||0;
+  const els=$('bossEls');
+  if(els){
+    const keys=Object.keys(st.els||{});
+    els.innerHTML=keys.length
+      ? keys.map(k=>`<button class="elchip ${st.el===k?'on':''}" data-el="${k}" style="${st.el===k?'border-color:'+ELS[k].c:''}">${ELS[k].nm}</button>`).join('')
+      : '<span class="hint">Beat a boss to earn an element. Elements only matter down here.</span>';
+  }
+  const list=$('bossList');
+  if(list)list.innerHTML=BOSSES.map(b=>{
+    const done=!!st.cleared[b.id],best=st.best[b.id];
+    return `<div class="bcard ${done?'done':''}"><img class="bimg" src="${bossArtSm(b)}" alt="">
+      <div><b>${b.nm}</b><div class="meta">${b.role} · ${ELS[b.el].nm}${best?' · best '+best.toFixed(1)+'s':''}</div>
+      <div class="taunt">${b.taunt}</div></div>
+      <button class="btn ${done?'alt':'hot'}" data-fight="${b.id}">${done?'Rematch':'Fight'}</button></div>`;
+  }).join('');
+}
+function unlockBoss(){
+  const st=bs();if(st.unlocked)return;
+  st.unlocked=true;save();
+  $('tab-boss').hidden=false;
+  toast('SOMETHING ANSWERED');
+  log('Something answered. The reef goes down a very long way.');
+  announce('The Deep unlocked');
+  jingle([392,523,659,784,1047]);
+  if(!reduce)$('readyFlash').animate([{transform:'scale(.3)',opacity:0},{transform:'scale(1.4)',opacity:.9,offset:.4},{transform:'scale(1.9)',opacity:0}],{duration:1400,easing:'ease-out'});
+}
+$('bossList').addEventListener('click',e=>{const b=e.target.closest('[data-fight]');if(!b||fight)return;startFight(b.dataset.fight)});
+$('bossEls').addEventListener('click',e=>{const b=e.target.closest('[data-el]');if(!b)return;bs().el=b.dataset.el;save();renderBossTab();blip(600,'triangle')});
+stage.addEventListener('click',e=>{
+  const t=e.target.closest('[data-tele]');
+  if(t&&fight&&fight.tele&&fight.tele.el===t){e.preventDefault();e.stopPropagation();interrupt()}
+},true);
+$('fin').addEventListener('click',()=>{
+  if(!reduce){stage.classList.add('shake');setTimeout(()=>stage.classList.remove('shake'),250)}
+  log('Something down there is watching. It has been for a while.');toast('...something moved');
+});
+renderBossTab();
+// ?deep=1 reveals the tab for testing without touching the save (no spoilers, no unlock).
+const DEEP_PREVIEW=location.search.indexOf('deep=1')>-1;
+if(DEEP_PREVIEW)$('tab-boss').hidden=false;
+
 /* loop */
 let prev=Date.now(),achT=0,lastAct=Date.now();
 function tick(){const now=Date.now();let dt=(now-prev)/1000;prev=now;
@@ -1062,11 +1376,12 @@ function tick(){const now=Date.now();let dt=(now-prev)/1000;prev=now;
   if(!isFinite(dt)||dt<0)dt=0;if(dt>14400)dt=14400;
   gain(ps()*dt);S.ult=Math.min(100,S.ult+dt*.5*(1+.2*own('whirl'))*skinMult('ult'));
   const t=Date.now();
+  if(fight)fightTick(dt);
   if(ev){const f=1-(t-ev.start)/(ev.end-ev.start);const ti=$('evTimer');if(ti)ti.style.width=Math.max(0,f*100)+'%';
     if(ev.t==='loki'){const s=S.eaten*.015*dt;S.eaten-=s;ev.stolen+=s}
     if(t>=ev.end){const msgs={ironman:'Iron Man got away.',cheese:'The cheese rolled away.',custody:'Nobody picked. Jeff stayed put.',hulk:'Hulk got bored and wandered off.',flame:'Your teammate went back to complaining about something else.',loki:`The fake Jeff escaped with ${fmt(ev.stolen)} heroes.`};endEvent(false,msgs[ev.t])}}
-  else if(t>=nextEv)startEvent();
-  bubT-=dt;if(bubT<=0){spawnBubble();bubT=bubGap()*(0.6+Math.random()*0.8)}
+  else if(t>=nextEv&&!fight)startEvent();
+  if(!fight){bubT-=dt;if(bubT<=0){spawnBubble();bubT=bubGap()*(0.6+Math.random()*0.8)}}
   if(!document.hidden&&Date.now()-lastAct>20000&&!$('spit').offsetParent){lastAct=Date.now()+25000;playSfx('hungry'+(1+Math.floor(Math.random()*2)));log('Jeff is hungry. Er... er...')}
   achT+=dt;if(achT>1){achT=0;checkAch()}
   draw()}

@@ -37,7 +37,7 @@ localStorage can be wiped by clearing site data, and iOS evicts it from sites th
 3. In the repository, open **Settings → Pages**. Under **Build and deployment**, set **Source** to **Deploy from a branch**, choose `main` and `/ (root)`, and save.
 4. After a minute or two, the game is live at `https://YOUR-USERNAME.github.io/Jeff-Clicker/`.
 
-To update later, upload the new files and bump the cache name in `sw.js` (`jeff-clicker-v5` → `jeff-clicker-v6`) so installed copies pick up the change.
+To update later, upload the new files and bump the cache name in `sw.js` (`jeff-clicker-v6` → `jeff-clicker-v7`) so installed copies pick up the change.
 
 ## Run it locally
 
@@ -57,12 +57,27 @@ manifest.webmanifest        install-on-home-screen details
 sw.js                       offline cache; art is precached, the theme song caches on first play
 assets/img/                 Jeff art, bubble, ult icon, Jeff emblem, app icons
 assets/img/skins/           one WebP per costume, plus 160px thumbnails for The Bubble
+assets/img/heroes/          boss art: full render, 160px thumbnail, ability icon for telegraphs
 assets/audio/               ult sounds, the theme song and boss-theme.mp3 (boss fights)
 assets/audio/voice/         Jeff voice lines
 ```
 
 To swap art or sounds, replace a file with one of the same name. Costume art lives in `assets/img/skins/<id>.webp` (512px) with an `-sm.webp` thumbnail beside it; the id is the first column of the `SKINS` table.
 To tune balance, edit the `UP` (upgrades), `SKINS` (costume rarities and abilities) and `ACH` (achievements) tables near the top of the script in `index.html`, and `DIFFS` for Iron Man's flight speeds and catch payouts. Pull rates live in `rollOne()`.
+
+## Spoilers: The Deep
+
+Past the sixth gem a fourth tab appears: three Marvel Rivals heroes to fight, one at a time.
+
+It is a **skill mode, not a numbers mode** — bosses are defined in *taps*, not damage, so a
+five-minute save and a five-hour save get the same fight. Tap fast to build a combo (up to
+×2), tap the red ring to interrupt an attack, and stop tapping completely when Hulk winds up.
+
+- First clear: **+2% to everything, permanently**, and unlocks that hero's element.
+- Elements cycle: cosmic beats earth beats lightning beats cosmic. They only matter in fights,
+  so the costume you *wear* stays purely cosmetic.
+- Trophies are earned per win; they are the currency for recruiting later.
+- `?deep=1` on the URL reveals the tab for testing without unlocking it in your save.
 
 ## Disclaimer
 
