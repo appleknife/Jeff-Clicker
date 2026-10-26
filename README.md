@@ -7,11 +7,12 @@ An unofficial fan-made clicker game starring Jeff the Land Shark from Marvel Riv
 ## Features
 
 - **Chomp and upgrade:** 10 upgrades, tiered one-time upgrades at 10/25/50/100 owned, plus special unlocks like Chomp Crits, Golden Belly, Fin Radar and Bottomless Tank. Buy ×1, ×10 or max, and hold a row to buy repeatedly.
+- **Two counters:** "Total eaten" is a lifetime tally that never goes down; "Heroes to spend" is the balance upgrades and capsules actually drain.
 - **The ult:** charge the meter, hit **IT'S JEFF!**, then choose where to spit the heroes: off the cliff, into spawn, or back on point.
 - **Costume Capsules:** a gacha with 20 costumes across Common, Rare, Epic and Legendary. Pity guarantees a Legendary by pull 60, and every 10-pull includes an Epic or better. Duplicates add stars (max 5). Each costume tints Jeff, adds an aura and accessory, and gives a perk.
 - **Sharknos gems:** prestige for six gems. Each one turns Jeff more purple and lets you pick Goodest Boy or Satan's Greatest Soldier. All six unlock the Snap.
 - **Chunky Jeff:** Jeff gets visibly wider as he eats, from Snack Size to Planet Jeff, with a fanfare each time he grows.
-- **Events:** Iron Man flyovers, the cheese heist, the Deadpool vs. Emma Frost custody battle, Hulk the Hater, teammates flaming you, and a Loki copycat.
+- **Events:** Iron Man flyovers (pick Chill, Normal or Spicy flight speed — slower is easier, faster pays more), the cheese heist, the Deadpool vs. Emma Frost custody battle, Hulk the Hater, teammates flaming you, and a Loki copycat.
 - **Floating bubbles** to pop, **20 achievements** that pay Fish Tokens, offline earnings, and a "Copy brag" button.
 - **Sound:** Jeff voice lines, ult sounds, and the theme song "Nom Nom (It's Jeff!)", with separate Volume, Jeff voice and Music sliders.
 - **Plays anywhere:** installable on a phone home screen and works offline after the first visit.
@@ -21,7 +22,7 @@ Progress saves automatically in each player's browser (localStorage). There are 
 ## Controls
 
 - Tap or click Jeff to chomp. On a phone, the bar at the bottom of the screen has a CHOMP button and the ult, so you don't have to scroll back up.
-- **Space** chomps. **1 / 2 / 3** switch between Upgrades, Capsules and Wardrobe.
+- **Space** chomps. **1 / 2 / 3** switch between Upgrades, Capsules and The Bubble.
 
 ## Backups
 
@@ -34,7 +35,7 @@ localStorage can be wiped by clearing site data, and iOS evicts it from sites th
 3. In the repository, open **Settings → Pages**. Under **Build and deployment**, set **Source** to **Deploy from a branch**, choose `main` and `/ (root)`, and save.
 4. After a minute or two, the game is live at `https://YOUR-USERNAME.github.io/Jeff-Clicker/`.
 
-To update later, upload the new files and bump the cache name in `sw.js` (`jeff-clicker-v1` → `jeff-clicker-v2`) so installed copies pick up the change.
+To update later, upload the new files and bump the cache name in `sw.js` (`jeff-clicker-v2` → `jeff-clicker-v3`) so installed copies pick up the change.
 
 ## Run it locally
 
@@ -58,7 +59,7 @@ assets/audio/voice/         Jeff voice lines
 ```
 
 To swap art or sounds, replace a file with one of the same name.
-To tune balance, edit the `UP` (upgrades), `SKINS` (costumes) and `ACH` (achievements) tables near the top of the script in `index.html`.
+To tune balance, edit the `UP` (upgrades), `SKINS` (costumes) and `ACH` (achievements) tables near the top of the script in `index.html`, and `DIFFS` for Iron Man's flight speeds and catch payouts.
 
 ## Disclaimer
 

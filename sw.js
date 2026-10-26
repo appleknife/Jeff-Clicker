@@ -1,6 +1,6 @@
 // Offline support. The art and the game itself are cached on install; the theme song
 // (2.9 MB) is cached the first time someone actually plays it, so install stays light.
-const CACHE = "jeff-clicker-v1";
+const CACHE = "jeff-clicker-v2";
 const CORE = [
   "./",
   "./index.html",
@@ -10,7 +10,9 @@ const CORE = [
   "./assets/img/bubble.png",
   "./assets/img/ult-icon.png",
   "./assets/img/icon-192.png",
-  "./assets/img/icon-512.png"
+  "./assets/img/icon-512.png",
+  "./assets/img/icon-maskable-512.png",
+  "./assets/img/apple-touch-icon.png"
 ];
 
 self.addEventListener("install", e => {

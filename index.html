@@ -33,7 +33,7 @@ img{max-width:100%}
 [hidden]{display:none!important}
 </style>
 <style>
-/* Layout: poolside arcade. Chomp stage + ult on the left; tabbed side panel (Upgrades / Capsules / Wardrobe) on the right; Sharknos gems and record below. */
+/* Layout: poolside arcade. Chomp stage + ult on the left; tabbed side panel (Upgrades / Capsules / The Bubble) on the right; Sharknos gems and record below. */
 :root{
   --bg:#e4f2ef; --panel:#fbfefd; --panel2:#eef8f6; --ink:#0f2f37; --muted:#4d6c72;
   --line:#c8e2dd; --water:#1f6f86; --water2:#2f95ad; --accent:#f2604c; --sun:#f7bd2e;
@@ -55,6 +55,10 @@ img{max-width:100%}
   --rC:#93a8ad; --rR:#5aacef; --rE:#c084fc; --rL:#ffbe45; color-scheme:dark}
 
 *{box-sizing:border-box}
+/* Phones: every tappable thing opts out of double-tap zoom, not just Jeff. */
+button,label,.item,.up1,.bub,.target,.choice,.card{touch-action:manipulation}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{overscroll-behavior-y:contain}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;
   background-image:radial-gradient(1100px 500px at 15% -10%,var(--glow),transparent 60%);
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 28px}
@@ -129,7 +133,8 @@ button:focus-visible,label:focus-within{outline:3px solid var(--sun);outline-off
 .btn.alt{background:var(--panel2);color:var(--ink);border:1.5px solid var(--line)}
 .btn.hot{background:var(--accent);color:#fff}
 .target{position:absolute;z-index:5;border:0;border-radius:999px;font-family:var(--display);font-size:16px;padding:8px 14px;box-shadow:0 5px 0 rgba(0,0,0,.2)}
-.flyer{background:#d8433a;color:#ffd75e;left:-30%;transition:left 6s linear}
+.flyer{background:#d8433a;color:#ffd75e;left:-30%;transition:left var(--flydur,6s) linear}
+.diffrow{display:flex;gap:6px;margin:0}
 .flyer.go{left:110%}
 .cheese{background:var(--sun);color:#5b3b00;animation:pulse .7s ease-in-out infinite alternate}
 @keyframes pulse{to{transform:scale(1.12)}}
@@ -335,7 +340,8 @@ footer p{margin:0;max-width:62ch}
       <p>An unofficial Jeff fan game. Chomp heroes, pull costumes, spit teams off cliffs.</p>
     </div>
     <div class="counts">
-      <div class="count big"><div class="lbl">Heroes eaten</div><div class="val num" id="cEaten">0</div></div>
+      <div class="count"><div class="lbl">Total eaten</div><div class="val num" id="cLife">0</div></div>
+      <div class="count big"><div class="lbl">Heroes to spend</div><div class="val num" id="cEaten">0</div></div>
       <div class="count"><div class="lbl">Per second</div><div class="val num" id="cPs">0</div></div>
       <div class="count"><div class="lbl">Per chomp</div><div class="val num" id="cClick">1</div></div>
       <div class="count tok"><div class="lbl">Fish tokens</div><div class="val num" id="cTok">0</div></div>
@@ -390,6 +396,12 @@ footer p{margin:0;max-width:62ch}
         <div class="prog"><i id="runFill"></i></div>
         <p class="hint num" id="runTxt"></p>
         <p class="hint" id="nextTxt"></p>
+        <div class="diffrow" id="diffRow" role="group" aria-label="Iron Man flight speed">
+          <button class="qbtn" data-diff="chill" aria-pressed="false">Chill</button>
+          <button class="qbtn" data-diff="normal" aria-pressed="true">Normal</button>
+          <button class="qbtn" data-diff="spicy" aria-pressed="false">Spicy</button>
+        </div>
+        <p class="hint num" id="diffTxt"></p>
         <div class="row">
           <button class="btn alt" id="saveOut">Save a backup</button>
           <label class="btn alt" for="saveIn">Restore a save<input type="file" id="saveIn" accept="application/json,.json" hidden></label>
@@ -401,7 +413,7 @@ footer p{margin:0;max-width:62ch}
       <div class="tabs" role="tablist">
         <button class="tab" role="tab" aria-selected="true" data-tab="shop" id="tab-shop">Upgrades</button>
         <button class="tab" role="tab" aria-selected="false" data-tab="caps" id="tab-caps">Capsules<span class="dot" id="capDot" hidden>!</span></button>
-        <button class="tab" role="tab" aria-selected="false" data-tab="ward" id="tab-ward">Wardrobe</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="ward" id="tab-ward">The Bubble</button>
       </div>
 
       <div data-pane="shop">
@@ -437,6 +449,8 @@ footer p{margin:0;max-width:62ch}
       </div>
 
       <div data-pane="ward" hidden>
+        <h2 style="margin-bottom:2px">The Bubble</h2>
+        <p class="hint">Jeff's costume locker. Tap a costume to put it on.</p>
         <div class="equipped" id="equipped"></div>
         <p class="hint num" id="colTxt"></p>
         <div class="wardrobe" id="wardrobe"></div>
@@ -565,6 +579,9 @@ const PERK={all:'everything',ps:'per second',click:'chomps',ult:'ult charge',eve
 const GEMS=[['Space','#3d7bff'],['Mind','#f2c230'],['Reality','#e2403a'],['Power','#9b47e6'],['Time','#2cb36b'],['Soul','#f08a2a']];
 const STAGES=[[0,'Snack Size',1,1],[1e3,'Chonk',1.1,1.04],[1e5,'Absolute Unit',1.22,1.08],[1e7,'Mega Chonk',1.34,1.1],[1e9,'Planet Jeff',1.5,1.14]];
 const FLAMES=['"jeff you are throwing"','"heal me?? hello??"','"uninstall shark"','"worst support in the lobby"','"why did you ult the payload"'];
+// Iron Man flight speed. Slower is easier to catch but pays less; faster is a smaller window for more.
+const DIFFS={chill:{nm:'Chill',fly:8.5,rw:.8},normal:{nm:'Normal',fly:6,rw:1},spicy:{nm:'Spicy',fly:4.2,rw:1.35}};
+const diff=()=>DIFFS[S.diff]||DIFFS.normal;
 
 const ACH=[
   ['peckish','Peckish','Chomp 100 times',()=>S.st.clicks>=100,5],
@@ -584,14 +601,14 @@ const ACH=[
   ['curious','Capsule Curious','Pull a capsule',()=>S.st.pulls>=1,5],
   ['shiny','Shiny!','Own a Legendary',()=>SKINS.some(s=>s.r==='L'&&S.skins[s.id]),25],
   ['fashion','Fashion Shark','Own 10 costumes',()=>Object.keys(S.skins).length>=10,30],
-  ['wardrobe','Full Wardrobe','Own every costume',()=>Object.keys(S.skins).length>=SKINS.length,100],
+  ['wardrobe','Full Bubble','Own every costume',()=>Object.keys(S.skins).length>=SKINS.length,100],
   ['planet','Planet Jeff','Reach the biggest size',()=>S.run>=1e9,30],
   ['wrap','Bubble Wrap','Pop 50 bubbles',()=>S.st.pops>=50,10],
   ['lobbyfull','Lobby Full','Own 100 upgrades total',()=>UP.reduce((s,u)=>s+own(u.id),0)>=100,20],
 ].map(a=>({id:a[0],nm:a[1],ds:a[2],t:a[3],tok:a[4]}));
 
 /* ---------- state ---------- */
-function fresh(){return{eaten:0,run:0,life:0,owned:{},bought:{},ult:0,gems:0,good:0,menace:0,align:0,snap:false,buffs:[],
+function fresh(){return{eaten:0,run:0,life:0,owned:{},bought:{},ult:0,gems:0,good:0,menace:0,align:0,snap:false,buffs:[],diff:'normal',
   tok:30,tokFrac:0,vol:.6,voVol:.35,music:false,musVol:.3,skins:{littleguy:1},equip:'littleguy',pity:0,ach:{},chompN:0,
   st:{wipes:0,mates:0,ults:0,events:0,clicks:0,pulls:0,pops:0},muted:false,last:Date.now()}}
 let S=fresh();
@@ -730,7 +747,7 @@ function pull(n){const price=n===10?90:10;if(S.tok<price)return;S.tok-=price;con
   $('results').innerHTML=out.map((o,i)=>`<div class="card ${o.sk.r}" style="animation-delay:${i*60}ms"><span class="tag">${o.tag}</span><span class="g">${o.sk.g}</span><b>${esc(o.sk.nm)}</b><small>${RNAME[o.sk.r]}</small></div>`).join('');
   const gotFuzz=out.some(o=>o.sk.id==='fuzzlefin');playSfx(gotFuzz?'brrExcited':best==='L'?'celebratory':best==='E'?'enthusiastic':n===10?'disappointed':'chomp1');
   if(best==='L'){jingle([523,659,784,1047]);const l=out.find(o=>o.sk.r==='L');toast(`LEGENDARY: ${l.sk.nm}!`);log(`Pulled a Legendary: ${l.sk.nm}.`)}else jingle(best==='E'?[523,659,784]:[523,659]);
-  const nw=out.filter(o=>o.isNew).length;if(nw)log(`${nw} new costume${nw>1?'s':''} for the wardrobe.`);draw()}
+  const nw=out.filter(o=>o.isNew).length;if(nw)log(`${nw} new costume${nw>1?'s':''} for The Bubble.`);draw()}
 $('pull1').onclick=()=>pull(1);$('pull10').onclick=()=>pull(10);
 $('buyTok').onclick=()=>{const c=tokCost();if(S.eaten<c)return;S.eaten-=c;S.tok+=10;blip(700,'triangle');draw()};
 
@@ -768,10 +785,10 @@ const bar=$('eventBar');
 function rnd(a,b){return a+Math.random()*(b-a)}
 function startEvent(){
   const pool=['ironman','cheese','custody','hulk','flame','loki'];const t=pool[Math.floor(Math.random()*pool.length)];
-  const dur={ironman:6.5,cheese:8,custody:10,hulk:6,flame:12,loki:10}[t];
+  const df=diff();const dur={ironman:df.fly+.5,cheese:8,custody:10,hulk:6,flame:12,loki:10}[t];
   ev={t,start:Date.now(),end:Date.now()+dur*1000,n:0,stolen:0};
-  if(t==='ironman'){const b=document.createElement('button');b.className='target flyer';b.textContent='IRON MAN';b.style.top=rnd(18,48)+'%';b.dataset.ev='catch';stage.appendChild(b);
-    requestAnimationFrame(()=>requestAnimationFrame(()=>b.classList.add('go')));showBar('Iron Man is flying overhead. Catch him mid-air!','')}
+  if(t==='ironman'){const b=document.createElement('button');b.className='target flyer';b.textContent='IRON MAN';b.style.top=rnd(18,48)+'%';b.dataset.ev='catch';b.style.setProperty('--flydur',df.fly+'s');stage.appendChild(b);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>b.classList.add('go')));showBar(`Iron Man is flying overhead. Catch him mid-air! (${df.fly}s)`,'')}
   if(t==='cheese'){const b=document.createElement('button');b.className='target cheese';b.textContent='CHEESE';b.style.left=rnd(8,72)+'%';b.style.top=rnd(30,70)+'%';b.dataset.ev='cheese';stage.appendChild(b);showBar('A wheel of cheese appeared. Jeff must have it.','')}
   if(t==='custody')showBar('Custody battle! Deadpool and Emma Frost both want Jeff. Pick a side.','<button class="btn hot" data-ev="dp">Deadpool: ×2 chomps</button><button class="btn" data-ev="emma">Emma: ×2 per second</button>');
   if(t==='hulk')showBar('Hulk the Hater stomps in. Dodge 12 times!','<button class="btn hot" data-ev="dodge">Dodge (0/12)</button>');
@@ -783,7 +800,7 @@ function showBar(msg,acts){bar.innerHTML=`<p>${msg}</p>${acts?`<div class="acts"
 function endEvent(win,msg){if(!ev)return;if(!ev.sfx)playSfx(win?'enthusiastic':'sad');if(win){S.st.events++;giveTok(3)}if(msg)log(msg);ev=null;bar.hidden=true;bar.innerHTML='';stage.classList.remove('acting');stage.querySelectorAll('.target').forEach(x=>x.remove());
   nextEv=Date.now()+rnd(35,75)*1000*(S.bought.radar?.5:1);draw()}
 stage.addEventListener('click',e=>{const b=e.target.closest('[data-ev]');if(!b||!ev)return;e.stopPropagation();const a=b.dataset.ev;const em=evMult();
-  if(a==='catch'){const n=(ps()*30+perClick()*25+100)*em;gain(n);jingle();endEvent(true,`Caught Iron Man in mid-air. Physics is a suggestion. +${fmt(n)}`)}
+  if(a==='catch'){const n=(ps()*30+perClick()*25+100)*em*diff().rw;gain(n);jingle();endEvent(true,`Caught Iron Man in mid-air. Physics is a suggestion. +${fmt(n)}`)}
   if(a==='cheese'){addBuff('Cheese frenzy','all',+(7*em).toFixed(1),15);jingle();endEvent(true,'Stole the cheese wheel. Frenzy for 15s.')}
   if(a==='dp'){addBuff('Team Deadpool','click',+(2*em).toFixed(1),45);endEvent(true,'Jeff goes home with Deadpool. Chomp boost for 45s.')}
   if(a==='emma'){ev.sfx=1;playSfx('supportive');addBuff('Team Emma','ps',+(2*em).toFixed(1),45);endEvent(true,'Jeff goes home with Emma Frost. Per-second boost for 45s.')}
@@ -818,7 +835,7 @@ function healBurst(){if(reduce)return;for(let i=0;i<10;i++){const a=i/10*Math.PI
 let wardKey='';
 function draw(){
   const P=ps(),C=perClick();
-  $('cEaten').textContent=fmt(S.eaten);$('cPs').textContent=fmt(P);$('cClick').textContent=fmt(C);$('cTok').textContent=S.tok;
+  $('cLife').textContent=fmt(S.life);$('cEaten').textContent=fmt(S.eaten);$('cPs').textContent=fmt(P);$('cClick').textContent=fmt(C);$('cTok').textContent=S.tok;
   $('ultFill').style.width=S.ult+'%';const rdy=S.ult>=100&&$('spit').hidden;if(rdy&&ultWasReady===false)ultReadyFx();ultWasReady=rdy;$('ultBtn').disabled=!rdy;$('ultBtn').classList.toggle('ready',rdy);
   const mu=$('mUlt');if(mu){$('mFill').style.width=S.ult+'%';mu.classList.toggle('ready',rdy);mu.textContent=rdy?'ULT!':'ULT'}
   document.querySelectorAll('[data-up]').forEach(b=>{const u=UP.find(x=>x.id===b.dataset.up);const maxed=u.max&&own(u.id)>=u.max;const bm=bmult(u.id);const n=own(u.id);
@@ -860,7 +877,7 @@ $('copyBtn').onclick=()=>{const t=brag();try{navigator.clipboard.writeText(t).th
   function sel(){const r=document.createRange();r.selectNodeContents($('shareTxt'));const s=getSelection();s.removeAllRanges();s.addRange(r);toast('Text selected. Copy it from here.')}};
 $('muteBtn').onclick=()=>{S.muted=!S.muted;$('muteBtn').textContent='Sound: '+(S.muted?'off':'on');updateMusic()};
 $('muteBtn').textContent='Sound: '+(S.muted?'off':'on');
-function syncVol(){$('volAll').value=Math.round(S.vol*100);$('volVo').value=Math.round(S.voVol*100);$('volMus').value=Math.round(S.musVol*100);$('musicBtn').textContent='Music: '+(S.music?'on':'off')}syncVol();
+function syncVol(){$('volAll').value=Math.round(S.vol*100);$('volVo').value=Math.round(S.voVol*100);$('volMus').value=Math.round(S.musVol*100);$('musicBtn').textContent='Music: '+(S.music?'on':'off')}syncVol();syncDiff();
 let bgm;function updateMusic(){const on=S.music&&!S.muted&&S.vol>0&&S.musVol>0;
   if(!on){if(bgm)bgm.pause();return}
   try{bgm=bgm||new Audio(THEME);bgm.loop=true;bgm.volume=Math.min(1,S.vol*S.musVol);if(bgm.paused){const p=bgm.play();if(p&&p.catch)p.catch(()=>{})}}catch(e){}}
@@ -904,6 +921,9 @@ document.addEventListener('keydown',e=>{
 });
 $('mChomp').addEventListener('click',()=>chomp({clientX:0,clientY:0}));
 $('mUlt').addEventListener('click',()=>{const b=$('ultBtn');if(!b.disabled)b.click()});
+$('diffRow').addEventListener('click',e=>{const b=e.target.closest('[data-diff]');if(!b)return;S.diff=b.dataset.diff;blip(520,'triangle',.08,.05);syncDiff();save();draw()});
+function syncDiff(){const d=diff();$('diffTxt').textContent=`Iron Man flies for ${d.fly}s · a catch pays ×${d.rw}`;
+  document.querySelectorAll('[data-diff]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.diff===S.diff))}
 $('saveOut').onclick=()=>{try{
   const blob=new Blob([JSON.stringify(S)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='jeff-clicker-save.json';
