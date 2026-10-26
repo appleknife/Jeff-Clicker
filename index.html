@@ -245,7 +245,8 @@ button:focus-visible,label:focus-within{outline:3px solid var(--sun);outline-off
 .stats dt{color:var(--muted);font-weight:700;font-size:13px}
 .stats dd{margin:0;font-weight:900}
 .achs{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
-.ach{font-size:11px;font-weight:900;border-radius:8px;padding:3px 8px;border:1.5px dashed var(--line);color:var(--muted)}
+.ach{font:inherit;font-size:11px;font-weight:900;border-radius:8px;padding:3px 8px;border:1.5px dashed var(--line);color:var(--muted);background:transparent;cursor:pointer;touch-action:manipulation;text-align:left}
+.ach.sel{outline:2px solid var(--water2);outline-offset:2px}
 .ach.on{border-style:solid;border-color:var(--sun);color:var(--ink);background:color-mix(in srgb,var(--sun) 18%,var(--panel))}
 .share{margin-top:12px;background:var(--panel2);border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;font-weight:700;font-size:13px;user-select:all}
 .log{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:700;color:var(--muted)}
@@ -620,6 +621,7 @@ footer p{margin:0;max-width:62ch}
         </dl>
         <h3 style="margin-top:12px" class="num" id="achTitle">Achievements</h3>
         <div class="achs" id="achs"></div>
+        <p class="hint" id="achDetail">Tap an achievement to see what it wants.</p>
         <div class="share" id="shareTxt"></div>
         <div class="artrow"><button class="btn" id="copyBtn">Copy brag</button></div>
         <ul class="log" id="log"></ul>
@@ -955,11 +957,23 @@ $('snapBtn').onclick=()=>{if(S.gems<6||S.snap)return;const n=ps()*600+perClick()
 let gemKey='';function buildGems(){$('gems').innerHTML=GEMS.map((g,i)=>`<div class="gem ${S.gems>i?'on':''}" style="--c:${g[1]}" title="${g[0]} gem"><span>${S.gems>i?g[0][0]:''}</span></div>`).join('')}
 
 /* ---------- achievements ---------- */
-let achKey='';
+let achKey='',achSel=null;
 function checkAch(){let hit=false;for(const a of ACH){if(!S.ach[a.id]&&a.t()){S.ach[a.id]=1;S.tok+=a.tok;hit=true;toast(`Achievement: ${a.nm} (+${a.tok} tokens)`);log(`Achievement unlocked: ${a.nm}. +${a.tok} tokens.`);playSfx('celebratory')}}
-  const k=Object.keys(S.ach).join();if(k!==achKey||hit){achKey=k;
-    $('achs').innerHTML=ACH.map(a=>`<span class="ach ${S.ach[a.id]?'on':''}" title="${esc(a.ds)} · ${a.tok} tokens">${esc(a.nm)}</span>`).join('');
+  const k=Object.keys(S.ach).join();
+  // also render when the grid is empty: a fresh save (or a reset) has no unlocked
+  // achievements, so the key never changes and the list would stay blank.
+  if(k!==achKey||hit||!$('achs').children.length){achKey=k;
+    $('achs').innerHTML=ACH.map(a=>`<button type="button" class="ach ${S.ach[a.id]?'on':''} ${achSel===a.id?'sel':''}" data-ach="${a.id}" title="${esc(a.ds)} · ${a.tok} tokens" aria-label="${esc(a.nm)}: ${esc(a.ds)}">${esc(a.nm)}</button>`).join('');
     $('achTitle').textContent=`Achievements ${Object.keys(S.ach).length}/${ACH.length}`}}
+// Hover-only titles do not exist on a phone, so a tap answers the same question.
+$('achs').addEventListener('click',e=>{
+  const b=e.target.closest('[data-ach]');if(!b)return;
+  const a=ACH.find(x=>x.id===b.dataset.ach);if(!a)return;
+  achSel=a.id;
+  $('achs').querySelectorAll('.ach').forEach(n=>n.classList.toggle('sel',n===b));
+  $('achDetail').textContent=`${a.nm} — ${a.ds}. Pays ${a.tok} tokens${S.ach[a.id]?' · unlocked':' · not yet'}.`;
+  blip(520,'triangle',.06,.04);
+});
 
 /* ---------- events ---------- */
 let ev=null,nextEv=Date.now()+25000;

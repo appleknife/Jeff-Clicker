@@ -15,7 +15,7 @@ An unofficial fan-made clicker game starring Jeff the Land Shark from Marvel Riv
 - **Alignment:** every spit and every event nudges Jeff toward menace (up to +40% chomps) or goodest boy (up to +40% per second). It's the third currency: the cliff pays heroes now, spawn refunds 40 ult charge so you can chain, and back-on-point buys alignment and a ×2 buff.
 - **Chunky Jeff:** Jeff gets visibly wider as he eats, from Snack Size to Planet Jeff, with a fanfare each time he grows.
 - **Events:** Iron Man flyovers (pick Chill, Normal or Spicy flight speed — slower is easier, faster pays more), the cheese heist, the Deadpool vs. Emma Frost custody battle, Hulk the Hater, teammates flaming you, and a Loki copycat.
-- **Floating bubbles** to pop, **20 achievements** that pay Fish Tokens, offline earnings, and a "Copy brag" button.
+- **Floating bubbles** to pop, **21 achievements** that pay Fish Tokens (tap one to see what it wants), offline earnings, and a "Copy brag" button.
 - **Sound:** Jeff voice lines, ult sounds, and the theme song "Nom Nom (It's Jeff!)", with separate Volume, Jeff voice and Music sliders.
 - **Plays anywhere:** installable on a phone home screen and works offline after the first visit.
 
