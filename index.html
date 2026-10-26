@@ -752,7 +752,7 @@ const GEMS=[['Space','#3d7bff'],['Mind','#f2c230'],['Reality','#e2403a'],['Power
 const STAGES=[[0,'Snack Size',1,1],[1e3,'Chonk',1.1,1.04],[1e5,'Absolute Unit',1.22,1.08],[1e7,'Mega Chonk',1.34,1.1],[1e9,'Planet Jeff',1.5,1.14]];
 const FLAMES=['"jeff you are throwing"','"heal me?? hello??"','"uninstall shark"','"worst support in the lobby"','"why did you ult the payload"'];
 // Iron Man flight speed. Slower is easier to catch but pays less; faster is a smaller window for more.
-const DIFFS={chill:{nm:'Chill',fly:8.5,rw:.8},normal:{nm:'Normal',fly:6,rw:1},spicy:{nm:'Spicy',fly:4.2,rw:1.35}};
+const DIFFS={chill:{nm:'Chill',fly:5.5,rw:.8},normal:{nm:'Normal',fly:3.8,rw:1},spicy:{nm:'Spicy',fly:2.5,rw:1.5}};
 const diff=()=>DIFFS[S.diff]||DIFFS.normal;
 
 const ACH=[
@@ -1268,14 +1268,16 @@ let fight=null,bossAudio=null;
 
 function startFight(id){
   const b=BOSSES.find(x=>x.id===id);if(!b||fight)return;
-  // The second fight against a boss is the rematch: a fifth less clock, 15% more HP,
-  // mechanics fire 20% faster, and no FINISH IT button — you tap the last fifth yourself.
+  // Every fight is tighter than it was: 20% less clock, 30% more HP, mechanics 20% faster.
+  // The rematch is a further step up — half again the HP, mechanics 32% faster than that, and
+  // no FINISH IT button, so you tap the last fifth yourself.
+  // With the element you just unlocked (+35%) this stays fair; without it, a rematch is rough.
   const rematch=!!bs().cleared[id]&&!isRec(id);
-  const hp=Math.round(b.hp*(rematch?1.15:1));
-  const clockMax=b.clock*(rematch?.8:1)+(isRec('hulk')?4:0);
+  const hp=Math.round(b.hp*(rematch?1.5:1.3));
+  const clockMax=b.clock*.8+(isRec('hulk')?4:0);
   fight={b,rematch,hp,max:hp,clockMax,combo:1,lastTap:0,maxCombo:1,left:clockMax,elapsed:0,phase:'intro',tele:null,
     nextTele:0,nextStomp:0,revived:false,quietUntil:0,pendingHold:false,finish:false,
-    mechScale:rematch?.8:1,teleWin:b.tele?b.tele.window*(isRec('storm')?1.25:1):0,
+    mechScale:rematch?.68:.8,teleWin:b.tele?b.tele.window*(isRec('storm')?1.25:1):0,
     mercy:isRec('adam-warlock'),used:{}};
   const el=$('bf');el.hidden=false;
   el.innerHTML=`<div class="bf-top"><span class="bf-name">${b.nm}</span>
@@ -1597,7 +1599,9 @@ function winFight(){
   // take a team slot if there is room, so the reward shows up in the next fight.
   const joins=f.rematch&&!isRec(b.id);
   st.cleared[b.id]=true;
-  if(first){st.trophies=(st.trophies||0)+3;st.els[b.el]=Math.max(1,st.els[b.el]||0)}
+  if(first){st.trophies=(st.trophies||0)+3;st.els[b.el]=Math.max(1,st.els[b.el]||0);
+    // auto-equip the element you just earned, or the rematch is a fight you never knew to prepare for
+    if(!st.el)st.el=b.el}
   else if(joins){st.trophies=(st.trophies||0)+2;recruited()[b.id]=true;if(team().length<TEAM_MAX)team().push(b.id)}
   else st.trophies=(st.trophies||0)+1;
   const t=f.elapsed;

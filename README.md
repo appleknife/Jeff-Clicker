@@ -15,7 +15,7 @@ An unofficial fan-made clicker game starring Jeff the Land Shark from Marvel Riv
 - **Sharknos gems:** prestige for six gems. Each one turns Jeff more purple and lets you pick Goodest Boy (+50% per second) or Satan's Greatest Soldier (+50% chomps). All six unlock the Snap. Chomp Crits and Fin Radar are mastery upgrades and survive the reset.
 - **Alignment:** every spit and every event nudges Jeff toward menace (up to +40% chomps) or goodest boy (up to +40% per second). It's the third currency: the cliff pays heroes now, spawn refunds 40 ult charge so you can chain, and back-on-point buys alignment and a ×2 buff.
 - **Chunky Jeff:** Jeff gets visibly wider as he eats, from Snack Size to Planet Jeff, with a fanfare each time he grows.
-- **Events:** Iron Man flyovers (pick Chill, Normal or Spicy flight speed — slower is easier, faster pays more), the cheese heist, the Deadpool vs. Emma Frost custody battle, Hulk the Hater, teammates flaming you, and a Loki copycat.
+- **Events:** Iron Man flyovers (pick Chill 5.5s, Normal 3.8s or Spicy 2.5s — slower is easier to catch, faster pays ×0.8 / ×1 / ×1.5), the cheese heist, the Deadpool vs. Emma Frost custody battle, Hulk the Hater, teammates flaming you, and a Loki copycat.
 - **Floating bubbles** to pop, **21 achievements** that pay Fish Tokens (tap one to see what it wants), offline earnings, and a "Copy brag" button.
 - **Sound:** Jeff voice lines, ult sounds, and the theme song "Nom Nom (It's Jeff!)", with separate Volume, Jeff voice and Music sliders. Every sound respects those sliders (the ult stings used to ignore the Jeff-voice one and played nearly three times louder), nothing plays while the tab is hidden, and `?audio=1` on the URL logs the name of every sound the game starts — the quickest way to identify a mystery noise.
 - **Plays anywhere:** installable on a phone home screen and works offline after the first visit.
@@ -94,9 +94,13 @@ five-minute save and a five-hour save get the same fight. Tap fast to build a co
 
 ### Recruiting
 
-**Beat them twice.** The first win takes their element. The second fight against the same hero
-is a **rematch**: a fifth less clock, 15% more HP, mechanics fire 20% faster, and no FINISH IT
-button — you have to tap the last fifth yourself. Win that and they join you.
+**Beat them twice.** Every fight runs on a 20% shorter clock with 30% more HP and mechanics
+20% faster than launch. The first win takes their element (and equips it for you). The second
+fight against the same hero is a **rematch**: half again the HP, mechanics 32% faster again, and
+**no FINISH IT button** — you tap the last fifth yourself. Win that and they join you.
+
+The element you earn on the first kill is worth +35% damage and is what makes a rematch fair;
+trying one without it is meant to hurt.
 
 *Passives are always on once recruited, and they are utility only — never damage, so the ladder
 can't be melted by your own roster:*
