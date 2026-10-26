@@ -324,6 +324,9 @@ footer p{margin:0;max-width:62ch}
 .pips{display:flex;gap:3px;margin-top:4px}
 .pips i{display:block;width:16px;height:4px;border-radius:2px;background:var(--line)}
 .pips i.on{background:var(--sun)}
+/* capped upgrades get one pip per level instead of the four tier slots */
+.pips.lvl{gap:2px}
+.pips.lvl i{width:10px}
 .buyrow{display:flex;gap:6px;margin:0 0 10px}
 .qbtn{flex:1;border:1.5px solid var(--line);background:var(--panel2);border-radius:10px;padding:6px 0;font-weight:900;font-size:13px;color:var(--muted)}
 .qbtn[aria-pressed="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
@@ -1021,7 +1024,15 @@ document.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.cl
   if(b.dataset.tab==='boss')renderBossTab();});
 
 /* ---------- shop ---------- */
-$('shop').innerHTML=UP.map(u=>`<button class="item" data-up="${u.id}"><span class="nm">${u.nm}</span><span class="own num" data-own></span><span class="ds" data-ds>${u.ds}</span><span class="pips" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="cost num" data-cost></span></button>`).join('');
+// Only upgrades with tier purchases show the four tier slots. Capped ones (Auto-Chomp,
+// Deeper Whirlpool) show one pip per level, and uncapped ones with no tiers (Bigger Jaws)
+// show nothing, instead of four dashes that never fill.
+const pipMarkup=u=>(u.kind==='ps'||u.kind==='click')
+  ? '<span class="pips" data-tier="1" aria-hidden="true"><i></i><i></i><i></i><i></i></span>'
+  : (u.max&&u.max<=12
+    ? '<span class="pips lvl" data-lvl="1" aria-hidden="true">'+'<i></i>'.repeat(u.max)+'</span>'
+    : '<span class="pips" aria-hidden="true"></span>');
+$('shop').innerHTML=UP.map(u=>`<button class="item" data-up="${u.id}"><span class="nm">${u.nm}</span><span class="own num" data-own></span><span class="ds" data-ds>${u.ds}</span>${pipMarkup(u)}<span class="cost num" data-cost></span></button>`).join('');
 let buyQ=1;
 function buyOne(u){const c=cost(u);if(S.eaten<c||(u.max&&own(u.id)>=u.max))return false;S.eaten-=c;S.owned[u.id]=own(u.id)+1;return true}
 function buyUp(u){let n=0;const limit=buyQ==='max'?1000:buyQ;while(n<limit&&buyOne(u))n++;if(n){blip(520,'triangle',.08,.05);draw()}return n}
@@ -1187,7 +1198,11 @@ function draw(){
         if(!q.n)return fmt(cost(u))+' heroes';
         return fmt(q.total)+' ×'+q.n+(q.afford<q.n?' ('+q.afford+' now)':'')})();
     b.disabled=maxed||S.eaten<cost(u);b.classList.toggle('afford',!maxed&&S.eaten>=cost(u));
-    b.querySelectorAll('.pips i').forEach((p,i)=>p.classList.toggle('on',n>=TIER_AT[i]))});
+    const pp=b.querySelector('.pips');
+    if(pp){
+      if(pp.dataset.tier)pp.querySelectorAll('i').forEach((p,i)=>p.classList.toggle('on',n>=TIER_AT[i]));
+      else if(pp.dataset.lvl)pp.querySelectorAll('i').forEach((p,i)=>p.classList.toggle('on',i<n));
+    }});
   renderUps();
   const pb=$('prestigeBtn');if(pb)pb.disabled=S.run<need();
   const st=stageInfo();$('stageName').textContent=st[1];art.style.transform=artTransform();
