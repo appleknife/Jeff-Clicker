@@ -17,7 +17,7 @@ An unofficial fan-made clicker game starring Jeff the Land Shark from Marvel Riv
 - **Chunky Jeff:** Jeff gets visibly wider as he eats, from Snack Size to Planet Jeff, with a fanfare each time he grows.
 - **Events:** Iron Man flyovers (pick Chill, Normal or Spicy flight speed — slower is easier, faster pays more), the cheese heist, the Deadpool vs. Emma Frost custody battle, Hulk the Hater, teammates flaming you, and a Loki copycat.
 - **Floating bubbles** to pop, **21 achievements** that pay Fish Tokens (tap one to see what it wants), offline earnings, and a "Copy brag" button.
-- **Sound:** Jeff voice lines, ult sounds, and the theme song "Nom Nom (It's Jeff!)", with separate Volume, Jeff voice and Music sliders.
+- **Sound:** Jeff voice lines, ult sounds, and the theme song "Nom Nom (It's Jeff!)", with separate Volume, Jeff voice and Music sliders. Every sound respects those sliders (the ult stings used to ignore the Jeff-voice one and played nearly three times louder), nothing plays while the tab is hidden, and `?audio=1` on the URL logs the name of every sound the game starts — the quickest way to identify a mystery noise.
 - **Plays anywhere:** installable on a phone home screen and works offline after the first visit.
 
 Progress saves automatically in each player's browser (localStorage). There are no accounts, no servers, no ads, and no real money.

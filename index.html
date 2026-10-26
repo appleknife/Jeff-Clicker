@@ -679,6 +679,8 @@ const SFX={ready:'assets/audio/ult-ready.mp3',ally:'assets/audio/ult-ally.mp3',e
 const THEME='assets/audio/theme-nom-nom-its-jeff.mp3';
 const ULT_SFX='assets/audio/its-jeff.mp3';
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+// ?audio=1 logs every sound the game starts, so a mystery noise can be named instead of guessed.
+const AUDIO_DEBUG=location.search.indexOf('audio=1')>-1;
 
 /* ---------- data ---------- */
 const UP=[
@@ -836,7 +838,10 @@ function nudge(d){S.align=Math.max(-100,Math.min(100,S.align+d))}
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 /* ---------- sound ---------- */
-let ac,lastChompVo=0;function blip(f=240,type='square',len=.09,vol=.05){if(S.muted||S.vol<=0)return;try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();
+let ac,lastChompVo=0;function blip(f=240,type='square',len=.09,vol=.05){if(S.muted||S.vol<=0||document.hidden)return;try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();
+  // A suspended AudioContext does not advance its clock. Every tone scheduled while it was
+  // suspended then fires at the same instant when it resumes — a loud buzz, not a chime.
+  if(ac.state!=='running'){const r=ac.resume();if(r&&r.catch)r.catch(()=>{});return}
   const o=ac.createOscillator(),g=ac.createGain(),t=ac.currentTime;o.type=type;o.frequency.setValueAtTime(f,t);o.frequency.exponentialRampToValueAtTime(f*.5,t+len);
   g.gain.setValueAtTime(vol*S.vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+len+.02);o.connect(g).connect(ac.destination);o.start(t);o.stop(t+len+.03)}catch(e){}}
 function jingle(notes=[523,659,784]){notes.forEach((f,i)=>setTimeout(()=>blip(f,'triangle',.12,.06),i*90))}
@@ -890,11 +895,16 @@ function autoChomp(){const v=perClick()*AUTO_DMG;gain(v);S.st.clicks++;
     floatText('+'+fmt(v),r.left+r.width/2,r.top+r.height*.28,'auto')}}
 
 /* ---------- ult ---------- */
-const sfxCache={};function playSfx(k){if(S.muted)return;try{const src=SFX[k]||VO[k];if(!src)return;const a=sfxCache[k]||(sfxCache[k]=new Audio(src));const vv=Math.min(1,.9*S.vol*(VO[k]?S.voVol:1));if(vv<=0)return;a.currentTime=0;a.volume=vv;const p=a.play();if(p&&p.catch)p.catch(()=>{})}catch(e){}}
+const sfxCache={};function playSfx(k){if(S.muted||document.hidden)return;try{const src=SFX[k]||VO[k];if(!src)return;const a=sfxCache[k]||(sfxCache[k]=new Audio(src));
+  // Every sound obeyed the Jeff-voice slider except the three ult stings, which played at
+  // full volume — 2.8x louder than anything else. 0.6 keeps them prominent, not startling.
+  const vv=Math.min(1,.9*S.vol*(VO[k]?S.voVol:.6));if(vv<=0)return;a.currentTime=0;a.volume=vv;
+  if(AUDIO_DEBUG)log('\u266a '+k+' \u2192 '+src.split('/').pop()+' @'+vv.toFixed(2));
+  const p=a.play();if(p&&p.catch)p.catch(()=>{})}catch(e){}}
 let ultWasReady=null;
 function ultReadyFx(){playSfx('ready');log('Ult ready. "It\'s Jeff!" is waiting.');announce('Ult ready');if(reduce)return;
   $('readyFlash').animate([{transform:'scale(.4)',opacity:0},{transform:'scale(1)',opacity:.95,offset:.35},{transform:'scale(1.25)',opacity:0}],{duration:1100,easing:'ease-out'})}
-let ultAudio;function playUlt(){if(S.muted)return;try{ultAudio=ultAudio||new Audio(ULT_SFX);ultAudio.currentTime=0;ultAudio.volume=Math.min(1,.9*S.vol*S.voVol);if(ultAudio.volume<=0)return;const p=ultAudio.play();if(p&&p.catch)p.catch(()=>blip(120,'sawtooth',.4,.06))}catch(e){blip(120,'sawtooth',.4,.06)}}
+let ultAudio;function playUlt(){if(S.muted||document.hidden)return;if(AUDIO_DEBUG)log('\u266a ult \u2192 its-jeff.mp3');try{ultAudio=ultAudio||new Audio(ULT_SFX);ultAudio.currentTime=0;ultAudio.volume=Math.min(1,.9*S.vol*S.voVol);if(ultAudio.volume<=0)return;const p=ultAudio.play();if(p&&p.catch)p.catch(()=>blip(120,'sawtooth',.4,.06))}catch(e){blip(120,'sawtooth',.4,.06)}}
 $('ultBtn').onclick=()=>{if(S.ult<100)return;$('spit').hidden=false;$('ultBtn').disabled=true;playUlt();if(S.art==='cuddly-fuzzlefin')setTimeout(()=>playSfx('brrPowerful'),1600);log('NOM NOM NOM. Jeff dives into the whirlpool...')};
 $('spit').addEventListener('click',e=>{const b=e.target.closest('[data-spit]');if(!b)return;const k=b.dataset.spit;playSfx(k==='point'?'ally':'end');let refund=0;
   if(k==='cliff'){const n=ps()*90+perClick()*120+500;gain(n);S.st.wipes++;nudge(-8);
@@ -1033,9 +1043,9 @@ function startEvent(){
   playSfx(t==='hulk'?'startling':t==='loki'?'urgent':'dun');
 }
 function showBar(msg,acts){bar.innerHTML=`<p>${msg}</p>${acts?`<div class="acts">${acts}</div>`:''}<div class="timer"><i id="evTimer"></i></div>`;bar.hidden=false;stage.classList.add('acting')}
-function endEvent(win,msg){if(!ev)return;if(!ev.sfx)playSfx(win?'enthusiastic':'sad');if(win){S.st.events++;giveTok(3)}if(msg)log(msg);ev=null;bar.hidden=true;bar.innerHTML='';stage.classList.remove('acting');stage.querySelectorAll('.target').forEach(x=>x.remove());
+function endEvent(win,msg,silent){if(!ev)return;if(!ev.sfx&&!silent)playSfx(win?'enthusiastic':'sad');if(win){S.st.events++;giveTok(3)}if(msg)log(msg);ev=null;bar.hidden=true;bar.innerHTML='';stage.classList.remove('acting');stage.querySelectorAll('.target').forEach(x=>x.remove());
   nextEv=Date.now()+rnd(35,75)*1000*(S.bought.radar?.5:1);draw()}
-stage.addEventListener('click',e=>{const b=e.target.closest('[data-ev]');if(!b||!ev)return;e.stopPropagation();const a=b.dataset.ev;const em=evMult();
+stage.addEventListener('click',e=>{const b=e.target.closest('[data-ev]');if(!b||!ev)return;e.stopPropagation();ev.touched=true;const a=b.dataset.ev;const em=evMult();
   if(a==='catch'){const n=(ps()*30+perClick()*25+100)*em*diff().rw;gain(n);jingle();endEvent(true,`Caught Iron Man in mid-air. Physics is a suggestion. +${fmt(n)}`)}
   if(a==='cheese'){addBuff('Cheese frenzy','all',+(7*em).toFixed(1),15);jingle();endEvent(true,'Stole the cheese wheel. Frenzy for 15s.')}
   if(a==='dp'){addBuff('Team Deadpool','click',+(2*em).toFixed(1),45);endEvent(true,'Jeff goes home with Deadpool. Chomp boost for 45s.')}
@@ -1208,7 +1218,9 @@ const BOSSES=[
 // Boss voice lines live in assets/audio/voice/. Missing files fail silently.
 const VOX={};
 function playVoice(name){
+  if(S.muted||document.hidden)return;
   try{
+    if(AUDIO_DEBUG)log('\u266a voice \u2192 '+name+'.mp3');
     const a=VOX[name]||(VOX[name]=new Audio('assets/audio/voice/'+name+'.mp3'));
     a.volume=Math.min(1,.95*S.vol*Math.max(.4,S.voVol));a.currentTime=0;
     // Duck the boss theme under the line. Without this, "BORN AGAIN" is fighting the
@@ -1626,7 +1638,7 @@ function tick(){const now=Date.now();let dt=(now-prev)/1000;prev=now;
   if(fight)fightTick(dt);
   if(ev){const f=1-(t-ev.start)/(ev.end-ev.start);const ti=$('evTimer');if(ti)ti.style.width=Math.max(0,f*100)+'%';
     if(ev.t==='loki'){const s=S.eaten*.015*dt;S.eaten-=s;ev.stolen+=s}
-    if(t>=ev.end){const msgs={ironman:'Iron Man got away.',cheese:'The cheese rolled away.',custody:'Nobody picked. Jeff stayed put.',hulk:'Hulk got bored and wandered off.',flame:'Your teammate went back to complaining about something else.',loki:`The fake Jeff escaped with ${fmt(ev.stolen)} heroes.`};endEvent(false,msgs[ev.t])}}
+    if(t>=ev.end){const msgs={ironman:'Iron Man got away.',cheese:'The cheese rolled away.',custody:'Nobody picked. Jeff stayed put.',hulk:'Hulk got bored and wandered off.',flame:'Your teammate went back to complaining about something else.',loki:`The fake Jeff escaped with ${fmt(ev.stolen)} heroes.`};endEvent(false,msgs[ev.t],!ev.touched)}}
   else if(t>=nextEv&&!fight)startEvent();
   if(!fight){bubT-=dt;if(bubT<=0){spawnBubble();bubT=bubGap()*(0.6+Math.random()*0.8)}
     // Auto-Chomp. Capped at ten per tick so a tab that slept for an hour can't come back
