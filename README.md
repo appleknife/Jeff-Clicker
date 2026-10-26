@@ -70,8 +70,12 @@ To tune balance, edit the `UP` (upgrades), `SKINS` (costume rarities and abiliti
 Past the sixth gem a fourth tab appears: three Marvel Rivals heroes to fight, one at a time.
 
 It is a **skill mode, not a numbers mode** — bosses are defined in *taps*, not damage, so a
-five-minute save and a five-hour save get the same fight. Tap fast to build a combo (up to
-×2), tap the red ring to interrupt an attack, and stop tapping completely when Hulk winds up.
+five-minute save and a five-hour save get the same fight. Tap fast to build a combo (up to ×2).
+
+- **Adam Warlock** channels his ult at 22% — gold glow, 3.5s bar, "Born again!". Out-tap it
+  or he heals to 42%.
+- **Storm** throws red rings. Tap inside one before it closes to counter for +14 damage.
+- **The Hulk** glows for a full second before his quiet window. Stop tapping through it.
 
 - First clear: **+2% to everything, permanently**, and unlocks that hero's element.
 - Elements cycle: cosmic beats earth beats lightning beats cosmic. They only matter in fights,

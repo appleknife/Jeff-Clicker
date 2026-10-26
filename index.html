@@ -366,7 +366,19 @@ footer p{margin:0;max-width:62ch}
 .tele{position:absolute;z-index:9;border-radius:50%;border:3px solid #ff5a4a;background:radial-gradient(circle,rgba(255,90,74,.28),transparent 72%);display:grid;place-items:center;pointer-events:auto;touch-action:manipulation;animation:telePulse .45s ease-in-out infinite alternate}
 .tele img{width:58%;height:58%;object-fit:contain;opacity:.95;pointer-events:none}
 @keyframes telePulse{to{box-shadow:0 0 0 6px rgba(255,90,74,.18)}}
-.bf-warn{position:absolute;inset:0;z-index:8;display:grid;place-items:center;pointer-events:none;font-family:var(--display);font-size:clamp(22px,6vw,34px);color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.4);background:radial-gradient(circle,rgba(226,64,58,.35),transparent 70%)}
+.bf-warn{position:absolute;inset:0;z-index:8;display:grid;place-items:center;text-align:center;pointer-events:none;font-family:var(--display);color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.4);transition:background .12s}
+.bf-warn.warn{background:radial-gradient(circle,rgba(247,189,46,.34),transparent 70%)}
+.bf-warn.quiet{background:radial-gradient(circle,rgba(226,64,58,.5),transparent 72%)}
+.bf-warn b{display:block;font-family:var(--display);font-weight:400;font-size:clamp(19px,5.2vw,30px);line-height:1.05}
+.bf-warn small{display:block;font-family:var(--body);font-size:10px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;opacity:.85;margin-top:5px}
+.bf-channel{height:9px;margin:5px 11px 0;border-radius:6px;background:rgba(0,0,0,.45);overflow:hidden;border:1px solid rgba(247,189,46,.85);box-shadow:0 0 12px rgba(247,189,46,.45)}
+.bf-channel i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#ffe9a3,#f7bd2e);transition:width .1s linear}
+.bf-boss.golden{filter:drop-shadow(0 0 18px rgba(247,189,46,.95)) brightness(1.16)}
+.bf-boss.rage{filter:drop-shadow(0 0 18px rgba(226,64,58,.95)) brightness(1.08)}
+.bf-cry{position:absolute;left:50%;top:40%;z-index:9;font-family:var(--display);font-size:clamp(20px,5vw,30px);color:#ffd75e;text-shadow:0 3px 0 rgba(0,0,0,.45);pointer-events:none;animation:cryPop 1s ease-out forwards}
+@keyframes cryPop{from{transform:translate(-50%,-50%) scale(.55);opacity:0}25%{transform:translate(-50%,-50%) scale(1.15);opacity:1}to{transform:translate(-50%,-62%) scale(1);opacity:0}}
+.bf-card .teach{color:var(--sun);font-weight:900;font-size:12px;letter-spacing:.01em;margin-top:4px;max-width:34ch}
+.tele.pop{animation:none;transform:scale(1.6);opacity:0;border-color:#fff;box-shadow:0 0 0 12px rgba(255,255,255,.3);transition:transform .2s ease-out,opacity .2s ease-out}
 .bf-finish{position:absolute;left:50%;bottom:52px;transform:translateX(-50%);z-index:10;pointer-events:auto;border:0;border-radius:14px;padding:10px 20px;font-family:var(--display);font-size:18px;background:var(--accent);color:#fff;animation:pulse .5s ease-in-out infinite alternate;box-shadow:0 5px 0 rgba(0,0,0,.25)}
 .bf-card{position:absolute;inset:0;z-index:10;display:grid;place-content:center;justify-items:center;text-align:center;gap:6px;background:rgba(4,18,24,.86);color:#fff;pointer-events:auto;padding:18px}
 .bf-card h3{font-family:var(--display);font-size:clamp(20px,5vw,32px);line-height:1.05}
@@ -1125,13 +1137,26 @@ const ELS={cosmic:{nm:'Cosmic',c:'#9b47e6'},lightning:{nm:'Lightning',c:'#f7bd2e
 // bosses quietly teach you the cycle: beat one, wear its element on the next.
 const STRONG={lightning:'cosmic',earth:'lightning',cosmic:'earth'};
 const BOSSES=[
-  {id:'adam-warlock',nm:'ADAM WARLOCK',el:'cosmic',role:'Strategist',hp:90,clock:22,revive:true,
-   taunt:'He has already seen how this ends.'},
+  {id:'adam-warlock',nm:'ADAM WARLOCK',el:'cosmic',role:'Strategist',hp:90,clock:24,
+   channel:{at:.22,time:3.5,healTo:.42},
+   taunt:'He has already seen how this ends.',
+   teach:'When he glows gold he is coming back. Keep tapping.'},
   {id:'storm',nm:'STORM',el:'lightning',role:'Duelist',hp:120,clock:20,tele:{every:4,window:1.4,icon:'storm-move'},
-   taunt:'The sky answers to her.'},
-  {id:'hulk',nm:'THE HULK',el:'earth',role:'Vanguard',hp:110,clock:20,stomp:{every:5,window:.62},
-   taunt:'Hulk hates little shark.'},
+   taunt:'The sky answers to her.',
+   teach:'Tap the red ring before it closes to counter.'},
+  {id:'hulk',nm:'THE HULK',el:'earth',role:'Vanguard',hp:110,clock:20,stomp:{every:5.5,warn:1,window:.6,grace:.2},
+   taunt:'Hulk hates little shark.',
+   teach:'Stop tapping the moment he glows.'},
 ];
+// Boss voice lines live in assets/audio/voice/. Missing files fail silently.
+const VOX={};
+function playVoice(name){
+  try{
+    const a=VOX[name]||(VOX[name]=new Audio('assets/audio/voice/'+name+'.mp3'));
+    a.volume=Math.min(1,.95*S.vol*Math.max(.4,S.voVol));a.currentTime=0;
+    const p=a.play();if(p&&p.catch)p.catch(()=>{});
+  }catch(e){}
+}
 const bs=()=>S.boss;
 const bossArt=b=>`assets/img/heroes/${b.id}.webp`;
 const bossArtSm=b=>`assets/img/heroes/${b.id}-sm.webp`;
@@ -1149,9 +1174,10 @@ function startFight(id){
       <div class="bf-hp"><u id="bfGhost"></u><b id="bfFill"></b></div>
       <button class="bf-flee" id="bfFlee">Flee</button></div>
     <div class="bf-clock"><i id="bfClock"></i></div>
+    <div class="bf-channel" id="bfChannel" hidden><i id="bfChannelFill"></i></div>
     <img class="bf-boss" id="bfBoss" src="${bossArt(b)}" alt="">
     <div class="bf-combo"><span id="bfCombo">×1.00</span><small>combo</small><div class="m"><i id="bfMeter"></i></div></div>
-    <div class="bf-card" id="bfCard"><h3>${b.nm}</h3><p>${b.taunt}</p></div>`;
+    <div class="bf-card" id="bfCard"><h3>${b.nm}</h3><p>${b.taunt}</p><p class="teach">${b.teach||''}</p></div>`;
   $('bfFlee').onclick=fleeFight;
   playBossMusic(true);
   paintBars();
@@ -1192,7 +1218,11 @@ function paintBars(){
 function bossHit(e){
   const f=fight;if(!f||f.phase!=='fight')return;
   const t=nowMs();
-  if(t<f.quietUntil){penalty('SMASHED');return}
+  if(f.quietUntil&&t>=f.warnUntil&&t<f.quietUntil){
+    const grace=(f.b.stomp?f.b.stomp.grace:0)*1000;
+    if(t<f.warnUntil+grace){toast('too early');return}
+    penalty('SMASHED');return;
+  }
   f.combo=(t-f.lastTap<560)?Math.min(2,f.combo+.05):1;
   f.lastTap=t;f.maxCombo=Math.max(f.maxCombo,f.combo);
   hitBoss(f.combo*elMultFor(f.b),e);
@@ -1209,16 +1239,35 @@ function hitBoss(d,e){
   const c=$('bfCombo');if(c)c.textContent='×'+f.combo.toFixed(2);
   const m=$('bfMeter');if(m)m.style.width=Math.min(100,(f.combo-1)*100)+'%';
   paintBars();
-  if(f.hp<=0){
-    if(f.b.revive&&!f.revived){
-      f.revived=true;f.hp=f.max*.45;f.left+=2;paintBars();
-      log('Adam Warlock comes back. He always comes back.');toast('HE CAME BACK');
-      if(!reduce){stage.classList.add('shake');setTimeout(()=>stage.classList.remove('shake'),250)}
-      return;
-    }
-    winFight();return;
+  if(f.hp<=0){endChannel(false);winFight();return}
+  const ch=f.b.channel;
+  if(ch&&!f.revived&&!f.channeling&&f.hp<=f.max*ch.at)beginChannel();
+  else if(!f.channeling&&f.hp<=f.max*.2&&!f.finish){f.finish=true;showFinish()}
+}
+// Adam's ult: a channel you can beat by out-tapping it, not an instant free revive.
+function beginChannel(){
+  const f=fight,ch=f.b.channel;if(!f||!ch)return;
+  f.revived=true;f.channeling=true;f.channelEnd=nowMs()+ch.time*1000;
+  const bo=$('bfBoss');if(bo)bo.classList.add('golden');
+  const bar=$('bfChannel');if(bar)bar.hidden=false;
+  const t=document.createElement('div');t.className='bf-cry';t.textContent='BORN AGAIN';
+  stage.appendChild(t);setTimeout(()=>t.remove(),1000);
+  playVoice('adam-born-again');
+  jingle([392,523,659,784]);
+  toast('BORN AGAIN — finish him');
+  log('Adam Warlock: "Born again!" Finish him before it lands.');
+}
+function endChannel(healed){
+  const f=fight;if(!f||!f.channeling)return;
+  f.channeling=false;
+  const bo=$('bfBoss');if(bo)bo.classList.remove('golden');
+  const bar=$('bfChannel');if(bar)bar.hidden=true;
+  if(healed&&f.b.channel){
+    f.hp=Math.max(f.hp,f.max*f.b.channel.healTo);paintBars();
+    toast('HE CAME BACK');playSfx('brrPowerful');
+    log('Adam Warlock came back. Golden light, brand new.');
+    if(!reduce){stage.classList.add('shake');setTimeout(()=>stage.classList.remove('shake'),300)}
   }
-  if(f.hp<=f.max*.2&&!f.finish){f.finish=true;showFinish()}
 }
 function penalty(msg){
   const f=fight;if(!f||f.phase!=='fight')return;
@@ -1246,10 +1295,12 @@ function spawnTele(){
 }
 function interrupt(){
   const f=fight;if(!f||!f.tele||f.phase!=='fight')return;
-  const el=f.tele.el;f.tele=null;el.remove();
-  f.left+=1.4;
-  const bo=$('bfBoss');if(bo){bo.classList.add('stagger');setTimeout(()=>bo.classList.remove('stagger'),320)}
-  toast('INTERRUPTED');jingle([660,880]);
+  const el=f.tele.el,r=el.getBoundingClientRect();
+  f.tele=null;f.left+=1.4;
+  el.classList.add('pop');setTimeout(()=>el.remove(),220);
+  floatText('COUNTER!',r.left+r.width/2,r.top+r.height/2,'crit');
+  blip(1400,'sine',.07,.05);setTimeout(()=>blip(1900,'sine',.09,.04),70);
+  const bo=$('bfBoss');if(bo){bo.classList.add('stagger');setTimeout(()=>bo.classList.remove('stagger'),340)}
   hitBoss(14*f.combo,null);
 }
 function missTele(){
@@ -1260,12 +1311,24 @@ function missTele(){
 }
 function doStomp(){
   const f=fight,b=f.b;if(!b.stomp||!f)return;
-  f.quietUntil=nowMs()+b.stomp.window*1000;f.pendingHold=true;
-  f.nextStomp=nowMs()+b.stomp.every*1000;
-  const w=document.createElement('div');w.className='bf-warn';w.textContent='DON\u2019T TAP';
+  const now=nowMs();
+  f.warnUntil=now+b.stomp.warn*1000;
+  f.quietUntil=f.warnUntil+b.stomp.window*1000;
+  f.pendingHold=true;
+  f.nextStomp=now+b.stomp.every*1000;
+  const bo=$('bfBoss');if(bo)bo.classList.add('golden');
+  const w=document.createElement('div');w.className='bf-warn warn';
+  w.innerHTML='<b>HULK IS WINDING UP</b><small>stop tapping</small>';
   stage.appendChild(w);
-  setTimeout(()=>w.remove(),b.stomp.window*1000);
-  blip(120,'sawtooth',.25,.06);
+  blip(150,'sawtooth',.22,.05);
+  setTimeout(()=>{
+    if(!w.isConnected)return;
+    w.classList.remove('warn');w.classList.add('quiet');
+    w.innerHTML='<b>DON\u2019T TAP</b><small>hold\u2026</small>';
+    if(bo){bo.classList.remove('golden');bo.classList.add('rage')}
+    blip(90,'sawtooth',.35,.07);
+  },b.stomp.warn*1000);
+  setTimeout(()=>{w.remove();if(bo)bo.classList.remove('golden','rage')},(b.stomp.warn+b.stomp.window)*1000);
 }
 function showFinish(){
   const el=document.createElement('button');
@@ -1278,7 +1341,12 @@ function fightTick(dt){
   const f=fight;if(!f||f.phase!=='fight')return;
   f.left-=dt;f.elapsed+=dt;
   const t=nowMs();
-  if(f.pendingHold&&t>f.quietUntil){f.pendingHold=false;f.left+=.6;hitBoss(12,null);toast('HELD')}
+  if(f.channeling){
+    const rem=f.channelEnd-t,fill=$('bfChannelFill');
+    if(fill)fill.style.width=Math.max(0,rem/(f.b.channel.time*1000)*100)+'%';
+    if(rem<=0)endChannel(true);
+  }
+  if(f.pendingHold&&t>f.quietUntil){f.pendingHold=false;f.left+=.6;hitBoss(12,null);toast('HELD IT')}
   if(f.tele){
     if(t>=f.tele.end)missTele();
     else{
