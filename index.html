@@ -119,6 +119,7 @@ button:focus-visible,label:focus-within{outline:3px solid var(--sun);outline-off
 .ultbtn.ready .ulticon{filter:none;opacity:1}
 .readyflash{position:absolute;left:50%;top:50%;width:220px;height:220px;margin:-110px 0 0 -110px;z-index:4;pointer-events:none;background:var(--sun);-webkit-mask:center/contain no-repeat;mask:center/contain no-repeat;opacity:0}
 .float{position:absolute;z-index:3;pointer-events:none;font-family:var(--display);font-size:20px;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.25);animation:up .9s ease-out forwards}
+.float.auto{font-size:14px;opacity:.7}
 .float.meow{color:var(--sun);font-size:26px}
 .float.crit{color:var(--sun);font-size:30px}
 @keyframes up{to{transform:translateY(-70px);opacity:0}}
@@ -665,6 +666,10 @@ const UP=[
   {id:'bubble',nm:'Healing Bubble',     ds:'+1 per second',               base:100,    g:1.15, kind:'ps', v:1},
   {id:'dig',   nm:'Hide and Seek',      ds:'+8 per second',               base:1100,   g:1.15, kind:'ps', v:8},
   {id:'jaws',  nm:'Bigger Jaws',        ds:'Chomps add 5% of per-second', base:3000,   g:1.6,  kind:'jaws'},
+  // Comfort upgrade: Jeff taps for you. Deliberately worse per chomp than a real tap
+  // (60% damage, half the ult charge) so mashing still wins — this just means you can put
+  // the phone down and still keep the ult coming. Survives the gem reset.
+  {id:'auto',  nm:'Auto-Chomp',         ds:'Jeff chomps for you',         base:8000,   g:1.55, kind:'auto', v:.35, max:10, dyn:()=>own('auto')?autoRate().toFixed(1)+' chomps/sec':''},
   {id:'whirl', nm:'Deeper Whirlpool',   ds:'Ult charges 20% faster',      base:2500,   g:2,    kind:'whirl', max:10},
   {id:'splash',nm:'Joyful Splash',      ds:'+47 per second',              base:12000,  g:1.15, kind:'ps', v:47},
   {id:'teamup',nm:'Team-Up Combo',      ds:'+260 per second',             base:130000, g:1.15, kind:'ps', v:260},
@@ -688,7 +693,7 @@ const SKINS=[
   // Official Marvel Rivals costumes. Rarity follows the game's own tiers:
   // C = default, R = Rare, E = Epic, L = Legendary. Art: assets/img/skins/<id>.webp
   // id, name, rarity, perk kind, perk value
-  ['default','Jeff the Land Shark','C','all',0],
+  ['default','Jeff the Land Shark','C','all',.03],
   ['adopted-avenger','Adopted Avenger','R','all',.12],
   ['razor-tooth','Razor-Tooth','R','click',.15],
   ['jeff-pool','Jeff-Pool','E','ult',.3],
@@ -750,7 +755,7 @@ const ACH=[
 
 /* ---------- state ---------- */
 function fresh(){return{eaten:0,run:0,life:0,owned:{},bought:{},ult:0,gems:0,good:0,menace:0,align:0,snap:false,buffs:[],diff:'normal',
-  tok:30,tokFrac:0,vol:.6,voVol:.35,music:false,musVol:.3,skins:{default:1},art:'default',perk:'default',wardMode:'look',pity:0,ach:{},chompN:0,
+  tok:30,tokFrac:0,vol:.6,voVol:.35,music:false,musVol:.3,skins:{default:1},dupes:0,art:'default',perk:'default',wardMode:'look',pity:0,ach:{},chompN:0,
   boss:{unlocked:false,trophies:0,cleared:{},best:{},els:{},el:''},
   st:{wipes:0,mates:0,ults:0,events:0,clicks:0,pulls:0,pops:0},muted:false,last:Date.now()}}
 let S=fresh();
@@ -779,7 +784,13 @@ const artSkin=()=>SKINS.find(s=>s.id===S.art)||SKINS[0];
 const perkSkin=()=>SKINS.find(s=>s.id===S.perk)||SKINS[0];
 function skinMult(k){const s=perkSkin(),st=S.skins[s.id]||1;let m=1;
   if(s.k==='all'||s.k===k)m+=s.v*(1+.5*(st-1));
-  if(k==='ps'||k==='click')m*=1+.01*Object.keys(S.skins).length;return m}
+  // Collection bonus: +1% per costume owned, plus +1% per dupe that landed on a costume
+  // already at five stars. That is what stops a finished collection being dead air.
+  if(k==='ps'||k==='click')m*=1+.01*(Object.keys(S.skins).length+(S.dupes||0));return m}
+// Auto-Chomp constants. A real chomp is 1.0 damage and 1.2 ult; an auto chomp is 60% of
+// the damage, half the ult charge, and counts half toward Golden Belly tokens.
+const AUTO_DMG=.6, AUTO_ULT=.5, AUTO_TOK=.5;
+const autoRate=()=>own('auto')*(UP.find(u=>u.id==='auto')||{v:0}).v;let autoAcc=0,autoFx=0;
 function basePs(){return UP.filter(u=>u.kind==='ps').reduce((s,u)=>s+own(u.id)*u.v*bmult(u.id),0)}
 function ps(){return basePs()*gemMult()*(1+.5*S.good)*skinMult('ps')*buffMult('ps')*alignMult('ps')*bossMult()}
 function perClick(){return ((1+own('fish')*bmult('fish'))*gemMult()*(1+.5*S.menace)*skinMult('click')+own('jaws')*.05*ps())*buffMult('click')*alignMult('click')*bossMult()}
@@ -850,6 +861,13 @@ function chomp(e){
   ripple(e);draw();
 }
 $('jeff').addEventListener('click',chomp);
+// Auto-Chomp: the same chomp, quietly. No crits, no golden chomps, no sound — just a
+// small float once a second so you can see it working without a fireworks show.
+function autoChomp(){const v=perClick()*AUTO_DMG;gain(v);S.st.clicks++;
+  S.ult=Math.min(100,S.ult+1.2*AUTO_ULT*(1+.2*own('whirl'))*skinMult('ult'));
+  lastAct=Date.now();S.chompN+=AUTO_TOK;if(S.chompN>=(S.bought.belly?25:50)){S.chompN=0;giveTok(1)}
+  if(!reduce&&Date.now()-autoFx>1000){autoFx=Date.now();const r=$('jeff').getBoundingClientRect();
+    floatText('+'+fmt(v),r.left+r.width/2,r.top+r.height*.28,'auto')}}
 
 /* ---------- ult ---------- */
 const sfxCache={};function playSfx(k){if(S.muted)return;try{const src=SFX[k]||VO[k];if(!src)return;const a=sfxCache[k]||(sfxCache[k]=new Audio(src));const vv=Math.min(1,.9*S.vol*(VO[k]?S.voVol:1));if(vv<=0)return;a.currentTime=0;a.volume=vv;const p=a.play();if(p&&p.catch)p.catch(()=>{})}catch(e){}}
@@ -907,8 +925,8 @@ function rollOne(forceEpic){S.pity++;let r;
   if(S.pity>=60)r='L';else{const x=Math.random()*100;r=x<18?'L':x<70?'E':'R'}
   if(forceEpic&&r!=='L')r='E';if(r==='L')S.pity=0;
   const pool=SKINS.filter(s=>s.r===r);const sk=pool[Math.floor(Math.random()*pool.length)];
-  const had=S.skins[sk.id]||0;let tag='NEW',refund=0;
-  if(!had)S.skins[sk.id]=1;else if(had<5){S.skins[sk.id]=had+1;tag='★'+(had+1)}else{refund=3;S.tok+=3;tag='+3 tok'}
+  const had=S.skins[sk.id]||0;let tag='NEW';
+  if(!had)S.skins[sk.id]=1;else if(had<5){S.skins[sk.id]=had+1;tag='★'+(had+1)}else{S.dupes=(S.dupes||0)+1;tag='+1%'}
   S.st.pulls++;return{sk,tag,isNew:!had}}
 function pull(n){const price=n===10?90:10;if(S.tok<price)return;S.tok-=price;const out=[];
   for(let i=0;i<n;i++){const needG=n===10&&i===n-1&&!out.some(o=>o.sk.r==='E'||o.sk.r==='L');out.push(rollOne(needG))}
@@ -931,7 +949,8 @@ function buildWardrobe(){const order={L:0,E:1,R:2,C:3};
   const a=artSkin(),p=perkSkin();
   $('equipped').innerHTML=`<img class="eqthumb" src="assets/img/skins/${a.id}-sm.webp" alt=""><p><strong>Wearing: ${esc(a.nm)}</strong>${RNAME[a.r]} · look only<br>Ability: ${esc(p.nm)} · ${perkTxt(p)}</p>`;
   const n=Object.keys(S.skins).length;
-  $('colTxt').textContent=`${n}/${SKINS.length} collected · +${n}% chomps and per second. Tapping a costume sets its ${S.wardMode==='perk'?'ability':'look'}.`;
+  const dp=S.dupes||0;
+  $('colTxt').textContent=`${n}/${SKINS.length} collected · +${n+dp}% chomps and per second${dp?` (${dp}% of that from maxed dupes)`:''}. Tapping a costume sets its ${S.wardMode==='perk'?'ability':'look'}.`;
   $('wardMode').querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===S.wardMode))}
 $('wardMode').addEventListener('click',e=>{const b=e.target.closest('[data-mode]');if(!b)return;
   S.wardMode=b.dataset.mode;save();buildWardrobe()});
@@ -946,7 +965,8 @@ $('paths').addEventListener('click',e=>{const b=e.target.closest('[data-path]');
   S[b.dataset.path==='good'?'good':'menace']++;S.gems++;playSfx('brrPowerful');
   const gname=S.gems<=6?GEMS[S.gems-1][0]+' gem':'Bonus gem';
   const keep={};PERM.forEach(k=>{if(S.bought[k])keep[k]=true});
-  S.eaten=0;S.run=0;S.owned={};S.bought=keep;S.ult=0;S.buffs=[];S.snap=false;S.tok+=25;upsKey='';
+  const autoLv=own('auto'); // comfort, not economy: Auto-Chomp survives every gem
+  S.eaten=0;S.run=0;S.owned=autoLv?{auto:autoLv}:{};S.bought=keep;S.ult=0;S.buffs=[];S.snap=false;S.tok+=25;upsKey='';autoAcc=0;
   $('paths').hidden=true;$('prestigeBtn').hidden=false;jingle();
   log(S.gems===6?'All six gems. Sharknos is complete. The Snap is ready.':`${gname} claimed (+25 tokens). Jeff is a little more purple now.`);toast(S.gems===6?'SHARKNOS COMPLETE':gname+' claimed');
   if(S.gems===3)log('The water past the reef went quiet. Jeff did not like it.');
@@ -1035,7 +1055,7 @@ function draw(){
   $('ultFill').style.width=S.ult+'%';const rdy=S.ult>=100&&$('spit').hidden;if(rdy&&ultWasReady===false)ultReadyFx();ultWasReady=rdy;$('ultBtn').disabled=!rdy;$('ultBtn').classList.toggle('ready',rdy);
   const mu=$('mUlt');if(mu){$('mFill').style.width=S.ult+'%';mu.classList.toggle('ready',rdy);mu.textContent=rdy?'ULT!':'ULT'}
   document.querySelectorAll('[data-up]').forEach(b=>{const u=UP.find(x=>x.id===b.dataset.up);const maxed=u.max&&own(u.id)>=u.max;const bm=bmult(u.id);const n=own(u.id);
-    b.querySelector('[data-own]').textContent=n;b.querySelector('[data-ds]').textContent=u.ds+(bm>1?` (×${bm})`:'');
+    b.querySelector('[data-own]').textContent=n;b.querySelector('[data-ds]').textContent=u.ds+(u.dyn&&u.dyn()?' · '+u.dyn():'')+(bm>1?` (×${bm})`:'');
     b.querySelector('[data-cost]').textContent=maxed?'Maxed':fmt(cost(u))+' heroes';
     b.disabled=maxed||S.eaten<cost(u);b.classList.toggle('afford',!maxed&&S.eaten>=cost(u));
     b.querySelectorAll('.pips i').forEach((p,i)=>p.classList.toggle('on',n>=TIER_AT[i]))});
@@ -1463,7 +1483,10 @@ function tick(){const now=Date.now();let dt=(now-prev)/1000;prev=now;
     if(ev.t==='loki'){const s=S.eaten*.015*dt;S.eaten-=s;ev.stolen+=s}
     if(t>=ev.end){const msgs={ironman:'Iron Man got away.',cheese:'The cheese rolled away.',custody:'Nobody picked. Jeff stayed put.',hulk:'Hulk got bored and wandered off.',flame:'Your teammate went back to complaining about something else.',loki:`The fake Jeff escaped with ${fmt(ev.stolen)} heroes.`};endEvent(false,msgs[ev.t])}}
   else if(t>=nextEv&&!fight)startEvent();
-  if(!fight){bubT-=dt;if(bubT<=0){spawnBubble();bubT=bubGap()*(0.6+Math.random()*0.8)}}
+  if(!fight){bubT-=dt;if(bubT<=0){spawnBubble();bubT=bubGap()*(0.6+Math.random()*0.8)}
+    // Auto-Chomp. Capped at ten per tick so a tab that slept for an hour can't come back
+    // and dump a burst of ult charge. Boss fights stay hand-played.
+    if(own('auto')){autoAcc=Math.min(autoAcc+autoRate()*dt,10);while(autoAcc>=1){autoAcc-=1;autoChomp()}}}
   if(!document.hidden&&Date.now()-lastAct>20000&&!$('spit').offsetParent){lastAct=Date.now()+25000;playSfx('hungry'+(1+Math.floor(Math.random()*2)));log('Jeff is hungry. Er... er...')}
   achT+=dt;if(achT>1){achT=0;checkAch()}
   draw()}

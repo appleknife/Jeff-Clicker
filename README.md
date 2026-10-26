@@ -7,9 +7,10 @@ An unofficial fan-made clicker game starring Jeff the Land Shark from Marvel Riv
 ## Features
 
 - **Chomp and upgrade:** 10 upgrades, tiered one-time upgrades at 10/25/50/100 owned, plus special unlocks like Chomp Crits, Golden Belly, Fin Radar and Bottomless Tank. Buy ×1, ×10 or max, and hold a row to buy repeatedly.
+- **Auto-Chomp:** up to 10 levels of Jeff tapping for himself, so you can put the phone down and still keep the ult coming. It is deliberately worse than a real tap — 60% of your per-chomp damage, half the ult charge, half a token — so mashing still wins. Boss fights stay hand-played, and it survives the gem reset.
 - **Two counters:** "Total eaten" is a lifetime tally that never goes down; "Heroes to spend" is the balance upgrades and capsules actually drain.
 - **The ult:** charge the meter, hit **IT'S JEFF!**, then choose where to spit the heroes: off the cliff, into spawn, or back on point.
-- **Costume Capsules:** a gacha with all 26 official Jeff costumes, using Marvel Rivals' own rarities — Rare 30%, Epic 52%, Legendary 18%. Pity guarantees a Legendary by pull 60, and every 10-pull includes an Epic or better. Duplicates add stars (max 5) and strengthen that costume's ability.
+- **Costume Capsules:** a gacha with all 26 official Jeff costumes, using Marvel Rivals' own rarities — Rare 30%, Epic 52%, Legendary 18%. Pity guarantees a Legendary by pull 60, and every 10-pull includes an Epic or better. Duplicates add stars (max 5) and strengthen that costume's ability; a dupe on a costume already at five stars feeds the **collection bonus** instead (+1% chomps and per second, permanently). The default costume carries a small +3% perk so a new save never starts at zero.
 - **The Bubble (transmog):** the costume you **wear** and the ability you **slip** are picked separately. Own a Legendary for its +70% perk, then wear the Rare one you actually like the look of. Two buttons — *Set the look* / *Set the ability* — decide what tapping a costume does.
 - **Sharknos gems:** prestige for six gems. Each one turns Jeff more purple and lets you pick Goodest Boy (+50% per second) or Satan's Greatest Soldier (+50% chomps). All six unlock the Snap. Chomp Crits and Fin Radar are mastery upgrades and survive the reset.
 - **Alignment:** every spit and every event nudges Jeff toward menace (up to +40% chomps) or goodest boy (up to +40% per second). It's the third currency: the cliff pays heroes now, spawn refunds 40 ult charge so you can chain, and back-on-point buys alignment and a ×2 buff.
@@ -37,7 +38,7 @@ localStorage can be wiped by clearing site data, and iOS evicts it from sites th
 3. In the repository, open **Settings → Pages**. Under **Build and deployment**, set **Source** to **Deploy from a branch**, choose `main` and `/ (root)`, and save.
 4. After a minute or two, the game is live at `https://YOUR-USERNAME.github.io/Jeff-Clicker/`.
 
-To update later, upload the new files and bump the cache name in `sw.js` (`jeff-clicker-v6` → `jeff-clicker-v7`) so installed copies pick up the change.
+To update later, upload the new files and bump the cache name in `sw.js` (`jeff-clicker-v9` → `jeff-clicker-v10`) so installed copies pick up the change.
 
 ## Run it locally
 
@@ -63,7 +64,7 @@ assets/audio/voice/         Jeff voice lines
 ```
 
 To swap art or sounds, replace a file with one of the same name. Costume art lives in `assets/img/skins/<id>.webp` (512px) with an `-sm.webp` thumbnail beside it; the id is the first column of the `SKINS` table.
-To tune balance, edit the `UP` (upgrades), `SKINS` (costume rarities and abilities) and `ACH` (achievements) tables near the top of the script in `index.html`, and `DIFFS` for Iron Man's flight speeds and catch payouts. Pull rates live in `rollOne()`.
+To tune balance, edit the `UP` (upgrades), `SKINS` (costume rarities and abilities) and `ACH` (achievements) tables near the top of the script in `index.html`, and `DIFFS` for Iron Man's flight speeds and catch payouts. Pull rates live in `rollOne()`. Auto-Chomp's numbers are the `AUTO_DMG`, `AUTO_ULT` and `AUTO_TOK` constants (`v` on the `auto` upgrade is chomps per second, per level).
 
 ## Spoilers: The Deep
 
