@@ -11,7 +11,8 @@ An unofficial fan-made clicker game starring Jeff the Land Shark from Marvel Riv
 - **The ult:** charge the meter, hit **IT'S JEFF!**, then choose where to spit the heroes: off the cliff, into spawn, or back on point.
 - **Costume Capsules:** a gacha with all 26 official Jeff costumes, using Marvel Rivals' own rarities — Rare 30%, Epic 52%, Legendary 18%. Pity guarantees a Legendary by pull 60, and every 10-pull includes an Epic or better. Duplicates add stars (max 5) and strengthen that costume's ability.
 - **The Bubble (transmog):** the costume you **wear** and the ability you **slip** are picked separately. Own a Legendary for its +70% perk, then wear the Rare one you actually like the look of. Two buttons — *Set the look* / *Set the ability* — decide what tapping a costume does.
-- **Sharknos gems:** prestige for six gems. Each one turns Jeff more purple and lets you pick Goodest Boy or Satan's Greatest Soldier. All six unlock the Snap.
+- **Sharknos gems:** prestige for six gems. Each one turns Jeff more purple and lets you pick Goodest Boy (+50% per second) or Satan's Greatest Soldier (+50% chomps). All six unlock the Snap. Chomp Crits and Fin Radar are mastery upgrades and survive the reset.
+- **Alignment:** every spit and every event nudges Jeff toward menace (up to +40% chomps) or goodest boy (up to +40% per second). It's the third currency: the cliff pays heroes now, spawn refunds 40 ult charge so you can chain, and back-on-point buys alignment and a ×2 buff.
 - **Chunky Jeff:** Jeff gets visibly wider as he eats, from Snack Size to Planet Jeff, with a fanfare each time he grows.
 - **Events:** Iron Man flyovers (pick Chill, Normal or Spicy flight speed — slower is easier, faster pays more), the cheese heist, the Deadpool vs. Emma Frost custody battle, Hulk the Hater, teammates flaming you, and a Loki copycat.
 - **Floating bubbles** to pop, **20 achievements** that pay Fish Tokens, offline earnings, and a "Copy brag" button.
@@ -36,7 +37,7 @@ localStorage can be wiped by clearing site data, and iOS evicts it from sites th
 3. In the repository, open **Settings → Pages**. Under **Build and deployment**, set **Source** to **Deploy from a branch**, choose `main` and `/ (root)`, and save.
 4. After a minute or two, the game is live at `https://YOUR-USERNAME.github.io/Jeff-Clicker/`.
 
-To update later, upload the new files and bump the cache name in `sw.js` (`jeff-clicker-v3` → `jeff-clicker-v4`) so installed copies pick up the change.
+To update later, upload the new files and bump the cache name in `sw.js` (`jeff-clicker-v4` → `jeff-clicker-v5`) so installed copies pick up the change.
 
 ## Run it locally
 

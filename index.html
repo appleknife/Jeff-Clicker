@@ -390,8 +390,8 @@ footer p{margin:0;max-width:62ch}
       <div class="spit" id="spit" hidden>
         <p>Your mouth is full of heroes. Where do they go?</p>
         <button class="choice m" data-spit="cliff"><b>Off the cliff</b><span>Huge instant haul. Pure menace.</span></button>
-        <button class="choice m" data-spit="spawn"><b>Into spawn</b><span>×3 everything for 30s.</span></button>
-        <button class="choice g" data-spit="point"><b>Back on point</b><span>Heal the team. ×2 passive for 60s.</span></button>
+        <button class="choice m" data-spit="spawn"><b>Into spawn</b><span>Refund 40 ult charge + ×3 for 20s. Chain it.</span></button>
+        <button class="choice g" data-spit="point"><b>Back on point</b><span>+25 alignment, ×2 passive for 60s.</span></button>
       </div>
       <div class="buffs" id="buffs"></div>
       <div class="artrow">
@@ -472,7 +472,7 @@ footer p{margin:0;max-width:62ch}
     <div class="row2 span2">
       <section class="panel">
         <h2>Sharknos</h2>
-        <p class="small">Fill this run's belly to earn a gem. Each gem resets your heroes and upgrades (costumes and tokens stay), adds +25% to everything and turns Jeff a little more purple. Six gems unlocks the Snap.</p>
+        <p class="small">Fill this run's belly to earn a gem. Each gem resets your heroes and upgrades (costumes, tokens and mastery upgrades stay), adds +25% to everything and turns Jeff a little more purple. Six gems unlocks the Snap.</p>
         <div class="gems" id="gems"></div>
         <div class="prog"><i id="progFill"></i></div>
         <p class="small num" id="progTxt"></p>
@@ -480,11 +480,12 @@ footer p{margin:0;max-width:62ch}
         <button class="btn" id="snapBtn" hidden>SNAP (once per run)</button>
         <div class="paths" id="paths" hidden>
           <button class="choice g" data-path="good"><b>Goodest Boy</b><span>+50% per second, forever.</span></button>
-          <button class="choice m" data-path="menace"><b>Satan's Greatest Soldier</b><span>+50% chomps and ult hauls, forever.</span></button>
+          <button class="choice m" data-path="menace"><b>Satan's Greatest Soldier</b><span>+50% chomps, forever.</span></button>
         </div>
         <div class="align">
           <div class="alignbar"><i id="alignMark"></i></div>
           <div class="alignlbl"><span>Menace</span><span>Goodest boy</span></div>
+          <p class="small num" id="alignVal"></p>
         </div>
       </section>
 
@@ -659,9 +660,16 @@ function skinMult(k){const s=perkSkin(),st=S.skins[s.id]||1;let m=1;
   if(s.k==='all'||s.k===k)m+=s.v*(1+.5*(st-1));
   if(k==='ps'||k==='click')m*=1+.01*Object.keys(S.skins).length;return m}
 function basePs(){return UP.filter(u=>u.kind==='ps').reduce((s,u)=>s+own(u.id)*u.v*bmult(u.id),0)}
-function ps(){return basePs()*gemMult()*(1+.5*S.good)*skinMult('ps')*buffMult('ps')}
-function perClick(){return ((1+own('fish')*bmult('fish'))*gemMult()*(1+.5*S.menace)*skinMult('click')+own('jaws')*.05*ps())*buffMult('click')}
-const ultMult=()=>1+.5*S.menace;
+function ps(){return basePs()*gemMult()*(1+.5*S.good)*skinMult('ps')*buffMult('ps')*alignMult('ps')}
+function perClick(){return ((1+own('fish')*bmult('fish'))*gemMult()*(1+.5*S.menace)*skinMult('click')+own('jaws')*.05*ps())*buffMult('click')*alignMult('click')}
+// These two survive a gem reset: pure feel upgrades, not economy.
+const PERM=['crit','radar'];
+// Alignment: every spit nudges Jeff toward menace (chomps) or goodest boy (per second).
+// Capped at ±40%, and now it is the only thing feeding the bar — but it feeds it well.
+function alignMult(k){const a=S.align;
+  if(a>0&&k==='ps')return 1+.004*Math.min(a,100);
+  if(a<0&&k==='click')return 1+.004*Math.min(-a,100);
+  return 1}
 const evMult=()=>skinMult('event');
 const need=()=>1e6*Math.pow(5,S.gems);
 
@@ -728,11 +736,14 @@ function ultReadyFx(){playSfx('ready');log('Ult ready. "It\'s Jeff!" is waiting.
   $('readyFlash').animate([{transform:'scale(.4)',opacity:0},{transform:'scale(1)',opacity:.95,offset:.35},{transform:'scale(1.25)',opacity:0}],{duration:1100,easing:'ease-out'})}
 let ultAudio;function playUlt(){if(S.muted)return;try{ultAudio=ultAudio||new Audio(ULT_SFX);ultAudio.currentTime=0;ultAudio.volume=Math.min(1,.9*S.vol*S.voVol);if(ultAudio.volume<=0)return;const p=ultAudio.play();if(p&&p.catch)p.catch(()=>blip(120,'sawtooth',.4,.06))}catch(e){blip(120,'sawtooth',.4,.06)}}
 $('ultBtn').onclick=()=>{if(S.ult<100)return;$('spit').hidden=false;$('ultBtn').disabled=true;playUlt();if(S.art==='cuddly-fuzzlefin')setTimeout(()=>playSfx('brrPowerful'),1600);log('NOM NOM NOM. Jeff dives into the whirlpool...')};
-$('spit').addEventListener('click',e=>{const b=e.target.closest('[data-spit]');if(!b)return;const k=b.dataset.spit;const m=ultMult();playSfx(k==='point'?'ally':'end');
-  if(k==='cliff'){const n=(ps()*90+perClick()*120+500)*m;gain(n);S.st.wipes++;nudge(-10);log(`Team wipe! Six heroes spat off the map. +${fmt(n)}`);toast('TEAM WIPE');}
-  if(k==='spawn'){addBuff('Spawn camping','all',3,30);nudge(-6);log('Dropped the whole team in their own spawn. ×3 for 30s.')}
-  if(k==='point'){const n=(ps()*30+200)*m;gain(n);addBuff('Healed the team','ps',2,60);nudge(12);healBurst();log(`Spat everyone back on point, fully healed. +${fmt(n)}`)}
-  giveTok(2);S.ult=0;S.st.ults++;$('spit').hidden=true;jingle();draw()});
+$('spit').addEventListener('click',e=>{const b=e.target.closest('[data-spit]');if(!b)return;const k=b.dataset.spit;playSfx(k==='point'?'ally':'end');let refund=0;
+  if(k==='cliff'){const n=ps()*90+perClick()*120+500;gain(n);S.st.wipes++;nudge(-8);
+    log(`Team wipe! Six heroes spat off the map. +${fmt(n)}`);toast('TEAM WIPE');}
+  if(k==='spawn'){const n=ps()*25+perClick()*25+300;gain(n);refund=40;addBuff('Spawn camping','all',3,20);nudge(-4);
+    log(`Dropped the team in their own spawn: +${fmt(n)} heroes and 40% of the ult back.`);toast('SPAWN CAMPED')}
+  if(k==='point'){const n=ps()*40+perClick()*15+250;gain(n);addBuff('Healed the team','ps',2,60);nudge(25);healBurst();
+    log(`Spat everyone back on point. +${fmt(n)} heroes, ×2 for 60s, and the goodest boy is pleased.`);toast('TEAM HEALED')}
+  giveTok(2);S.ult=refund;S.st.ults++;$('spit').hidden=true;jingle();draw()});
 
 $('ultIcon').src=ULT_ICON;
 ['logo','readyFlash'].forEach(id=>{const el=$(id);el.style.webkitMaskImage=`url(${JEFF_MARK})`;el.style.maskImage=`url(${JEFF_MARK})`});
@@ -759,7 +770,7 @@ $('shop').addEventListener('click',e=>{const b=e.target.closest('[data-up]');if(
 let upsKey=null;
 function renderUps(){const av=ONE.filter(o=>!S.bought[o.id]&&o.need()).sort((a,b)=>a.cost-b.cost).slice(0,8);
   const key=av.map(o=>o.id).join();if(key!==upsKey){upsKey=key;
-    $('ups').innerHTML=av.map(o=>`<button class="up1" data-one="${o.id}"><b>${esc(o.nm)}</b><span>${esc(o.ds)}</span><em class="num">${fmt(o.cost)} heroes</em></button>`).join('');
+    $('ups').innerHTML=av.map(o=>`<button class="up1" data-one="${o.id}"><b>${esc(o.nm)}</b><span>${esc(o.ds)}</span>${PERM.includes(o.id)?'<span style="color:var(--good)">stays through gems</span>':''}<em class="num">${fmt(o.cost)} heroes</em></button>`).join('');
     const teaser=av.length?[]:ONE.filter(o=>!S.bought[o.id]&&!o.need()).sort((a,b)=>a.cost-b.cost).slice(0,2);
     $('upsTeaser').innerHTML=teaser.map(o=>`<div class="lock"><b>${esc(o.nm)}</b><span>${esc(o.req||'Locked')} · ${fmt(o.cost)} heroes</span></div>`).join('');
     $('upsHead').textContent=av.length?'One-time upgrades':'One-time upgrades — nothing unlocked yet'}
@@ -813,10 +824,11 @@ $('prestigeBtn').onclick=()=>{if(S.run<need())return;$('paths').hidden=false;$('
 $('paths').addEventListener('click',e=>{const b=e.target.closest('[data-path]');if(!b)return;
   S[b.dataset.path==='good'?'good':'menace']++;S.gems++;playSfx('brrPowerful');
   const gname=S.gems<=6?GEMS[S.gems-1][0]+' gem':'Bonus gem';
-  S.eaten=0;S.run=0;S.owned={};S.bought={};S.ult=0;S.buffs=[];S.snap=false;S.tok+=25;upsKey='';
+  const keep={};PERM.forEach(k=>{if(S.bought[k])keep[k]=true});
+  S.eaten=0;S.run=0;S.owned={};S.bought=keep;S.ult=0;S.buffs=[];S.snap=false;S.tok+=25;upsKey='';
   $('paths').hidden=true;$('prestigeBtn').hidden=false;jingle();
   log(S.gems===6?'All six gems. Sharknos is complete. The Snap is ready.':`${gname} claimed (+25 tokens). Jeff is a little more purple now.`);toast(S.gems===6?'SHARKNOS COMPLETE':gname+' claimed');draw()});
-$('snapBtn').onclick=()=>{if(S.gems<6||S.snap)return;const n=(ps()*600+perClick()*600+1e6)*ultMult();gain(n);S.snap=true;S.st.wipes+=6;log(`SNAP. Half the server got swallowed. +${fmt(n)}`);toast('SNAP');jingle();draw()};
+$('snapBtn').onclick=()=>{if(S.gems<6||S.snap)return;const n=ps()*600+perClick()*600+1e6;gain(n);S.snap=true;S.st.wipes+=6;log(`SNAP. Half the server got swallowed. +${fmt(n)}`);toast('SNAP');jingle();draw()};
 let gemKey='';function buildGems(){$('gems').innerHTML=GEMS.map((g,i)=>`<div class="gem ${S.gems>i?'on':''}" style="--c:${g[1]}" title="${g[0]} gem"><span>${S.gems>i?g[0][0]:''}</span></div>`).join('')}
 
 /* ---------- achievements ---------- */
@@ -907,6 +919,8 @@ function draw(){
   const al=S.align,ap=$('alignPill');const neutral=Math.abs(al)<=20;ap.hidden=neutral;
   ap.textContent=al>20?'Goodest Boy':"Satan's Greatest Soldier";ap.className='pill '+(al>20?'good':'menace');
   $('alignMark').style.left=(50+al/2)+'%';
+  const av=Math.round(Math.abs(al)*.4);
+  $('alignVal').textContent=al>0?`Goodest: +${av}% per second`:al<0?`Menace: +${av}% chomps`:'Neutral: spit one way or the other to earn a bonus';
   const nd=need(),pr=Math.min(1,S.run/nd);$('progFill').style.width=(pr*100)+'%';
   $('progTxt').textContent=`This run: ${fmt(S.run)} / ${fmt(nd)} heroes`+(S.good||S.menace?`  ·  Goodest Boy ×${S.good}, Menace ×${S.menace}`:'');
   $('prestigeBtn').disabled=S.run<nd;$('prestigeBtn').textContent=S.gems<6?`Claim ${GEMS[S.gems][0]} gem`:'Claim bonus gem';
