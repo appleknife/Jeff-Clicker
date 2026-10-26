@@ -1,0 +1,748 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jeff Clicker</title>
+<meta name="description" content="Unofficial Jeff the Land Shark fan clicker game. Chomp heroes, pull costume capsules, collect Sharknos gems.">
+<link rel="icon" type="image/png" href="assets/img/ult-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Nunito:wght@500;700;800;900&display=swap">
+<style>
+html{color-scheme:light}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+<style>
+/* Layout: poolside arcade. Chomp stage + ult on the left; tabbed side panel (Upgrades / Capsules / Wardrobe) on the right; Sharknos gems and record below. */
+:root{
+  --bg:#e4f2ef; --panel:#fbfefd; --panel2:#eef8f6; --ink:#0f2f37; --muted:#4d6c72;
+  --line:#c8e2dd; --water:#1f6f86; --water2:#2f95ad; --accent:#f2604c; --sun:#f7bd2e;
+  --good:#1f9e63; --menace:#7a3fe0; --glow:#ffffff;
+  --rC:#7b8f94; --rR:#2f8fd8; --rE:#a04de0; --rL:#f0a020;
+  --display:"Bagel Fat One","Arial Rounded MT Bold","Trebuchet MS",system-ui,sans-serif;
+  --body:"Nunito",ui-rounded,"Segoe UI",system-ui,sans-serif;
+  --r:18px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#08171e; --panel:#0f252d; --panel2:#132e37; --ink:#e3f3f0; --muted:#8eb0b4;
+  --line:#21434c; --water:#1b5566; --water2:#3aa7c0; --accent:#ff7663; --sun:#ffcf55;
+  --good:#3fcf87; --menace:#a57dff; --glow:#163a45;
+  --rC:#93a8ad; --rR:#5aacef; --rE:#c084fc; --rL:#ffbe45; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#08171e; --panel:#0f252d; --panel2:#132e37; --ink:#e3f3f0; --muted:#8eb0b4;
+  --line:#21434c; --water:#1b5566; --water2:#3aa7c0; --accent:#ff7663; --sun:#ffcf55;
+  --good:#3fcf87; --menace:#a57dff; --glow:#163a45;
+  --rC:#93a8ad; --rR:#5aacef; --rE:#c084fc; --rL:#ffbe45; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;
+  background-image:radial-gradient(1100px 500px at 15% -10%,var(--glow),transparent 60%);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 28px}
+.wrap{max-width:1160px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+h1,h2,h3{font-family:var(--display);font-weight:400;margin:0;text-wrap:balance;letter-spacing:.01em}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,label:focus-within{outline:3px solid var(--sun);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px}
+.brand h1{font-size:clamp(30px,6vw,46px);line-height:1;color:var(--water)}
+.brand h1 span{color:var(--accent)}
+.brand p{margin:4px 0 0;color:var(--muted);font-weight:700}
+.counts{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-end}
+.count .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:800}
+.count .val{font-family:var(--display);font-size:22px;line-height:1.1}
+.count.big .val{font-size:clamp(30px,5vw,40px);color:var(--accent)}
+.count.tok .val{color:var(--rL)}
+
+.grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:16px}
+.panel{background:var(--panel);border:1.5px solid var(--line);border-radius:var(--r);padding:16px;min-width:0}
+.panel h2{font-size:20px;margin-bottom:10px}
+.panel h3{font-size:15px;margin:2px 0 8px;color:var(--muted)}
+.span2{grid-column:1/-1}
+.row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media (max-width:820px){.grid,.row2{grid-template-columns:minmax(0,1fr)}}
+
+/* stage */
+.stage{position:relative;overflow:hidden;border-radius:14px;min-height:340px;display:grid;place-items:center;
+  background:radial-gradient(circle at 50% 62%,var(--water2) 0,var(--water) 58%,var(--water) 100%);padding:52px 12px 46px}
+.stage::after{content:"";position:absolute;inset:auto 0 0;height:40px;opacity:.35;pointer-events:none;
+  background:repeating-radial-gradient(circle at 50% 140%,transparent 0 10px,var(--panel) 10px 12px)}
+.jeff{--ring:transparent;width:min(62vw,250px);aspect-ratio:1;border-radius:50%;border:0;background:transparent;padding:0;position:relative;z-index:1;-webkit-tap-highlight-color:transparent;touch-action:manipulation;
+  box-shadow:0 0 0 5px var(--ring),0 0 34px 4px var(--ring);transition:box-shadow .4s}
+.art{width:100%;height:100%;display:grid;place-items:center;transform-origin:50% 70%;transition:transform .35s cubic-bezier(.3,1.6,.5,1),filter .6s}
+.art img{width:100%;height:100%;object-fit:contain;user-select:none;-webkit-user-drag:none;pointer-events:none;filter:drop-shadow(0 8px 0 rgba(0,0,0,.18))}
+.ph{width:100%;height:100%;border-radius:50%;border:4px dashed rgba(255,255,255,.75);display:grid;place-content:center;text-align:center;gap:2px;color:#fff;background:rgba(255,255,255,.08)}
+.ph b{font-family:var(--display);font-weight:400;font-size:44px;line-height:1}
+.ph small{font-weight:800;font-size:12px;opacity:.9;max-width:150px;margin:0 auto}
+.acc{position:absolute;right:2%;top:-2%;z-index:2;font-size:38px;line-height:1;color:var(--sun);text-shadow:0 3px 0 rgba(0,0,0,.25);pointer-events:none;transform:rotate(14deg)}
+.stagebadge{position:absolute;left:12px;bottom:12px;z-index:2;display:flex;gap:6px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:900;letter-spacing:.04em;background:var(--panel);color:var(--ink);border:1.5px solid var(--line)}
+.pill.menace{background:var(--menace);color:#fff;border-color:transparent}
+.pill.good{background:var(--good);color:#fff;border-color:transparent}
+.bub{position:absolute;bottom:-90px;z-index:3;border:0;padding:0;background:transparent;width:var(--sz,56px);aspect-ratio:1;border-radius:50%;cursor:pointer;
+  animation:rise var(--dur,8s) linear forwards,wob 2.2s ease-in-out infinite alternate;-webkit-tap-highlight-color:transparent}
+.bub img{width:100%;height:100%;pointer-events:none;opacity:.92}
+.bub.popped{animation:popb .25s ease-out forwards;pointer-events:none}
+@keyframes rise{to{bottom:calc(100% + 20px)}}
+@keyframes wob{from{margin-left:-10px}to{margin-left:10px}}
+@keyframes popb{to{transform:scale(1.6);opacity:0}}
+.burst{position:absolute;left:50%;top:50%;width:48px;height:48px;margin:-24px 0 0 -24px;z-index:3;pointer-events:none}
+.ico{width:22px;height:22px;vertical-align:-5px;margin-right:4px}
+.logo{width:54px;height:54px;flex:none;background:var(--water);-webkit-mask:center/contain no-repeat;mask:center/contain no-repeat}
+.brandrow{display:flex;gap:12px;align-items:center}
+.ulticon{width:30px;height:30px;filter:grayscale(1);opacity:.55;transition:filter .3s,opacity .3s}
+.ultbtn{display:inline-flex;align-items:center;gap:8px}
+.ultbtn.ready .ulticon{filter:none;opacity:1}
+.readyflash{position:absolute;left:50%;top:50%;width:220px;height:220px;margin:-110px 0 0 -110px;z-index:4;pointer-events:none;background:var(--sun);-webkit-mask:center/contain no-repeat;mask:center/contain no-repeat;opacity:0}
+.float{position:absolute;z-index:3;pointer-events:none;font-family:var(--display);font-size:20px;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.25);animation:up .9s ease-out forwards}
+.float.meow{color:var(--sun);font-size:26px}
+.float.crit{color:var(--sun);font-size:30px}
+@keyframes up{to{transform:translateY(-70px);opacity:0}}
+
+.eventbar{position:absolute;inset:10px 10px auto;z-index:4;background:var(--panel);color:var(--ink);border-radius:12px;padding:10px 12px;border:2px solid var(--sun);display:flex;flex-direction:column;gap:8px;box-shadow:0 6px 0 rgba(0,0,0,.12)}
+.eventbar p{margin:0;font-weight:800}
+.eventbar .acts{display:flex;gap:8px;flex-wrap:wrap}
+.timer{height:5px;border-radius:9px;background:var(--line);overflow:hidden}
+.timer i{display:block;height:100%;background:var(--sun);width:100%}
+.btn{border:0;border-radius:11px;padding:8px 14px;font-weight:900;background:var(--ink);color:var(--panel)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.alt{background:var(--panel2);color:var(--ink);border:1.5px solid var(--line)}
+.btn.hot{background:var(--accent);color:#fff}
+.target{position:absolute;z-index:5;border:0;border-radius:999px;font-family:var(--display);font-size:16px;padding:8px 14px;box-shadow:0 5px 0 rgba(0,0,0,.2)}
+.flyer{background:#d8433a;color:#ffd75e;left:-30%;transition:left 6s linear}
+.flyer.go{left:110%}
+.cheese{background:var(--sun);color:#5b3b00;animation:pulse .7s ease-in-out infinite alternate}
+@keyframes pulse{to{transform:scale(1.12)}}
+
+.ult{display:flex;gap:12px;align-items:center;margin-top:14px}
+.meter{flex:1;height:18px;border-radius:999px;background:var(--panel2);border:1.5px solid var(--line);overflow:hidden}
+.meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--water2),var(--water));transition:width .12s linear}
+.ultbtn{border:0;border-radius:14px;padding:10px 16px;font-family:var(--display);font-size:18px;background:var(--panel2);color:var(--muted);white-space:nowrap}
+.ultbtn.ready{background:var(--accent);color:#fff;animation:pulse .6s ease-in-out infinite alternate}
+.spit{margin-top:12px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+@media (max-width:520px){.spit{grid-template-columns:minmax(0,1fr)}}
+.spit p{grid-column:1/-1;margin:0;font-weight:800}
+.choice{border:1.5px solid var(--line);background:var(--panel2);border-radius:12px;padding:10px;text-align:left;display:flex;flex-direction:column;gap:2px}
+.choice b{font-size:15px}
+.choice span{font-size:12px;color:var(--muted);font-weight:700}
+.choice.m{border-color:var(--menace)} .choice.g{border-color:var(--good)}
+.buffs{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;min-height:26px}
+.artrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px;font-size:13px;color:var(--muted);font-weight:700}
+.artrow label{cursor:pointer}
+.artrow input{position:absolute;opacity:0;width:1px;height:1px}
+
+/* tabs */
+.tabs{display:flex;gap:4px;background:var(--panel2);border:1.5px solid var(--line);border-radius:14px;padding:4px;margin-bottom:12px}
+.tab{flex:1;border:0;background:transparent;border-radius:10px;padding:8px 6px;font-weight:900;color:var(--muted)}
+.tab[aria-selected="true"]{background:var(--panel);color:var(--ink);box-shadow:0 2px 0 var(--line)}
+.tab .dot{display:inline-block;min-width:18px;padding:0 5px;border-radius:9px;background:var(--accent);color:#fff;font-size:11px;margin-left:4px}
+
+/* shop */
+.shop{display:flex;flex-direction:column;gap:8px}
+.ups{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-bottom:10px}
+.up1{border:1.5px solid var(--sun);background:var(--panel2);border-radius:11px;padding:7px 9px;text-align:left;display:flex;flex-direction:column;gap:1px}
+.up1 b{font-size:13px}
+.up1 span{font-size:11px;color:var(--muted);font-weight:700}
+.up1 em{font-style:normal;font-size:11px;font-weight:900;color:var(--accent)}
+.up1:disabled{opacity:.5;cursor:not-allowed}
+.hint{font-size:12px;color:var(--muted);font-weight:700;margin:0 0 10px}
+.item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;text-align:left;border:1.5px solid var(--line);background:var(--panel2);border-radius:13px;padding:10px 12px;transition:transform .08s}
+.item:active:not(:disabled){transform:scale(.98)}
+.item:disabled{opacity:.5;cursor:not-allowed}
+.item .nm{font-weight:900}
+.item .ds{font-size:12px;color:var(--muted);font-weight:700;grid-column:1}
+.item .own{font-family:var(--display);font-size:22px;grid-row:1/3;grid-column:2;align-self:center;color:var(--water2)}
+.item .cost{font-size:12px;font-weight:900;color:var(--accent)}
+
+/* capsules */
+.machine{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.dome{width:110px;height:110px;border-radius:50% 50% 14px 14px;flex:none;position:relative;overflow:hidden;
+  background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.6),transparent 30%),var(--water2);border:4px solid var(--ink)}
+.dome i{position:absolute;width:26px;height:26px;border-radius:50%;border:2px solid rgba(0,0,0,.2)}
+.dome.shake{animation:shake .45s ease-in-out}
+@keyframes shake{25%{transform:rotate(-6deg)}50%{transform:rotate(5deg)}75%{transform:rotate(-3deg)}}
+.rates{font-size:12px;font-weight:800;color:var(--muted);margin:0}
+.rates b{color:var(--ink)}
+.pulls{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.results{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:6px;min-height:20px}
+.card{--rc:var(--rC);border:2px solid var(--rc);border-radius:12px;padding:8px;background:var(--panel2);display:flex;flex-direction:column;gap:2px;position:relative;text-align:left;min-width:0}
+.card .g{font-size:26px;line-height:1.1;color:var(--rc)}
+.card b{font-size:12px;line-height:1.2}
+.card small{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:var(--rc)}
+.card .tag{position:absolute;top:6px;right:6px;font-size:10px;font-weight:900;background:var(--accent);color:#fff;border-radius:6px;padding:0 5px}
+.card.R{--rc:var(--rR)} .card.E{--rc:var(--rE)} .card.L{--rc:var(--rL);background:linear-gradient(135deg,var(--panel2),color-mix(in srgb,var(--rL) 22%,var(--panel2)))}
+.results .card{animation:pop .35s both}
+@keyframes pop{from{transform:scale(.6);opacity:0}}
+.card.locked{opacity:.55;border-style:dashed}
+.card.eq{box-shadow:0 0 0 3px var(--accent)}
+.wardrobe{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:6px}
+.wardrobe .card{cursor:pointer}
+.wardrobe .card span{font-size:11px;color:var(--muted);font-weight:700}
+.stars{font-size:11px;color:var(--rL);letter-spacing:1px}
+.equipped{display:flex;gap:12px;align-items:center;background:var(--panel2);border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:10px}
+.equipped .g{font-size:32px}
+.equipped p{margin:0;font-size:13px;font-weight:700;color:var(--muted)}
+.equipped strong{display:block;color:var(--ink);font-size:15px}
+
+/* sharknos */
+.gems{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 10px}
+.gem{width:34px;height:34px;border-radius:9px;transform:rotate(45deg);border:2px dashed var(--line);display:grid;place-items:center}
+.gem.on{border:0;background:var(--c);box-shadow:0 0 0 3px var(--panel),0 0 14px var(--c)}
+.gem span{transform:rotate(-45deg);font-size:10px;font-weight:900;color:#fff}
+.prog{height:10px;border-radius:9px;background:var(--panel2);border:1.5px solid var(--line);overflow:hidden;margin:6px 0}
+.prog i{display:block;height:100%;background:var(--menace);width:0}
+.small{font-size:13px;color:var(--muted);font-weight:700;margin:4px 0}
+.paths{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.align{margin-top:14px}
+.alignbar{position:relative;height:12px;border-radius:9px;background:linear-gradient(90deg,var(--menace),var(--line) 50%,var(--good))}
+.alignbar i{position:absolute;top:-4px;width:6px;height:20px;border-radius:4px;background:var(--ink);transform:translateX(-50%);left:50%;transition:left .3s}
+.alignlbl{display:flex;justify-content:space-between;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-top:6px}
+
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px;margin:0}
+.stats div{display:flex;justify-content:space-between;gap:8px;border-bottom:1px dashed var(--line);padding:4px 0}
+.stats dt{color:var(--muted);font-weight:700;font-size:13px}
+.stats dd{margin:0;font-weight:900}
+.achs{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.ach{font-size:11px;font-weight:900;border-radius:8px;padding:3px 8px;border:1.5px dashed var(--line);color:var(--muted)}
+.ach.on{border-style:solid;border-color:var(--sun);color:var(--ink);background:color-mix(in srgb,var(--sun) 18%,var(--panel))}
+.share{margin-top:12px;background:var(--panel2);border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;font-weight:700;font-size:13px;user-select:all}
+.log{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:700;color:var(--muted)}
+.log li:first-child{color:var(--ink)}
+footer{display:flex;flex-wrap:wrap;gap:10px 18px;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);font-weight:700}
+footer p{margin:0;max-width:62ch}
+.soundbar{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:flex-end;background:var(--panel);border:1.5px solid var(--line);border-radius:14px;padding:6px 6px 6px 14px}
+.soundbar .btn{padding:6px 12px}
+.vol{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:var(--muted)}
+.vol input{width:120px;max-width:32vw;accent-color:var(--accent)}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--panel);padding:10px 16px;border-radius:12px;font-weight:800;z-index:20;max-width:calc(100% - 32px);text-align:center}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="brandrow"><div class="logo" id="logo" aria-hidden="true"></div><h1>Jeff <span>Clicker</span></h1></div>
+      <p>An unofficial Jeff fan game. Chomp heroes, pull costumes, spit teams off cliffs.</p>
+    </div>
+    <div class="counts">
+      <div class="count big"><div class="lbl">Heroes eaten</div><div class="val num" id="cEaten">0</div></div>
+      <div class="count"><div class="lbl">Per second</div><div class="val num" id="cPs">0</div></div>
+      <div class="count"><div class="lbl">Per chomp</div><div class="val num" id="cClick">1</div></div>
+      <div class="count tok"><div class="lbl">Fish tokens</div><div class="val num" id="cTok">0</div></div>
+    </div>
+  </header>
+  <div class="soundbar" role="group" aria-label="Sound settings">
+      <label class="vol" for="volAll">Volume <input type="range" id="volAll" min="0" max="100" step="5"></label>
+      <label class="vol" for="volVo">Jeff voice <input type="range" id="volVo" min="0" max="100" step="5"></label>
+      <label class="vol" for="volMus">Music <input type="range" id="volMus" min="0" max="100" step="5"></label>
+      <button class="btn alt" id="musicBtn">Music: off</button>
+      <button class="btn alt" id="muteBtn">Sound: on</button>
+  </div>
+
+  <main class="grid">
+    <section class="panel">
+      <div class="stage" id="stage">
+        <div class="eventbar" id="eventBar" hidden></div>
+        <div class="readyflash" id="readyFlash"></div>
+        <button class="jeff" id="jeff" aria-label="Chomp a hero">
+          <div class="art" id="art">
+            <img id="artImg" alt="Jeff">
+            <div class="ph" id="artPh" hidden><b>NOM</b><small>Tap to chomp. Add your own Jeff art below.</small></div>
+          </div>
+          <span class="acc" id="acc"></span>
+        </button>
+        <div class="stagebadge"><span class="pill" id="stageName">Snack Size</span><span class="pill" id="skinPill"></span><span class="pill" id="alignPill">Just a Little Guy</span></div>
+      </div>
+
+      <div class="ult">
+        <div class="meter" aria-label="Ult charge"><i id="ultFill"></i></div>
+        <button class="ultbtn" id="ultBtn" disabled><img class="ulticon" id="ultIcon" alt="">IT'S JEFF!</button>
+      </div>
+      <div class="spit" id="spit" hidden>
+        <p>Your mouth is full of heroes. Where do they go?</p>
+        <button class="choice m" data-spit="cliff"><b>Off the cliff</b><span>Huge instant haul. Pure menace.</span></button>
+        <button class="choice m" data-spit="spawn"><b>Into spawn</b><span>×3 everything for 30s.</span></button>
+        <button class="choice g" data-spit="point"><b>Back on point</b><span>Heal the team. ×2 passive for 60s.</span></button>
+      </div>
+      <div class="buffs" id="buffs"></div>
+      <div class="artrow">
+        <label class="btn alt" for="artIn">Use your own art<input type="file" id="artIn" accept="image/*"></label>
+        <button class="btn alt" id="artClear" hidden>Back to default Jeff</button>
+        <span>Custom art stays in this browser. Costumes tint Jeff and he gets chunkier as he eats.</span>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" aria-selected="true" data-tab="shop" id="tab-shop">Upgrades</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="caps" id="tab-caps">Capsules<span class="dot" id="capDot" hidden>!</span></button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="ward" id="tab-ward">Wardrobe</button>
+      </div>
+
+      <div data-pane="shop">
+        <h3>One-time upgrades</h3>
+        <div class="ups" id="ups"></div>
+        <p class="hint" id="upsHint" hidden>More unlock as you buy 10, 25, 50 and 100 of each upgrade.</p>
+        <h3>Upgrades</h3>
+        <div class="shop" id="shop"></div>
+      </div>
+
+      <div data-pane="caps" hidden>
+        <div class="machine">
+          <div class="dome" id="dome"></div>
+          <div style="flex:1;min-width:180px">
+            <h2 style="margin-bottom:4px">Costume Capsules</h2>
+            <p class="rates">Common <b>58%</b> · Rare <b>28%</b> · Epic <b>11.5%</b> · Legendary <b>2.5%</b></p>
+            <p class="rates num" id="pityTxt"></p>
+            <p class="rates">Every 10-pull includes an Epic or better. Duplicates add a star (max 5) and power up the perk.</p>
+          </div>
+        </div>
+        <div class="pulls">
+          <button class="btn hot" id="pull1">Pull ×1 · 10 tokens</button>
+          <button class="btn hot" id="pull10">Pull ×10 · 90 tokens</button>
+          <button class="btn alt" id="buyTok"></button>
+        </div>
+        <div class="results" id="results"></div>
+        <p class="hint" style="margin-top:10px">Earn tokens by chomping (1 per 50), using your ult, clearing events, claiming gems and unlocking achievements.</p>
+      </div>
+
+      <div data-pane="ward" hidden>
+        <div class="equipped" id="equipped"></div>
+        <p class="hint num" id="colTxt"></p>
+        <div class="wardrobe" id="wardrobe"></div>
+      </div>
+    </aside>
+
+    <div class="row2 span2">
+      <section class="panel">
+        <h2>Sharknos</h2>
+        <p class="small">Fill this run's belly to earn a gem. Each gem resets your heroes and upgrades (costumes and tokens stay), adds +25% to everything and turns Jeff a little more purple. Six gems unlocks the Snap.</p>
+        <div class="gems" id="gems"></div>
+        <div class="prog"><i id="progFill"></i></div>
+        <p class="small num" id="progTxt"></p>
+        <button class="btn hot" id="prestigeBtn" disabled>Claim gem</button>
+        <button class="btn" id="snapBtn" hidden>SNAP (once per run)</button>
+        <div class="paths" id="paths" hidden>
+          <button class="choice g" data-path="good"><b>Goodest Boy</b><span>+50% per second, forever.</span></button>
+          <button class="choice m" data-path="menace"><b>Satan's Greatest Soldier</b><span>+50% chomps and ult hauls, forever.</span></button>
+        </div>
+        <div class="align">
+          <div class="alignbar"><i id="alignMark"></i></div>
+          <div class="alignlbl"><span>Menace</span><span>Goodest boy</span></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Jeff's record</h2>
+        <dl class="stats">
+          <div><dt>Lifetime eaten</dt><dd class="num" id="sLife">0</dd></div>
+          <div><dt>Team wipes</dt><dd class="num" id="sWipes">0</dd></div>
+          <div><dt>Teammates swallowed</dt><dd class="num" id="sMates">0</dd></div>
+          <div><dt>Ults used</dt><dd class="num" id="sUlts">0</dd></div>
+          <div><dt>Events cleared</dt><dd class="num" id="sEvents">0</dd></div>
+          <div><dt>Capsules pulled</dt><dd class="num" id="sPulls">0</dd></div>
+          <div><dt>Bubbles popped</dt><dd class="num" id="sPops">0</dd></div>
+        </dl>
+        <h3 style="margin-top:12px" class="num" id="achTitle">Achievements</h3>
+        <div class="achs" id="achs"></div>
+        <div class="share" id="shareTxt"></div>
+        <div class="artrow"><button class="btn" id="copyBtn">Copy brag</button></div>
+        <ul class="log" id="log"></ul>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <p>Unofficial fan game, made for fun and free to play. No real money, ever. Jeff the Land Shark and Marvel Rivals belong to Marvel and NetEase. Not affiliated with or endorsed by either.</p>
+    <div class="artrow" style="margin:0">
+      <button class="btn alt" id="resetBtn">Reset save</button>
+    </div>
+  </footer>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const KEY='nomnom_save_v1', ART='nomnom_art_v1';
+const DEFAULT_ART='assets/img/jeff.png';
+const BUBBLE='assets/img/bubble.png';
+const ULT_ICON='assets/img/ult-icon.png';
+const JEFF_MARK='assets/img/jeff-mark.png';
+const VO={brrCocky:'assets/audio/voice/brr-cocky.mp3',brrExcited:'assets/audio/voice/brr-excited.mp3',brrPowerful:'assets/audio/voice/brr-powerful.mp3',celebratory:'assets/audio/voice/celebratory.mp3',chomp1:'assets/audio/voice/chomp1.mp3',chomp2:'assets/audio/voice/chomp2.mp3',chomp3:'assets/audio/voice/chomp3.mp3',chomp4:'assets/audio/voice/chomp4.mp3',chomp5:'assets/audio/voice/chomp5.mp3',disappointed:'assets/audio/voice/disappointed.mp3',dun:'assets/audio/voice/dun.mp3',enthusiastic:'assets/audio/voice/enthusiastic.mp3',hungry1:'assets/audio/voice/hungry1.mp3',hungry2:'assets/audio/voice/hungry2.mp3',mocking:'assets/audio/voice/mocking.mp3',sad:'assets/audio/voice/sad.mp3',startling:'assets/audio/voice/startling.mp3',supportive:'assets/audio/voice/supportive.mp3',urgent:'assets/audio/voice/urgent.mp3'};
+const SFX={ready:'assets/audio/ult-ready.mp3',ally:'assets/audio/ult-ally.mp3',end:'assets/audio/ult-end.mp3'};
+const THEME='assets/audio/theme-nom-nom-its-jeff.mp3';
+const ULT_SFX='assets/audio/its-jeff.mp3';
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- data ---------- */
+const UP=[
+  {id:'fish',  nm:'Fish Snack',         ds:'+1 per chomp',                base:15,     g:1.15, kind:'click', v:1},
+  {id:'bubble',nm:'Healing Bubble',     ds:'+1 per second',               base:100,    g:1.15, kind:'ps', v:1},
+  {id:'dig',   nm:'Hide and Seek',      ds:'+8 per second',               base:1100,   g:1.15, kind:'ps', v:8},
+  {id:'jaws',  nm:'Bigger Jaws',        ds:'Chomps add 5% of per-second', base:3000,   g:1.6,  kind:'jaws'},
+  {id:'whirl', nm:'Deeper Whirlpool',   ds:'Ult charges 20% faster',      base:2500,   g:2,    kind:'whirl', max:10},
+  {id:'splash',nm:'Joyful Splash',      ds:'+47 per second',              base:12000,  g:1.15, kind:'ps', v:47},
+  {id:'teamup',nm:'Team-Up Combo',      ds:'+260 per second',             base:130000, g:1.15, kind:'ps', v:260},
+  {id:'lobby', nm:'Lobby Full of Jeffs',ds:'+1,400 per second',           base:1.4e6,  g:1.15, kind:'ps', v:1400},
+  {id:'mcu',   nm:'Movie Deal',         ds:'+7,800 per second',           base:2e7,    g:1.15, kind:'ps', v:7800},
+  {id:'merch', nm:'Plushie Empire',     ds:'+44,000 per second',          base:3.3e8,  g:1.15, kind:'ps', v:44000},
+];
+const TIER_AT=[10,25,50,100], TIER_COST=[20,150,1500,20000], TIER_NM=['Extra','Super','Mega','Ultra'];
+const ONE=[];
+UP.filter(u=>u.kind==='ps'||u.kind==='click').forEach(u=>TIER_AT.forEach((t,i)=>ONE.push({
+  id:`${u.id}_t${i}`,nm:`${TIER_NM[i]} ${u.nm}`,ds:`${u.nm} ×2`,cost:u.base*TIER_COST[i],need:()=>own(u.id)>=t,bld:u.id})));
+ONE.push(
+  {id:'crit', nm:'Chomp Crits',      ds:'5% of chomps hit ×10',              cost:5000,   need:()=>S.st.clicks>=200},
+  {id:'belly',nm:'Golden Belly',     ds:'A token every 25 chomps',           cost:20000,  need:()=>S.life>=5000},
+  {id:'radar',nm:'Fin Radar',        ds:'Events show up twice as often',     cost:50000,  need:()=>S.st.events>=2},
+  {id:'tank', nm:'Bottomless Tank',  ds:'Full-speed offline snacking, 4 hrs',cost:250000, need:()=>S.life>=1e5},
+  {id:'lucky',nm:'Lucky Bubble',     ds:'Crits hit ×25 instead',             cost:2e6,    need:()=>S.bought.crit},
+);
+
+const SKINS=[
+  // id, name, rarity, glyph, perk kind, perk value, filter, ring color
+  ['littleguy','Just a Little Guy','C','•','all',.02,'','rgba(255,255,255,.35)'],
+  ['wetpaws','Wet Paws','C','∴','click',.06,'saturate(1.15)','#8fd3e8'],
+  ['fishbreath','Fish Breath','C','≈','ps',.06,'hue-rotate(-12deg)','#9be0c4'],
+  ['towel','Beach Towel','C','▤','ult',.06,'sepia(.15)','#f6a7a7'],
+  ['sandy','Sandy','C','⁘','event',.08,'sepia(.35) saturate(1.1)','#e4c48a'],
+  ['puddle','Puddle Jumper','C','◌','token',.15,'brightness(1.08)','#a8c7ff'],
+  ['ducky','Ducky Dip','R','◒','ult',.2,'saturate(1.25)','#ffd23f'],
+  ['nightswim','Night Swim','R','☾','ps',.14,'brightness(.78) saturate(1.2)','#3a4fa8'],
+  ['goldfin','Golden Fin','R','✦','click',.16,'sepia(.55) saturate(1.5)','#e9b522'],
+  ['bubblebath','Bubble Bath','R','○','event',.22,'brightness(1.1) saturate(.9)','#9fe7ff'],
+  ['poolparty','Pool Party','R','✺','all',.07,'hue-rotate(20deg) saturate(1.2)','#3fcf87'],
+  ['fuzzlefin','Cuddly Fuzzlefin','E','❄','ps',.28,'brightness(1.12) saturate(.75)','#cfeaff'],
+  ['dolphin','Incognito Dolphin','E','◐','click',.32,'hue-rotate(-25deg)','#5fa8d3'],
+  ['chunky','Chunky Boy','E','●','all',.14,'saturate(1.1)','#ff9d5c'],
+  ['nyan','Nyan Jeff','E','≋','token',.5,'hue-rotate(260deg) saturate(1.6)','#ff7ad9'],
+  ['sharknos','Sharknos','L','♛','all',.3,'hue-rotate(60deg) saturate(1.5)','#9b47e6'],
+  ['sunshine','Sunshine Land Shark','L','✿','ps',.6,'sepia(.25) saturate(1.4) brightness(1.08)','#f7bd2e'],
+  ['maid','Maid to Chomp','L','♥','click',.7,'saturate(1.15) hue-rotate(-8deg)','#ff8fb8'],
+  ['sheep',"Shark in Sheep's Clothing",'L','☁','event',.8,'grayscale(.35) brightness(1.15)','#f2f2f2'],
+  ['jeffpool','Jeff-Pool','L','✖','ult',.6,'hue-rotate(150deg) saturate(1.3)','#e2403a'],
+].map(a=>({id:a[0],nm:a[1],r:a[2],g:a[3],k:a[4],v:a[5],fx:a[6],ring:a[7]}));
+const RNAME={C:'Common',R:'Rare',E:'Epic',L:'Legendary'};
+const PERK={all:'everything',ps:'per second',click:'chomps',ult:'ult charge',event:'event rewards',token:'token earnings'};
+const GEMS=[['Space','#3d7bff'],['Mind','#f2c230'],['Reality','#e2403a'],['Power','#9b47e6'],['Time','#2cb36b'],['Soul','#f08a2a']];
+const STAGES=[[0,'Snack Size',1,1],[1e3,'Chonk',1.1,1.04],[1e5,'Absolute Unit',1.22,1.08],[1e7,'Mega Chonk',1.34,1.1],[1e9,'Planet Jeff',1.5,1.14]];
+const FLAMES=['"jeff you are throwing"','"heal me?? hello??"','"uninstall shark"','"worst support in the lobby"','"why did you ult the payload"'];
+
+const ACH=[
+  ['peckish','Peckish','Chomp 100 times',()=>S.st.clicks>=100,5],
+  ['champ','Chomp Champion','Chomp 1,000 times',()=>S.st.clicks>=1000,15],
+  ['snack','Snack Attack','Eat 1,000 heroes',()=>S.life>=1e3,5],
+  ['buffet','Buffet','Eat 1M heroes',()=>S.life>=1e6,15],
+  ['ayce','All You Can Eat','Eat 1B heroes',()=>S.life>=1e9,30],
+  ['server','Ate the Server','Eat 1T heroes',()=>S.life>=1e12,50],
+  ['nom','NOM NOM NOM','Use your ult',()=>S.st.ults>=1,5],
+  ['soldier',"Satan's Greatest Soldier",'10 team wipes',()=>S.st.wipes>=10,20],
+  ['spite','Spite Swallower','Swallow 5 teammates',()=>S.st.mates>=5,15],
+  ['main','Main Character','Clear 10 events',()=>S.st.events>=10,15],
+  ['villain','Villain Arc','Claim a gem',()=>S.gems>=1,20],
+  ['snap','Sharknos','Claim all six gems',()=>S.gems>=6,100],
+  ['goodest','Goodest Boy','Max out good alignment',()=>S.align>=80,20],
+  ['menace','Absolute Menace','Max out menace alignment',()=>S.align<=-80,20],
+  ['curious','Capsule Curious','Pull a capsule',()=>S.st.pulls>=1,5],
+  ['shiny','Shiny!','Own a Legendary',()=>SKINS.some(s=>s.r==='L'&&S.skins[s.id]),25],
+  ['fashion','Fashion Shark','Own 10 costumes',()=>Object.keys(S.skins).length>=10,30],
+  ['wardrobe','Full Wardrobe','Own every costume',()=>Object.keys(S.skins).length>=SKINS.length,100],
+  ['planet','Planet Jeff','Reach the biggest size',()=>S.run>=1e9,30],
+  ['wrap','Bubble Wrap','Pop 50 bubbles',()=>S.st.pops>=50,10],
+  ['lobbyfull','Lobby Full','Own 100 upgrades total',()=>UP.reduce((s,u)=>s+own(u.id),0)>=100,20],
+].map(a=>({id:a[0],nm:a[1],ds:a[2],t:a[3],tok:a[4]}));
+
+/* ---------- state ---------- */
+function fresh(){return{eaten:0,run:0,life:0,owned:{},bought:{},ult:0,gems:0,good:0,menace:0,align:0,snap:false,buffs:[],
+  tok:30,tokFrac:0,vol:.6,voVol:.35,music:false,musVol:.3,skins:{littleguy:1},equip:'littleguy',pity:0,ach:{},chompN:0,
+  st:{wipes:0,mates:0,ults:0,events:0,clicks:0,pulls:0,pops:0},muted:false,last:Date.now()}}
+let S=fresh();
+try{const raw=localStorage.getItem(KEY);if(raw){const L=JSON.parse(raw);const F=fresh();S=Object.assign(F,L);S.st=Object.assign(fresh().st,L.st||{});
+  if(!S.skins||!Object.keys(S.skins).length)S.skins={littleguy:1};if(!SKINS.find(s=>s.id===S.equip))S.equip='littleguy'}}catch(e){}
+
+const own=id=>S.owned[id]||0;
+const cost=u=>Math.ceil(u.base*Math.pow(u.g,own(u.id)));
+const bmult=id=>Math.pow(2,TIER_AT.reduce((n,_,i)=>n+(S.bought[`${id}_t${i}`]?1:0),0));
+const gemMult=()=>1+.25*Math.min(S.gems,6)+.1*Math.max(0,S.gems-6);
+function buffMult(k){const n=Date.now();return S.buffs.filter(b=>b.end>n&&(b.k==='all'||b.k===k)).reduce((m,b)=>m*b.m,1)}
+const eqSkin=()=>SKINS.find(s=>s.id===S.equip)||SKINS[0];
+function skinMult(k){const s=eqSkin(),st=S.skins[s.id]||1;let m=1;
+  if(s.k===k||(s.k==='all'&&(k==='ps'||k==='click')))m+=s.v*(1+.5*(st-1));
+  if(k==='ps'||k==='click')m*=1+.01*Object.keys(S.skins).length;return m}
+function basePs(){return UP.filter(u=>u.kind==='ps').reduce((s,u)=>s+own(u.id)*u.v*bmult(u.id),0)}
+function ps(){return basePs()*gemMult()*(1+.5*S.good)*skinMult('ps')*buffMult('ps')}
+function perClick(){return ((1+own('fish')*bmult('fish'))*gemMult()*(1+.5*S.menace)*skinMult('click')+own('jaws')*.05*ps())*buffMult('click')}
+const ultMult=()=>1+.5*S.menace;
+const evMult=()=>skinMult('event');
+const need=()=>1e6*Math.pow(5,S.gems);
+
+function fmt(n){if(!isFinite(n))return'∞';if(n<1000)return n<10&&n%1?n.toFixed(1):Math.floor(n).toLocaleString();
+  const u=['K','M','B','T','Qa','Qi','Sx','Sp','Oc'];let i=-1;while(n>=1000&&i<u.length-1){n/=1000;i++}return n.toFixed(n<10?2:n<100?1:0)+u[i]}
+function gain(n){S.eaten+=n;S.run+=n;S.life+=n}
+function giveTok(n){S.tokFrac+=n*skinMult('token');const w=Math.floor(S.tokFrac);S.tokFrac-=w;S.tok+=w;return w}
+function log(t){const li=document.createElement('li');li.textContent=t;const L=$('log');L.prepend(li);while(L.children.length>6)L.lastChild.remove()}
+let toastT;function toast(t){const el=$('toast');el.textContent=t;el.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>el.hidden=true,2600)}
+function addBuff(name,k,m,sec){S.buffs=S.buffs.filter(b=>b.end>Date.now()&&b.name!==name);S.buffs.push({name,k,m,end:Date.now()+sec*1000})}
+function nudge(d){S.align=Math.max(-100,Math.min(100,S.align+d))}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- sound ---------- */
+let ac,lastChompVo=0;function blip(f=240,type='square',len=.09,vol=.05){if(S.muted||S.vol<=0)return;try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();
+  const o=ac.createOscillator(),g=ac.createGain(),t=ac.currentTime;o.type=type;o.frequency.setValueAtTime(f,t);o.frequency.exponentialRampToValueAtTime(f*.5,t+len);
+  g.gain.setValueAtTime(vol*S.vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+len+.02);o.connect(g).connect(ac.destination);o.start(t);o.stop(t+len+.03)}catch(e){}}
+function jingle(notes=[523,659,784]){notes.forEach((f,i)=>setTimeout(()=>blip(f,'triangle',.12,.06),i*90))}
+
+/* ---------- art ---------- */
+const img=$('artImg');
+function setArt(src){img.src=src||DEFAULT_ART;img.hidden=false;$('artPh').hidden=true;$('artClear').hidden=!src}
+try{setArt(localStorage.getItem(ART))}catch(e){}
+$('artIn').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,512/Math.max(im.width,im.height));const c=document.createElement('canvas');
+    c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext('2d').drawImage(im,0,0,c.width,c.height);const url=c.toDataURL('image/png');
+    setArt(url);try{localStorage.setItem(ART,url)}catch(err){toast('Art added, but this browser would not save it for next time.')}};im.src=r.result};r.readAsDataURL(f);e.target.value=''});
+$('artClear').onclick=()=>{setArt(null);try{localStorage.removeItem(ART)}catch(e){}};
+
+/* ---------- chomp ---------- */
+const stage=$('stage'),art=$('art');
+function stageInfo(){let s=STAGES[0];for(const x of STAGES)if(S.run>=x[0])s=x;return s}
+function artTransform(){const s=stageInfo();const extra=S.equip==='chunky'?.12:0;return`scale(${s[2]+extra},${s[3]})`}
+function floatText(txt,x,y,cls){const r=stage.getBoundingClientRect();const el=document.createElement('div');el.className='float '+(cls||'');el.textContent=txt;
+  el.style.left=(x-r.left-20)+'px';el.style.top=(y-r.top-20)+'px';stage.appendChild(el);setTimeout(()=>el.remove(),900)}
+$('jeff').addEventListener('click',e=>{
+  let v=perClick();S.st.clicks++;
+  let label,cls='';const roll=Math.random();
+  if(S.bought.crit&&Math.random()<.05){const m=S.bought.lucky?25:10;v*=m;cls='crit';label=`CRIT ×${m}! +${fmt(v)}`;blip(660,'square',.1,.05)}
+  if(roll<1/1500){v*=50;label='MY NAME IS JEFF! +'+fmt(v);cls='meow';jingle();log('Golden chomp: "My name is Jeff!" ×50')}
+  else if(!label&&roll<1/1500+1/220){label='meow';cls='meow';log('Jeff briefly believed he was a cat.')}
+  if(!label)label='+'+fmt(v);
+  gain(v);S.ult=Math.min(100,S.ult+1.2*(1+.2*own('whirl'))*skinMult('ult'));
+  lastAct=Date.now();if(Date.now()-lastChompVo>15000&&Math.random()<1/25){lastChompVo=Date.now();playSfx('chomp'+(1+Math.floor(Math.random()*5)))}S.chompN++;if(S.chompN>=(S.bought.belly?25:50)){S.chompN=0;giveTok(1)}
+  const r=$('jeff').getBoundingClientRect();const x=e.clientX||r.left+r.width/2,y=e.clientY||r.top+r.height/3;
+  floatText(label,x+(Math.random()*30-15),y,cls);blip(200+Math.random()*80);
+  if(!reduce){const s=stageInfo();const ex=S.equip==='chunky'?.12:0;art.animate([{transform:`scale(${(s[2]+ex)*1.08},${s[3]*.9})`},{transform:artTransform()}],{duration:140,easing:'ease-out'})}
+  draw();
+});
+
+/* ---------- ult ---------- */
+const sfxCache={};function playSfx(k){if(S.muted)return;try{const src=SFX[k]||VO[k];if(!src)return;const a=sfxCache[k]||(sfxCache[k]=new Audio(src));const vv=Math.min(1,.9*S.vol*(VO[k]?S.voVol:1));if(vv<=0)return;a.currentTime=0;a.volume=vv;const p=a.play();if(p&&p.catch)p.catch(()=>{})}catch(e){}}
+let ultWasReady=null;
+function ultReadyFx(){playSfx('ready');log('Ult ready. "It\'s Jeff!" is waiting.');if(reduce)return;
+  $('readyFlash').animate([{transform:'scale(.4)',opacity:0},{transform:'scale(1)',opacity:.95,offset:.35},{transform:'scale(1.25)',opacity:0}],{duration:1100,easing:'ease-out'})}
+let ultAudio;function playUlt(){if(S.muted)return;try{ultAudio=ultAudio||new Audio(ULT_SFX);ultAudio.currentTime=0;ultAudio.volume=Math.min(1,.9*S.vol*S.voVol);if(ultAudio.volume<=0)return;const p=ultAudio.play();if(p&&p.catch)p.catch(()=>blip(120,'sawtooth',.4,.06))}catch(e){blip(120,'sawtooth',.4,.06)}}
+$('ultBtn').onclick=()=>{if(S.ult<100)return;$('spit').hidden=false;$('ultBtn').disabled=true;playUlt();if(S.equip==='fuzzlefin')setTimeout(()=>playSfx('brrPowerful'),1600);log('NOM NOM NOM. Jeff dives into the whirlpool...')};
+$('spit').addEventListener('click',e=>{const b=e.target.closest('[data-spit]');if(!b)return;const k=b.dataset.spit;const m=ultMult();playSfx(k==='point'?'ally':'end');
+  if(k==='cliff'){const n=(ps()*90+perClick()*120+500)*m;gain(n);S.st.wipes++;nudge(-10);log(`Team wipe! Six heroes spat off the map. +${fmt(n)}`);toast('TEAM WIPE');}
+  if(k==='spawn'){addBuff('Spawn camping','all',3,30);nudge(-6);log('Dropped the whole team in their own spawn. ×3 for 30s.')}
+  if(k==='point'){const n=(ps()*30+200)*m;gain(n);addBuff('Healed the team','ps',2,60);nudge(12);healBurst();log(`Spat everyone back on point, fully healed. +${fmt(n)}`)}
+  giveTok(2);S.ult=0;S.st.ults++;$('spit').hidden=true;jingle();draw()});
+
+$('ultIcon').src=ULT_ICON;
+['logo','readyFlash'].forEach(id=>{const el=$(id);el.style.webkitMaskImage=`url(${JEFF_MARK})`;el.style.maskImage=`url(${JEFF_MARK})`});
+
+/* ---------- tabs ---------- */
+document.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(!b)return;
+  document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',t===b?'true':'false'));
+  document.querySelectorAll('[data-pane]').forEach(p=>p.hidden=p.dataset.pane!==b.dataset.tab);
+  if(b.dataset.tab==='ward')buildWardrobe();});
+
+/* ---------- shop ---------- */
+$('shop').innerHTML=UP.map(u=>`<button class="item" data-up="${u.id}"><span class="nm">${u.id==='bubble'?`<img class="ico" src="${BUBBLE}" alt="">`:''}${u.nm}</span><span class="own num" data-own></span><span class="ds" data-ds>${u.ds}</span><span class="cost num" data-cost></span></button>`).join('');
+$('shop').addEventListener('click',e=>{const b=e.target.closest('[data-up]');if(!b)return;const u=UP.find(x=>x.id===b.dataset.up);const c=cost(u);
+  if(S.eaten<c||(u.max&&own(u.id)>=u.max))return;S.eaten-=c;S.owned[u.id]=own(u.id)+1;blip(520,'triangle',.08,.05);draw()});
+let upsKey='';
+function renderUps(){const av=ONE.filter(o=>!S.bought[o.id]&&o.need()).sort((a,b)=>a.cost-b.cost).slice(0,8);
+  const key=av.map(o=>o.id).join();if(key!==upsKey){upsKey=key;
+    $('ups').innerHTML=av.map(o=>`<button class="up1" data-one="${o.id}"><b>${esc(o.nm)}</b><span>${esc(o.ds)}</span><em class="num">${fmt(o.cost)} heroes</em></button>`).join('');
+    $('upsHint').hidden=av.length>0}
+  $('ups').querySelectorAll('[data-one]').forEach(b=>{const o=ONE.find(x=>x.id===b.dataset.one);b.disabled=S.eaten<o.cost})}
+$('ups').addEventListener('click',e=>{const b=e.target.closest('[data-one]');if(!b)return;const o=ONE.find(x=>x.id===b.dataset.one);
+  if(!o||S.bought[o.id]||S.eaten<o.cost)return;S.eaten-=o.cost;S.bought[o.id]=true;jingle([660,880]);log(`Bought ${o.nm}.`);draw()});
+
+/* ---------- capsules ---------- */
+(function domeBalls(){const cols=['var(--rC)','var(--rR)','var(--rE)','var(--rL)','var(--accent)','var(--sun)','var(--good)'];let h='';
+  for(let i=0;i<11;i++)h+=`<i style="left:${8+(i*37)%72}px;top:${30+((i*53)%60)}px;background:${cols[i%cols.length]}"></i>`;$('dome').innerHTML=h})();
+function tokCost(){return Math.max(500,Math.ceil(ps()*120+perClick()*60))}
+function rollOne(forceEpic){S.pity++;let r;
+  if(S.pity>=60)r='L';else{const x=Math.random()*100;r=x<2.5?'L':x<14?'E':x<42?'R':'C'}
+  if(forceEpic&&(r==='C'||r==='R'))r='E';if(r==='L')S.pity=0;
+  const pool=SKINS.filter(s=>s.r===r);const sk=pool[Math.floor(Math.random()*pool.length)];
+  const had=S.skins[sk.id]||0;let tag='NEW',refund=0;
+  if(!had)S.skins[sk.id]=1;else if(had<5){S.skins[sk.id]=had+1;tag='★'+(had+1)}else{refund=3;S.tok+=3;tag='+3 tok'}
+  S.st.pulls++;return{sk,tag,isNew:!had}}
+function pull(n){const price=n===10?90:10;if(S.tok<price)return;S.tok-=price;const out=[];
+  for(let i=0;i<n;i++){const needG=n===10&&i===n-1&&!out.some(o=>o.sk.r==='E'||o.sk.r==='L');out.push(rollOne(needG))}
+  const best=out.some(o=>o.sk.r==='L')?'L':out.some(o=>o.sk.r==='E')?'E':'R';
+  const d=$('dome');d.classList.remove('shake');void d.offsetWidth;d.classList.add('shake');
+  $('results').innerHTML=out.map((o,i)=>`<div class="card ${o.sk.r}" style="animation-delay:${i*60}ms"><span class="tag">${o.tag}</span><span class="g">${o.sk.g}</span><b>${esc(o.sk.nm)}</b><small>${RNAME[o.sk.r]}</small></div>`).join('');
+  const gotFuzz=out.some(o=>o.sk.id==='fuzzlefin');playSfx(gotFuzz?'brrExcited':best==='L'?'celebratory':best==='E'?'enthusiastic':n===10?'disappointed':'chomp1');
+  if(best==='L'){jingle([523,659,784,1047]);const l=out.find(o=>o.sk.r==='L');toast(`LEGENDARY: ${l.sk.nm}!`);log(`Pulled a Legendary: ${l.sk.nm}.`)}else jingle(best==='E'?[523,659,784]:[523,659]);
+  const nw=out.filter(o=>o.isNew).length;if(nw)log(`${nw} new costume${nw>1?'s':''} for the wardrobe.`);draw()}
+$('pull1').onclick=()=>pull(1);$('pull10').onclick=()=>pull(10);
+$('buyTok').onclick=()=>{const c=tokCost();if(S.eaten<c)return;S.eaten-=c;S.tok+=10;blip(700,'triangle');draw()};
+
+/* ---------- wardrobe ---------- */
+function perkTxt(s){const st=S.skins[s.id]||1;return`+${Math.round(s.v*(1+.5*(st-1))*100)}% ${PERK[s.k]}`}
+function buildWardrobe(){const order={L:0,E:1,R:2,C:3};
+  $('wardrobe').innerHTML=SKINS.slice().sort((a,b)=>order[a.r]-order[b.r]).map(s=>{const st=S.skins[s.id];
+    if(!st)return`<div class="card ${s.r} locked"><span class="g">?</span><b>???</b><small>${RNAME[s.r]}</small></div>`;
+    return`<button class="card ${s.r} ${S.equip===s.id?'eq':''}" data-skin="${s.id}"><span class="g">${s.g}</span><b>${esc(s.nm)}</b><span class="stars">${'★'.repeat(st)}${'☆'.repeat(5-st)}</span><span>${perkTxt(s)}</span><small>${RNAME[s.r]}</small></button>`}).join('');
+  const s=eqSkin();$('equipped').innerHTML=`<span class="g" style="color:var(--r${s.r})">${s.g}</span><p><strong>${esc(s.nm)}</strong>${RNAME[s.r]} · ${perkTxt(s)}</p>`;
+  const n=Object.keys(S.skins).length;$('colTxt').textContent=`${n}/${SKINS.length} collected · collection bonus +${n}% chomps and per second. Tap a costume to wear it.`}
+$('wardrobe').addEventListener('click',e=>{const b=e.target.closest('[data-skin]');if(!b)return;S.equip=b.dataset.skin;blip(600,'triangle');if(S.equip==='fuzzlefin')playSfx('brrCocky');buildWardrobe();draw();log(`Jeff is now wearing ${eqSkin().nm}.`)});
+
+/* ---------- sharknos ---------- */
+$('prestigeBtn').onclick=()=>{if(S.run<need())return;$('paths').hidden=false;$('prestigeBtn').hidden=true};
+$('paths').addEventListener('click',e=>{const b=e.target.closest('[data-path]');if(!b)return;
+  S[b.dataset.path==='good'?'good':'menace']++;S.gems++;playSfx('brrPowerful');
+  const gname=S.gems<=6?GEMS[S.gems-1][0]+' gem':'Bonus gem';
+  S.eaten=0;S.run=0;S.owned={};S.bought={};S.ult=0;S.buffs=[];S.snap=false;S.tok+=25;upsKey='';
+  $('paths').hidden=true;$('prestigeBtn').hidden=false;jingle();
+  log(S.gems===6?'All six gems. Sharknos is complete. The Snap is ready.':`${gname} claimed (+25 tokens). Jeff is a little more purple now.`);toast(S.gems===6?'SHARKNOS COMPLETE':gname+' claimed');draw()});
+$('snapBtn').onclick=()=>{if(S.gems<6||S.snap)return;const n=(ps()*600+perClick()*600+1e6)*ultMult();gain(n);S.snap=true;S.st.wipes+=6;log(`SNAP. Half the server got swallowed. +${fmt(n)}`);toast('SNAP');jingle();draw()};
+let gemKey='';function buildGems(){$('gems').innerHTML=GEMS.map((g,i)=>`<div class="gem ${S.gems>i?'on':''}" style="--c:${g[1]}" title="${g[0]} gem"><span>${S.gems>i?g[0][0]:''}</span></div>`).join('')}
+
+/* ---------- achievements ---------- */
+let achKey='';
+function checkAch(){let hit=false;for(const a of ACH){if(!S.ach[a.id]&&a.t()){S.ach[a.id]=1;S.tok+=a.tok;hit=true;toast(`Achievement: ${a.nm} (+${a.tok} tokens)`);log(`Achievement unlocked: ${a.nm}. +${a.tok} tokens.`);playSfx('celebratory')}}
+  const k=Object.keys(S.ach).join();if(k!==achKey||hit){achKey=k;
+    $('achs').innerHTML=ACH.map(a=>`<span class="ach ${S.ach[a.id]?'on':''}" title="${esc(a.ds)} · ${a.tok} tokens">${esc(a.nm)}</span>`).join('');
+    $('achTitle').textContent=`Achievements ${Object.keys(S.ach).length}/${ACH.length}`}}
+
+/* ---------- events ---------- */
+let ev=null,nextEv=Date.now()+25000;
+const bar=$('eventBar');
+function rnd(a,b){return a+Math.random()*(b-a)}
+function startEvent(){
+  const pool=['ironman','cheese','custody','hulk','flame','loki'];const t=pool[Math.floor(Math.random()*pool.length)];
+  const dur={ironman:6.5,cheese:8,custody:10,hulk:6,flame:12,loki:10}[t];
+  ev={t,start:Date.now(),end:Date.now()+dur*1000,n:0,stolen:0};
+  if(t==='ironman'){const b=document.createElement('button');b.className='target flyer';b.textContent='IRON MAN';b.style.top=rnd(18,48)+'%';b.dataset.ev='catch';stage.appendChild(b);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>b.classList.add('go')));showBar('Iron Man is flying overhead. Catch him mid-air!','')}
+  if(t==='cheese'){const b=document.createElement('button');b.className='target cheese';b.textContent='CHEESE';b.style.left=rnd(8,72)+'%';b.style.top=rnd(30,70)+'%';b.dataset.ev='cheese';stage.appendChild(b);showBar('A wheel of cheese appeared. Jeff must have it.','')}
+  if(t==='custody')showBar('Custody battle! Deadpool and Emma Frost both want Jeff. Pick a side.','<button class="btn hot" data-ev="dp">Deadpool: ×2 chomps</button><button class="btn" data-ev="emma">Emma: ×2 per second</button>');
+  if(t==='hulk')showBar('Hulk the Hater stomps in. Dodge 12 times!','<button class="btn hot" data-ev="dodge">Dodge (0/12)</button>');
+  if(t==='flame')showBar(`Your teammate types: ${FLAMES[Math.floor(Math.random()*FLAMES.length)]}`,'<button class="btn hot" data-ev="swallow">Swallow them</button><button class="btn alt" data-ev="ignore">Let it go</button>');
+  if(t==='loki')showBar('A Loki copied you and is stealing your heroes! Tap the fake 15 times.','<button class="btn hot" data-ev="fake">Tap the fake (0/15)</button>');
+  playSfx(t==='hulk'?'startling':t==='loki'?'urgent':'dun');
+}
+function showBar(msg,acts){bar.innerHTML=`<p>${msg}</p>${acts?`<div class="acts">${acts}</div>`:''}<div class="timer"><i id="evTimer"></i></div>`;bar.hidden=false}
+function endEvent(win,msg){if(!ev)return;if(!ev.sfx)playSfx(win?'enthusiastic':'sad');if(win){S.st.events++;giveTok(3)}if(msg)log(msg);ev=null;bar.hidden=true;bar.innerHTML='';stage.querySelectorAll('.target').forEach(x=>x.remove());
+  nextEv=Date.now()+rnd(35,75)*1000*(S.bought.radar?.5:1);draw()}
+stage.addEventListener('click',e=>{const b=e.target.closest('[data-ev]');if(!b||!ev)return;e.stopPropagation();const a=b.dataset.ev;const em=evMult();
+  if(a==='catch'){const n=(ps()*30+perClick()*25+100)*em;gain(n);jingle();endEvent(true,`Caught Iron Man in mid-air. Physics is a suggestion. +${fmt(n)}`)}
+  if(a==='cheese'){addBuff('Cheese frenzy','all',+(7*em).toFixed(1),15);jingle();endEvent(true,'Stole the cheese wheel. Frenzy for 15s.')}
+  if(a==='dp'){addBuff('Team Deadpool','click',+(2*em).toFixed(1),45);endEvent(true,'Jeff goes home with Deadpool. Chomp boost for 45s.')}
+  if(a==='emma'){ev.sfx=1;playSfx('supportive');addBuff('Team Emma','ps',+(2*em).toFixed(1),45);endEvent(true,'Jeff goes home with Emma Frost. Per-second boost for 45s.')}
+  if(a==='dodge'){ev.n++;b.textContent=`Dodge (${ev.n}/12)`;blip(300+ev.n*30);if(ev.n>=12){const n=(ps()*60+perClick()*40+150)*em;gain(n);endEvent(true,`Dodged every stomp. Hulk: "...Hulk like little shark." +${fmt(n)}`)}}
+  if(a==='fake'){ev.n++;b.textContent=`Tap the fake (${ev.n}/15)`;blip(400+ev.n*20);if(ev.n>=15){const n=(ev.stolen*2+100)*em;gain(n);endEvent(true,`Exposed the fake Jeff. Got everything back, doubled. +${fmt(n)}`)}}
+  if(a==='swallow'){S.st.mates++;nudge(-8);ev.sfx=1;if(Math.random()<.75){playSfx('mocking');const n=(ps()*120+perClick()*60+200)*em;gain(n);endEvent(true,`Swallowed them and spat them off the map. Worth it. +${fmt(n)}`)}
+    else{playSfx('disappointed');addBuff('Reported','all',.5,20);endEvent(true,'You got reported. Everything halved for 20s.')}}
+  if(a==='ignore'){nudge(8);ev.sfx=1;playSfx('supportive');const n=(ps()*20+perClick()*10+50)*em;gain(n);endEvent(true,`Let it go. Goodest boy behavior. +${fmt(n)}`)}
+},true);
+
+/* ---------- bubbles ---------- */
+let bubT=4;
+const bubGap=()=>Math.max(1.5,9/(1+own('bubble')*.06));
+function spawnBubble(){if(document.hidden||stage.querySelectorAll('.bub').length>=6)return;
+  const b=document.createElement('button');b.className='bub';b.setAttribute('aria-label','Pop bubble');
+  b.innerHTML=`<img src="${BUBBLE}" alt="">`;b.style.left=(4+Math.random()*80)+'%';
+  b.style.setProperty('--sz',(44+Math.random()*28)+'px');b.style.setProperty('--dur',(7+Math.random()*4)+'s');
+  if(reduce){b.style.bottom=(15+Math.random()*55)+'%';setTimeout(()=>b.remove(),6000)}
+  b.addEventListener('animationend',ev=>{if(ev.animationName==='rise'||ev.animationName==='popb')b.remove()});
+  b.addEventListener('click',e=>{e.stopPropagation();if(b.classList.contains('popped'))return;b.classList.add('popped');
+    S.st.pops++;const n=Math.max(5,ps()*3+perClick()*2);gain(n);let txt='+'+fmt(n);
+    if(Math.random()<.08){const w=giveTok(1);if(w)txt+=' +1 token'}
+    floatText(txt,e.clientX||0,e.clientY||0,'');blip(900+Math.random()*300,'sine',.06,.05);
+    if(reduce)b.remove();draw()});
+  stage.appendChild(b)}
+function healBurst(){if(reduce)return;for(let i=0;i<10;i++){const a=i/10*Math.PI*2,r=110+Math.random()*50;const im=document.createElement('img');
+  im.src=BUBBLE;im.alt='';im.className='burst';stage.appendChild(im);
+  im.animate([{transform:'translate(0,0) scale(.3)',opacity:1},{transform:`translate(${Math.cos(a)*r}px,${Math.sin(a)*r}px) scale(1)`,opacity:0}],{duration:900+Math.random()*300,easing:'cubic-bezier(.2,.7,.3,1)'}).onfinish=()=>im.remove()}
+  [660,880,1100].forEach((f,i)=>setTimeout(()=>blip(f,'sine',.15,.05),i*80))}
+
+/* ---------- draw ---------- */
+let wardKey='';
+function draw(){
+  const P=ps(),C=perClick();
+  $('cEaten').textContent=fmt(S.eaten);$('cPs').textContent=fmt(P);$('cClick').textContent=fmt(C);$('cTok').textContent=S.tok;
+  $('ultFill').style.width=S.ult+'%';const rdy=S.ult>=100&&$('spit').hidden;if(rdy&&ultWasReady===false)ultReadyFx();ultWasReady=rdy;$('ultBtn').disabled=!rdy;$('ultBtn').classList.toggle('ready',rdy);
+  document.querySelectorAll('[data-up]').forEach(b=>{const u=UP.find(x=>x.id===b.dataset.up);const maxed=u.max&&own(u.id)>=u.max;const bm=bmult(u.id);
+    b.querySelector('[data-own]').textContent=own(u.id);b.querySelector('[data-ds]').textContent=u.ds+(bm>1?` (×${bm})`:'');
+    b.querySelector('[data-cost]').textContent=maxed?'Maxed':fmt(cost(u))+' heroes';b.disabled=maxed||S.eaten<cost(u)});
+  renderUps();
+  const st=stageInfo();$('stageName').textContent=st[1];art.style.transform=artTransform();
+  const sk=eqSkin(),g=Math.min(S.gems,6);
+  art.style.filter=[sk.fx,g?`hue-rotate(${g*11}deg) saturate(${1+g*.08})`:''].filter(Boolean).join(' ')||'';
+  $('jeff').style.setProperty('--ring',sk.ring);$('acc').textContent=sk.id==='littleguy'?'':sk.g;
+  $('skinPill').textContent=sk.nm;
+  const al=S.align,ap=$('alignPill');ap.textContent=al>20?'Goodest Boy':al<-20?"Satan's Greatest Soldier":'Just a Little Guy';ap.className='pill '+(al>20?'good':al<-20?'menace':'');
+  $('alignMark').style.left=(50+al/2)+'%';
+  const nd=need(),pr=Math.min(1,S.run/nd);$('progFill').style.width=(pr*100)+'%';
+  $('progTxt').textContent=`This run: ${fmt(S.run)} / ${fmt(nd)} heroes`+(S.good||S.menace?`  ·  Goodest Boy ×${S.good}, Menace ×${S.menace}`:'');
+  $('prestigeBtn').disabled=S.run<nd;$('prestigeBtn').textContent=S.gems<6?`Claim ${GEMS[S.gems][0]} gem`:'Claim bonus gem';
+  $('snapBtn').hidden=!(S.gems>=6&&!S.snap);
+  if(String(S.gems)!==gemKey){buildGems();gemKey=String(S.gems)}
+  const n=Date.now();S.buffs=S.buffs.filter(b=>b.end>n);
+  $('buffs').innerHTML=S.buffs.map(b=>`<span class="pill ${b.m<1?'menace':'good'}">${b.name} ×${b.m} · ${Math.ceil((b.end-n)/1000)}s</span>`).join('');
+  // capsules
+  $('pull1').disabled=S.tok<10;$('pull10').disabled=S.tok<90;const tc=tokCost();$('buyTok').textContent=`Trade ${fmt(tc)} heroes for 10 tokens`;$('buyTok').disabled=S.eaten<tc;
+  $('pityTxt').textContent=`Legendary guaranteed in ${60-S.pity} pulls`;$('capDot').hidden=S.tok<10;
+  const wk=JSON.stringify(S.skins)+S.equip;if(wk!==wardKey){wardKey=wk;if(!document.querySelector('[data-pane="ward"]').hidden)buildWardrobe()}
+  $('sLife').textContent=fmt(S.life);$('sWipes').textContent=S.st.wipes;$('sMates').textContent=S.st.mates;$('sUlts').textContent=S.st.ults;$('sEvents').textContent=S.st.events;$('sPulls').textContent=S.st.pulls;$('sPops').textContent=S.st.pops;
+  $('shareTxt').textContent=brag();
+}
+function brag(){const legs=SKINS.filter(s=>s.r==='L'&&S.skins[s.id]).length;
+  return`My Jeff has eaten ${fmt(S.life)} heroes in Jeff Clicker: ${S.st.wipes} team wipes, ${S.st.mates} teammates swallowed out of spite, ${Object.keys(S.skins).length}/${SKINS.length} costumes (${legs} Legendary), ${S.gems} Sharknos gems. Wearing: ${eqSkin().nm}. Vibe: ${$('alignPill').textContent}.`}
+$('copyBtn').onclick=()=>{const t=brag();try{navigator.clipboard.writeText(t).then(()=>toast('Copied. Go brag.'),sel)}catch(e){sel()}
+  function sel(){const r=document.createRange();r.selectNodeContents($('shareTxt'));const s=getSelection();s.removeAllRanges();s.addRange(r);toast('Text selected. Copy it from here.')}};
+$('muteBtn').onclick=()=>{S.muted=!S.muted;$('muteBtn').textContent='Sound: '+(S.muted?'off':'on');updateMusic()};
+$('muteBtn').textContent='Sound: '+(S.muted?'off':'on');
+function syncVol(){$('volAll').value=Math.round(S.vol*100);$('volVo').value=Math.round(S.voVol*100);$('volMus').value=Math.round(S.musVol*100);$('musicBtn').textContent='Music: '+(S.music?'on':'off')}syncVol();
+let bgm;function updateMusic(){const on=S.music&&!S.muted&&S.vol>0&&S.musVol>0;
+  if(!on){if(bgm)bgm.pause();return}
+  try{bgm=bgm||new Audio(THEME);bgm.loop=true;bgm.volume=Math.min(1,S.vol*S.musVol);if(bgm.paused){const p=bgm.play();if(p&&p.catch)p.catch(()=>{})}}catch(e){}}
+$('musicBtn').onclick=()=>{S.music=!S.music;syncVol();updateMusic();save();if(S.music)log('Now playing: Nom Nom (It\'s Jeff!)')};
+$('volMus').addEventListener('input',e=>{S.musVol=e.target.value/100;updateMusic()});
+$('volMus').addEventListener('change',save);
+if(S.music){const kick=()=>{updateMusic();document.removeEventListener('pointerdown',kick);document.removeEventListener('keydown',kick)};document.addEventListener('pointerdown',kick);document.addEventListener('keydown',kick)}
+$('volAll').addEventListener('input',e=>{S.vol=e.target.value/100;updateMusic()});
+$('volAll').addEventListener('change',()=>{blip(520,'triangle',.08,.05);save()});
+$('volVo').addEventListener('input',e=>{S.voVol=e.target.value/100});
+$('volVo').addEventListener('change',()=>{playSfx('chomp1');save()});
+let resetArm=0;$('resetBtn').onclick=()=>{if(Date.now()-resetArm<3000){if(ev)endEvent(false);S=fresh();upsKey='';gemKey='';achKey='';wardKey='';save();$('log').innerHTML='';$('results').innerHTML='';log('Fresh shark. Fresh hunger.');syncVol();updateMusic();$('resetBtn').textContent='Reset save';draw();checkAch();return}
+  resetArm=Date.now();$('resetBtn').textContent='Tap again to wipe';setTimeout(()=>$('resetBtn').textContent='Reset save',3000)};
+
+function save(){S.last=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+setInterval(save,5000);document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});
+
+/* offline */
+(function(){const cap=S.bought.tank?4:2,rate=S.bought.tank?1:.5;const sec=Math.min(Date.now()-(S.last||Date.now()),cap*3600e3)/1000;
+  const n=basePs()*gemMult()*(1+.5*S.good)*sec*rate;
+  if(sec>60&&n>0){gain(n);log(`While you were gone, Jeff snacked on ${fmt(n)} heroes.`);setTimeout(()=>toast(`Welcome back. Jeff ate ${fmt(n)} heroes while you were away.`),400)}})();
+
+/* loop */
+let prev=performance.now(),achT=0,lastAct=Date.now();
+function tick(){const now=performance.now();const dt=Math.min(1,(now-prev)/1000);prev=now;
+  gain(ps()*dt);S.ult=Math.min(100,S.ult+dt*.5*(1+.2*own('whirl'))*skinMult('ult'));
+  const t=Date.now();
+  if(ev){const f=1-(t-ev.start)/(ev.end-ev.start);const ti=$('evTimer');if(ti)ti.style.width=Math.max(0,f*100)+'%';
+    if(ev.t==='loki'){const s=S.eaten*.015*dt;S.eaten-=s;ev.stolen+=s}
+    if(t>=ev.end){const msgs={ironman:'Iron Man got away.',cheese:'The cheese rolled away.',custody:'Nobody picked. Jeff stayed put.',hulk:'Hulk got bored and wandered off.',flame:'Your teammate went back to complaining about something else.',loki:`The fake Jeff escaped with ${fmt(ev.stolen)} heroes.`};endEvent(false,msgs[ev.t])}}
+  else if(t>=nextEv)startEvent();
+  bubT-=dt;if(bubT<=0){spawnBubble();bubT=bubGap()*(0.6+Math.random()*0.8)}
+  if(!document.hidden&&Date.now()-lastAct>20000&&!$('spit').offsetParent){lastAct=Date.now()+25000;playSfx('hungry'+(1+Math.floor(Math.random()*2)));log('Jeff is hungry. Er... er...')}
+  achT+=dt;if(achT>1){achT=0;checkAch()}
+  draw()}
+setInterval(tick,100);
+log('Jeff is hungry. Tap to chomp. You have 30 tokens for your first capsules.');
+checkAch();draw();
+})();
+</script>
+</body>
+</html>
