@@ -1229,17 +1229,17 @@ function brag(){const legs=SKINS.filter(s=>s.r==='L'&&S.skins[s.id]).length;
   return`My Jeff has eaten ${fmt(S.life)} heroes in Jeff Clicker: ${S.st.wipes} team wipes, ${S.st.mates} teammates swallowed out of spite, ${Object.keys(S.skins).length}/${SKINS.length} costumes (${legs} Legendary), ${S.gems} Sharknos gems. Wearing: ${artSkin().nm}, ability: ${perkSkin().nm}. Vibe: ${$('alignPill').textContent}.`}
 $('copyBtn').onclick=()=>{const t=brag();try{navigator.clipboard.writeText(t).then(()=>toast('Copied. Go brag.'),sel)}catch(e){sel()}
   function sel(){const r=document.createRange();r.selectNodeContents($('shareTxt'));const s=getSelection();s.removeAllRanges();s.addRange(r);toast('Text selected. Copy it from here.')}};
-$('muteBtn').onclick=()=>{S.muted=!S.muted;$('muteBtn').textContent='Sound: '+(S.muted?'off':'on');updateMusic()};
+$('muteBtn').onclick=()=>{S.muted=!S.muted;$('muteBtn').textContent='Sound: '+(S.muted?'off':'on');updateMusic();syncBossMusic()};
 $('muteBtn').textContent='Sound: '+(S.muted?'off':'on');
 function syncVol(){$('volAll').value=Math.round(S.vol*100);$('volVo').value=Math.round(S.voVol*100);$('volMus').value=Math.round(S.musVol*100);$('musicBtn').textContent='Music: '+(S.music?'on':'off')}syncVol();syncDiff();
 let bgm;function updateMusic(){const on=S.music&&!S.muted&&S.vol>0&&S.musVol>0;
   if(!on){if(bgm)bgm.pause();return}
   try{bgm=bgm||new Audio(THEME);bgm.loop=true;bgm.volume=Math.min(1,S.vol*S.musVol);if(bgm.paused){const p=bgm.play();if(p&&p.catch)p.catch(()=>{})}}catch(e){}}
-$('musicBtn').onclick=()=>{S.music=!S.music;syncVol();updateMusic();save();if(S.music)log('Now playing: Nom Nom (It\'s Jeff!)')};
-$('volMus').addEventListener('input',e=>{S.musVol=e.target.value/100;updateMusic()});
+$('musicBtn').onclick=()=>{S.music=!S.music;syncVol();updateMusic();syncBossMusic();save();if(S.music)log('Now playing: Nom Nom (It\'s Jeff!)')};
+$('volMus').addEventListener('input',e=>{S.musVol=e.target.value/100;updateMusic();syncBossMusic()});
 $('volMus').addEventListener('change',save);
 if(S.music){const kick=()=>{updateMusic();document.removeEventListener('pointerdown',kick);document.removeEventListener('keydown',kick)};document.addEventListener('pointerdown',kick);document.addEventListener('keydown',kick)}
-$('volAll').addEventListener('input',e=>{S.vol=e.target.value/100;updateMusic()});
+$('volAll').addEventListener('input',e=>{S.vol=e.target.value/100;updateMusic();syncBossMusic()});
 $('volAll').addEventListener('change',()=>{blip(520,'triangle',.08,.05);save()});
 $('volVo').addEventListener('input',e=>{S.voVol=e.target.value/100});
 $('volVo').addEventListener('change',()=>{playSfx('chomp1');save()});
@@ -1405,17 +1405,30 @@ function startFight(id,mode){
     const c=$('bfCard');if(c)c.remove();
   },1200);
 }
+// The boss theme is music, so it answers to the same switches as the main theme: muted,
+// any slider at zero, and the Music toggle. It used to ignore all three.
+function bossMusicOn(){return !S.muted&&S.vol>0&&S.musVol>0&&S.music&&!!fight}
 function playBossMusic(on){
   try{
-    if(on){
+    if(on&&bossMusicOn()){
       if(!bossAudio)bossAudio=new Audio(BOSS_THEME);
       bossAudio.currentTime=0;bossAudio.loop=false;bossAudio.volume=Math.min(1,S.vol*S.musVol);
       if(bgm)bgm.volume=Math.min(1,S.vol*S.musVol*.2);
       const p=bossAudio.play();if(p&&p.catch)p.catch(()=>{});
     }else{
       if(bossAudio)bossAudio.pause();
+      // restore the main theme after a fight (cleanupFight still has fight set at this point)
       if(bgm&&S.music)bgm.volume=Math.min(1,S.vol*S.musVol);
     }
+  }catch(e){}
+}
+// Called whenever a sound or music setting changes, so flipping a switch mid-fight is felt.
+function syncBossMusic(){
+  try{
+    if(!bossAudio)return;
+    if(!bossMusicOn()){bossAudio.pause();return}
+    bossAudio.volume=Math.min(1,S.vol*S.musVol);
+    if(bossAudio.paused){const p=bossAudio.play();if(p&&p.catch)p.catch(()=>{})}
   }catch(e){}
 }
 function cleanupFight(){
