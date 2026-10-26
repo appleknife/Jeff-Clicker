@@ -1155,7 +1155,7 @@ function draw(){
   $('progTxt').textContent=`This run: ${fmt(S.run)} / ${fmt(nd)} heroes`+(S.good||S.menace?`  ·  Goodest Boy ×${S.good}, Menace ×${S.menace}`:'');
   $('prestigeBtn').disabled=S.run<nd;$('prestigeBtn').textContent=S.gems<6?`Claim ${GEMS[S.gems][0]} gem`:'Claim bonus gem';
   $('snapBtn').hidden=!(S.gems>=6&&!S.snap);
-  const bTab=$('tab-boss');if(bTab)bTab.hidden=!(bs().unlocked||DEEP_PREVIEW);
+  const bTab=$('tab-boss');if(bTab)bTab.hidden=!(bs().unlocked||DEEP_PREVIEW||EX_PREVIEW);
   const finEl=$('fin');if(finEl)finEl.hidden=!(S.gems>=5&&!bs().unlocked);
   if(String(S.gems)!==gemKey){buildGems();gemKey=String(S.gems)}
   const n=Date.now();S.buffs=S.buffs.filter(b=>b.end>n);
