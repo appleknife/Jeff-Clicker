@@ -37,7 +37,7 @@ localStorage can be wiped by clearing site data, and iOS evicts it from sites th
 3. In the repository, open **Settings → Pages**. Under **Build and deployment**, set **Source** to **Deploy from a branch**, choose `main` and `/ (root)`, and save.
 4. After a minute or two, the game is live at `https://YOUR-USERNAME.github.io/Jeff-Clicker/`.
 
-To update later, upload the new files and bump the cache name in `sw.js` (`jeff-clicker-v4` → `jeff-clicker-v5`) so installed copies pick up the change.
+To update later, upload the new files and bump the cache name in `sw.js` (`jeff-clicker-v5` → `jeff-clicker-v6`) so installed copies pick up the change.
 
 ## Run it locally
 
