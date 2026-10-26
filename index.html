@@ -203,6 +203,14 @@ button:focus-visible,label:focus-within{outline:3px solid var(--sun);outline-off
 .wardrobe{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:6px}
 .wardrobe .card{cursor:pointer}
 .wardrobe .card span{font-size:11px;color:var(--muted);font-weight:700}
+.wardrobe .card{padding:6px;gap:2px}
+.thumb{width:100%;aspect-ratio:1;object-fit:contain;border-radius:9px;background:color-mix(in srgb,var(--water2) 16%,transparent);display:block}
+.eqthumb{width:54px;height:54px;border-radius:11px;object-fit:contain;flex:none;background:color-mix(in srgb,var(--water2) 16%,transparent)}
+.card .st{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);min-height:12px;margin-top:2px}
+.card.pk{box-shadow:0 0 0 2px var(--menace)}
+.card.eq,.card.eq.pk{box-shadow:0 0 0 3px var(--accent)}
+.card.pk .st{color:var(--menace)}
+.results .thumb{max-height:70px}
 .stars{font-size:11px;color:var(--rL);letter-spacing:1px}
 .equipped{display:flex;gap:12px;align-items:center;background:var(--panel2);border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:10px}
 .equipped .g{font-size:32px}
@@ -434,7 +442,7 @@ footer p{margin:0;max-width:62ch}
           <div class="dome" id="dome"></div>
           <div style="flex:1;min-width:180px">
             <h2 style="margin-bottom:4px">Costume Capsules</h2>
-            <p class="rates">Common <b>58%</b> · Rare <b>28%</b> · Epic <b>11.5%</b> · Legendary <b>2.5%</b></p>
+            <p class="rates">Rare <b>30%</b> · Epic <b>52%</b> · Legendary <b>18%</b></p>
             <p class="rates num" id="pityTxt"></p>
             <p class="rates">Every 10-pull includes an Epic or better. Duplicates add a star (max 5) and power up the perk.</p>
           </div>
@@ -450,8 +458,12 @@ footer p{margin:0;max-width:62ch}
 
       <div data-pane="ward" hidden>
         <h2 style="margin-bottom:2px">The Bubble</h2>
-        <p class="hint">Jeff's costume locker. Tap a costume to put it on.</p>
+        <p class="hint">Wear any costume you own and slot any ability you own — they don't have to match.</p>
         <div class="equipped" id="equipped"></div>
+        <div class="buyrow" id="wardMode" role="group" aria-label="What tapping a costume sets">
+          <button class="qbtn" data-mode="look" aria-pressed="true">Set the look</button>
+          <button class="qbtn" data-mode="perk" aria-pressed="false">Set the ability</button>
+        </div>
         <p class="hint num" id="colTxt"></p>
         <div class="wardrobe" id="wardrobe"></div>
       </div>
@@ -552,29 +564,37 @@ ONE.push(
 );
 
 const SKINS=[
-  // id, name, rarity, glyph, perk kind, perk value, filter, ring color
-  ['littleguy','Just a Little Guy','C','•','all',.02,'','rgba(255,255,255,.35)'],
-  ['wetpaws','Wet Paws','C','∴','click',.06,'saturate(1.15)','#8fd3e8'],
-  ['fishbreath','Fish Breath','C','≈','ps',.06,'hue-rotate(-12deg)','#9be0c4'],
-  ['towel','Beach Towel','C','▤','ult',.06,'sepia(.15)','#f6a7a7'],
-  ['sandy','Sandy','C','⁘','event',.08,'sepia(.35) saturate(1.1)','#e4c48a'],
-  ['puddle','Puddle Jumper','C','◌','token',.15,'brightness(1.08)','#a8c7ff'],
-  ['ducky','Ducky Dip','R','◒','ult',.2,'saturate(1.25)','#ffd23f'],
-  ['nightswim','Night Swim','R','☾','ps',.14,'brightness(.78) saturate(1.2)','#3a4fa8'],
-  ['goldfin','Golden Fin','R','✦','click',.16,'sepia(.55) saturate(1.5)','#e9b522'],
-  ['bubblebath','Bubble Bath','R','○','event',.22,'brightness(1.1) saturate(.9)','#9fe7ff'],
-  ['poolparty','Pool Party','R','✺','all',.07,'hue-rotate(20deg) saturate(1.2)','#3fcf87'],
-  ['fuzzlefin','Cuddly Fuzzlefin','E','❄','ps',.28,'brightness(1.12) saturate(.75)','#cfeaff'],
-  ['dolphin','Incognito Dolphin','E','◐','click',.32,'hue-rotate(-25deg)','#5fa8d3'],
-  ['chunky','Chunky Boy','E','●','all',.14,'saturate(1.1)','#ff9d5c'],
-  ['nyan','Nyan Jeff','E','≋','token',.5,'hue-rotate(260deg) saturate(1.6)','#ff7ad9'],
-  ['sharknos','Sharknos','L','♛','all',.3,'hue-rotate(60deg) saturate(1.5)','#9b47e6'],
-  ['sunshine','Sunshine Land Shark','L','✿','ps',.6,'sepia(.25) saturate(1.4) brightness(1.08)','#f7bd2e'],
-  ['maid','Maid to Chomp','L','♥','click',.7,'saturate(1.15) hue-rotate(-8deg)','#ff8fb8'],
-  ['sheep',"Shark in Sheep's Clothing",'L','☁','event',.8,'grayscale(.35) brightness(1.15)','#f2f2f2'],
-  ['jeffpool','Jeff-Pool','L','✖','ult',.6,'hue-rotate(150deg) saturate(1.3)','#e2403a'],
-].map(a=>({id:a[0],nm:a[1],r:a[2],g:a[3],k:a[4],v:a[5],fx:a[6],ring:a[7]}));
-const RNAME={C:'Common',R:'Rare',E:'Epic',L:'Legendary'};
+  // Official Marvel Rivals costumes. Rarity follows the game's own tiers:
+  // C = default, R = Rare, E = Epic, L = Legendary. Art: assets/img/skins/<id>.webp
+  // id, name, rarity, perk kind, perk value
+  ['default','Jeff the Land Shark','C','all',0],
+  ['adopted-avenger','Adopted Avenger','R','all',.12],
+  ['razor-tooth','Razor-Tooth','R','click',.15],
+  ['jeff-pool','Jeff-Pool','E','ult',.3],
+  ['powder-pink','Powder Pink','E','token',.3],
+  ['blue-blizzard','Blue Blizzard','E','ps',.3],
+  ['incognito-dolphin','Incognito Dolphin','E','click',.3],
+  ['shark-in-sheeps-clothing',"Shark in Sheep's Clothing",'E','event',.3],
+  ['sharknos','Sharknos','E','all',.2],
+  ['cuddly-fuzzlefin','Cuddly Fuzzlefin','E','ps',.3],
+  ['gwenpool','Gwenpool','E','token',.3],
+  ['8-bit-bash','8-Bit Bash','E','click',.3],
+  ['incognito-blue','Incognito Blue','E','event',.3],
+  ['maid-to-chomp','Maid to Chomp','E','ult',.3],
+  ['jeff-olantern',"Jeff O'Lantern",'L','event',.7],
+  ['duck-defender','Duck Defender','L','ps',.7],
+  ['verdant-vortex','Verdant Vortex','L','ps',.7],
+  ['blue-barrage','Blue Barrage','L','click',.7],
+  ['white-waddle','White Waddle','L','ult',.7],
+  ['green-bill','Green Bill','L','token',.7],
+  ['sunshine-land-shark','Sunshine Land Shark','L','ps',.7],
+  ['business-shark','Business Shark','L','token',.7],
+  ['devil-landshark','Devil Landshark','L','click',.7],
+  ['magma-menace','Magma Menace','L','all',.5],
+  ['rosy-ruin','Rosy Ruin','L','event',.7],
+  ['devouring-duo','Devouring Duo','L','all',.5],
+].map(a=>({id:a[0],nm:a[1],r:a[2],k:a[3],v:a[4],g:'',fx:'',ring:'',art:'assets/img/skins/'+a[0]+'.webp'}));
+const RNAME={C:'Default',R:'Rare',E:'Epic',L:'Legendary'};
 const PERK={all:'everything',ps:'per second',click:'chomps',ult:'ult charge',event:'event rewards',token:'token earnings'};
 const GEMS=[['Space','#3d7bff'],['Mind','#f2c230'],['Reality','#e2403a'],['Power','#9b47e6'],['Time','#2cb36b'],['Soul','#f08a2a']];
 const STAGES=[[0,'Snack Size',1,1],[1e3,'Chonk',1.1,1.04],[1e5,'Absolute Unit',1.22,1.08],[1e7,'Mega Chonk',1.34,1.1],[1e9,'Planet Jeff',1.5,1.14]];
@@ -609,20 +629,34 @@ const ACH=[
 
 /* ---------- state ---------- */
 function fresh(){return{eaten:0,run:0,life:0,owned:{},bought:{},ult:0,gems:0,good:0,menace:0,align:0,snap:false,buffs:[],diff:'normal',
-  tok:30,tokFrac:0,vol:.6,voVol:.35,music:false,musVol:.3,skins:{littleguy:1},equip:'littleguy',pity:0,ach:{},chompN:0,
+  tok:30,tokFrac:0,vol:.6,voVol:.35,music:false,musVol:.3,skins:{default:1},art:'default',perk:'default',wardMode:'look',pity:0,ach:{},chompN:0,
   st:{wipes:0,mates:0,ults:0,events:0,clicks:0,pulls:0,pops:0},muted:false,last:Date.now()}}
 let S=fresh();
-try{const raw=localStorage.getItem(KEY);if(raw){const L=JSON.parse(raw);const F=fresh();S=Object.assign(F,L);S.st=Object.assign(fresh().st,L.st||{});
-  if(!S.skins||!Object.keys(S.skins).length)S.skins={littleguy:1};if(!SKINS.find(s=>s.id===S.equip))S.equip='littleguy'}}catch(e){}
+// Old saves used fantasy costume ids. Keep the ones with an official equivalent, drop
+// the rest, and split the old single "equip" into a look (art) and an ability (perk).
+const ALIAS={littleguy:'default',wetpaws:'default',fishbreath:'default',towel:'default',sandy:'default',puddle:'default',
+  ducky:'default',nightswim:'default',goldfin:'default',bubblebath:'default',poolparty:'default',chunky:'default',nyan:'default',
+  fuzzlefin:'cuddly-fuzzlefin',dolphin:'incognito-dolphin',sunshine:'sunshine-land-shark',maid:'maid-to-chomp',
+  jeffpool:'jeff-pool',sheep:'shark-in-sheeps-clothing',sharknos:'sharknos'};
+function migrate(){const old=S.skins||{},next={default:1};
+  for(const id of Object.keys(old)){const n=ALIAS[id]||(SKINS.some(s=>s.id===id)?id:null);if(n)next[n]=Math.max(next[n]||0,old[id]|0)}
+  S.skins=next;const eq=ALIAS[S.equip]||S.equip||'default';
+  S.art=next[eq]?eq:'default';S.perk=S.art;if(!S.wardMode)S.wardMode='look'}
+try{const raw=localStorage.getItem(KEY);if(raw){const L=JSON.parse(raw);const F=fresh();S=Object.assign(F,L);S.st=Object.assign(F.st,L.st||{});
+  if(!S.art||!S.perk||!S.skins||!S.skins.default)migrate();
+  else{const keep={};for(const id of Object.keys(S.skins))if(SKINS.some(s=>s.id===id))keep[id]=S.skins[id];
+    keep.default=Math.max(1,keep.default||0);S.skins=keep;
+    if(!S.skins[S.art])S.art='default';if(!S.skins[S.perk])S.perk='default'}}}catch(e){}
 
 const own=id=>S.owned[id]||0;
 const cost=u=>Math.ceil(u.base*Math.pow(u.g,own(u.id)));
 const bmult=id=>Math.pow(2,TIER_AT.reduce((n,_,i)=>n+(S.bought[`${id}_t${i}`]?1:0),0));
 const gemMult=()=>1+.25*Math.min(S.gems,6)+.1*Math.max(0,S.gems-6);
 function buffMult(k){const n=Date.now();return S.buffs.filter(b=>b.end>n&&(b.k==='all'||b.k===k)).reduce((m,b)=>m*b.m,1)}
-const eqSkin=()=>SKINS.find(s=>s.id===S.equip)||SKINS[0];
-function skinMult(k){const s=eqSkin(),st=S.skins[s.id]||1;let m=1;
-  if(s.k===k||(s.k==='all'&&(k==='ps'||k==='click')))m+=s.v*(1+.5*(st-1));
+const artSkin=()=>SKINS.find(s=>s.id===S.art)||SKINS[0];
+const perkSkin=()=>SKINS.find(s=>s.id===S.perk)||SKINS[0];
+function skinMult(k){const s=perkSkin(),st=S.skins[s.id]||1;let m=1;
+  if(s.k==='all'||s.k===k)m+=s.v*(1+.5*(st-1));
   if(k==='ps'||k==='click')m*=1+.01*Object.keys(S.skins).length;return m}
 function basePs(){return UP.filter(u=>u.kind==='ps').reduce((s,u)=>s+own(u.id)*u.v*bmult(u.id),0)}
 function ps(){return basePs()*gemMult()*(1+.5*S.good)*skinMult('ps')*buffMult('ps')}
@@ -649,7 +683,11 @@ function jingle(notes=[523,659,784]){notes.forEach((f,i)=>setTimeout(()=>blip(f,
 
 /* ---------- art ---------- */
 const img=$('artImg');
-function setArt(src){img.src=src||DEFAULT_ART;img.hidden=false;$('artPh').hidden=true;$('artClear').hidden=!src}
+let customArt=null;
+// Costume art wins while a real costume is worn; your own uploaded art is the default look.
+function applyArt(){const s=artSkin();const src=(S.art==='default'&&customArt)?customArt:s.art;
+  if(img.getAttribute('src')!==src)img.src=src;img.hidden=false;$('artPh').hidden=true;$('artClear').hidden=!customArt}
+function setArt(src){customArt=src||null;applyArt()}
 try{setArt(localStorage.getItem(ART))}catch(e){}
 $('artIn').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
   r.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,512/Math.max(im.width,im.height));const c=document.createElement('canvas');
@@ -660,7 +698,7 @@ $('artClear').onclick=()=>{setArt(null);try{localStorage.removeItem(ART)}catch(e
 /* ---------- chomp ---------- */
 const stage=$('stage'),art=$('art');
 function stageInfo(){let s=STAGES[0];for(const x of STAGES)if(S.run>=x[0])s=x;return s}
-function artTransform(){const s=stageInfo();const extra=S.equip==='chunky'?.12:0;return`scale(${s[2]+extra},${s[3]})`}
+function artTransform(){const s=stageInfo();return`scale(${s[2]},${s[3]})`}
 function floatText(txt,x,y,cls){const r=stage.getBoundingClientRect();const el=document.createElement('div');el.className='float '+(cls||'');el.textContent=txt;
   el.style.left=(x-r.left-20)+'px';el.style.top=(y-r.top-20)+'px';stage.appendChild(el);setTimeout(()=>el.remove(),900)}
 function ripple(e){if(reduce||stage.querySelectorAll('.ripple').length>4)return;const r=stage.getBoundingClientRect();
@@ -678,7 +716,7 @@ function chomp(e){
   lastAct=Date.now();if(Date.now()-lastChompVo>15000&&Math.random()<1/25){lastChompVo=Date.now();playSfx('chomp'+(1+Math.floor(Math.random()*5)))}S.chompN++;if(S.chompN>=(S.bought.belly?25:50)){S.chompN=0;giveTok(1)}
   const r=$('jeff').getBoundingClientRect();const x=e.clientX||r.left+r.width/2,y=e.clientY||r.top+r.height/3;
   floatText(label,x+(Math.random()*30-15),y,cls);blip(200+Math.random()*80);
-  if(!reduce){const s=stageInfo();const ex=S.equip==='chunky'?.12:0;art.animate([{transform:`scale(${(s[2]+ex)*1.08},${s[3]*.9})`},{transform:artTransform()}],{duration:140,easing:'ease-out'})}
+  if(!reduce){const s=stageInfo();const ex=0;art.animate([{transform:`scale(${(s[2]+ex)*1.08},${s[3]*.9})`},{transform:artTransform()}],{duration:140,easing:'ease-out'})}
   ripple(e);draw();
 }
 $('jeff').addEventListener('click',chomp);
@@ -689,7 +727,7 @@ let ultWasReady=null;
 function ultReadyFx(){playSfx('ready');log('Ult ready. "It\'s Jeff!" is waiting.');announce('Ult ready');if(reduce)return;
   $('readyFlash').animate([{transform:'scale(.4)',opacity:0},{transform:'scale(1)',opacity:.95,offset:.35},{transform:'scale(1.25)',opacity:0}],{duration:1100,easing:'ease-out'})}
 let ultAudio;function playUlt(){if(S.muted)return;try{ultAudio=ultAudio||new Audio(ULT_SFX);ultAudio.currentTime=0;ultAudio.volume=Math.min(1,.9*S.vol*S.voVol);if(ultAudio.volume<=0)return;const p=ultAudio.play();if(p&&p.catch)p.catch(()=>blip(120,'sawtooth',.4,.06))}catch(e){blip(120,'sawtooth',.4,.06)}}
-$('ultBtn').onclick=()=>{if(S.ult<100)return;$('spit').hidden=false;$('ultBtn').disabled=true;playUlt();if(S.equip==='fuzzlefin')setTimeout(()=>playSfx('brrPowerful'),1600);log('NOM NOM NOM. Jeff dives into the whirlpool...')};
+$('ultBtn').onclick=()=>{if(S.ult<100)return;$('spit').hidden=false;$('ultBtn').disabled=true;playUlt();if(S.art==='cuddly-fuzzlefin')setTimeout(()=>playSfx('brrPowerful'),1600);log('NOM NOM NOM. Jeff dives into the whirlpool...')};
 $('spit').addEventListener('click',e=>{const b=e.target.closest('[data-spit]');if(!b)return;const k=b.dataset.spit;const m=ultMult();playSfx(k==='point'?'ally':'end');
   if(k==='cliff'){const n=(ps()*90+perClick()*120+500)*m;gain(n);S.st.wipes++;nudge(-10);log(`Team wipe! Six heroes spat off the map. +${fmt(n)}`);toast('TEAM WIPE');}
   if(k==='spawn'){addBuff('Spawn camping','all',3,30);nudge(-6);log('Dropped the whole team in their own spawn. ×3 for 30s.')}
@@ -734,8 +772,8 @@ $('ups').addEventListener('click',e=>{const b=e.target.closest('[data-one]');if(
   for(let i=0;i<11;i++)h+=`<i style="left:${8+(i*37)%72}px;top:${30+((i*53)%60)}px;background:${cols[i%cols.length]}"></i>`;$('dome').innerHTML=h})();
 function tokCost(){return Math.max(500,Math.ceil(ps()*120+perClick()*60))}
 function rollOne(forceEpic){S.pity++;let r;
-  if(S.pity>=60)r='L';else{const x=Math.random()*100;r=x<2.5?'L':x<14?'E':x<42?'R':'C'}
-  if(forceEpic&&(r==='C'||r==='R'))r='E';if(r==='L')S.pity=0;
+  if(S.pity>=60)r='L';else{const x=Math.random()*100;r=x<18?'L':x<70?'E':'R'}
+  if(forceEpic&&r!=='L')r='E';if(r==='L')S.pity=0;
   const pool=SKINS.filter(s=>s.r===r);const sk=pool[Math.floor(Math.random()*pool.length)];
   const had=S.skins[sk.id]||0;let tag='NEW',refund=0;
   if(!had)S.skins[sk.id]=1;else if(had<5){S.skins[sk.id]=had+1;tag='★'+(had+1)}else{refund=3;S.tok+=3;tag='+3 tok'}
@@ -744,22 +782,31 @@ function pull(n){const price=n===10?90:10;if(S.tok<price)return;S.tok-=price;con
   for(let i=0;i<n;i++){const needG=n===10&&i===n-1&&!out.some(o=>o.sk.r==='E'||o.sk.r==='L');out.push(rollOne(needG))}
   const best=out.some(o=>o.sk.r==='L')?'L':out.some(o=>o.sk.r==='E')?'E':'R';
   const d=$('dome');d.classList.remove('shake');void d.offsetWidth;d.classList.add('shake');
-  $('results').innerHTML=out.map((o,i)=>`<div class="card ${o.sk.r}" style="animation-delay:${i*60}ms"><span class="tag">${o.tag}</span><span class="g">${o.sk.g}</span><b>${esc(o.sk.nm)}</b><small>${RNAME[o.sk.r]}</small></div>`).join('');
-  const gotFuzz=out.some(o=>o.sk.id==='fuzzlefin');playSfx(gotFuzz?'brrExcited':best==='L'?'celebratory':best==='E'?'enthusiastic':n===10?'disappointed':'chomp1');
+  $('results').innerHTML=out.map((o,i)=>`<div class="card ${o.sk.r}" style="animation-delay:${i*60}ms"><span class="tag">${o.tag}</span><img class="thumb" src="assets/img/skins/${o.sk.id}-sm.webp" alt=""><b>${esc(o.sk.nm)}</b><small>${RNAME[o.sk.r]}</small></div>`).join('');
+  const gotFuzz=out.some(o=>o.sk.id==='cuddly-fuzzlefin');playSfx(gotFuzz?'brrExcited':best==='L'?'celebratory':best==='E'?'enthusiastic':n===10?'disappointed':'chomp1');
   if(best==='L'){jingle([523,659,784,1047]);const l=out.find(o=>o.sk.r==='L');toast(`LEGENDARY: ${l.sk.nm}!`);log(`Pulled a Legendary: ${l.sk.nm}.`)}else jingle(best==='E'?[523,659,784]:[523,659]);
   const nw=out.filter(o=>o.isNew).length;if(nw)log(`${nw} new costume${nw>1?'s':''} for The Bubble.`);draw()}
 $('pull1').onclick=()=>pull(1);$('pull10').onclick=()=>pull(10);
 $('buyTok').onclick=()=>{const c=tokCost();if(S.eaten<c)return;S.eaten-=c;S.tok+=10;blip(700,'triangle');draw()};
 
 /* ---------- wardrobe ---------- */
-function perkTxt(s){const st=S.skins[s.id]||1;return`+${Math.round(s.v*(1+.5*(st-1))*100)}% ${PERK[s.k]}`}
+function perkTxt(s){if(!s.v)return'No ability';const st=S.skins[s.id]||1;return`+${Math.round(s.v*(1+.5*(st-1))*100)}% ${PERK[s.k]}`}
 function buildWardrobe(){const order={L:0,E:1,R:2,C:3};
   $('wardrobe').innerHTML=SKINS.slice().sort((a,b)=>order[a.r]-order[b.r]).map(s=>{const st=S.skins[s.id];
     if(!st)return`<div class="card ${s.r} locked"><span class="g">?</span><b>???</b><small>${RNAME[s.r]}</small></div>`;
-    return`<button class="card ${s.r} ${S.equip===s.id?'eq':''}" data-skin="${s.id}"><span class="g">${s.g}</span><b>${esc(s.nm)}</b><span class="stars">${'★'.repeat(st)}${'☆'.repeat(5-st)}</span><span>${perkTxt(s)}</span><small>${RNAME[s.r]}</small></button>`}).join('');
-  const s=eqSkin();$('equipped').innerHTML=`<span class="g" style="color:var(--r${s.r})">${s.g}</span><p><strong>${esc(s.nm)}</strong>${RNAME[s.r]} · ${perkTxt(s)}</p>`;
-  const n=Object.keys(S.skins).length;$('colTxt').textContent=`${n}/${SKINS.length} collected · collection bonus +${n}% chomps and per second. Tap a costume to wear it.`}
-$('wardrobe').addEventListener('click',e=>{const b=e.target.closest('[data-skin]');if(!b)return;S.equip=b.dataset.skin;blip(600,'triangle');if(S.equip==='fuzzlefin')playSfx('brrCocky');buildWardrobe();draw();log(`Jeff is now wearing ${eqSkin().nm}.`)});
+    const worn=S.art===s.id,used=S.perk===s.id;
+    return`<button class="card ${s.r} ${worn?'eq':''} ${used?'pk':''}" data-skin="${s.id}"><img class="thumb" src="assets/img/skins/${s.id}-sm.webp" alt="" loading="lazy"><b>${esc(s.nm)}</b><span class="stars">${'★'.repeat(st)}${'☆'.repeat(5-st)}</span><span>${perkTxt(s)}</span><small>${RNAME[s.r]}</small><span class="st">${worn?'Worn':''}${worn&&used?' · ':''}${used?'Ability':''}</span></button>`}).join('');
+  const a=artSkin(),p=perkSkin();
+  $('equipped').innerHTML=`<img class="eqthumb" src="assets/img/skins/${a.id}-sm.webp" alt=""><p><strong>Wearing: ${esc(a.nm)}</strong>${RNAME[a.r]} · look only<br>Ability: ${esc(p.nm)} · ${perkTxt(p)}</p>`;
+  const n=Object.keys(S.skins).length;
+  $('colTxt').textContent=`${n}/${SKINS.length} collected · +${n}% chomps and per second. Tapping a costume sets its ${S.wardMode==='perk'?'ability':'look'}.`;
+  $('wardMode').querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===S.wardMode))}
+$('wardMode').addEventListener('click',e=>{const b=e.target.closest('[data-mode]');if(!b)return;
+  S.wardMode=b.dataset.mode;save();buildWardrobe()});
+$('wardrobe').addEventListener('click',e=>{const b=e.target.closest('[data-skin]');if(!b)return;const id=b.dataset.skin;
+  if(S.wardMode==='perk'){S.perk=id;log(`Ability set to ${perkSkin().nm}.`)}
+  else{S.art=id;log(`Jeff is now wearing ${artSkin().nm}.`);if(id==='cuddly-fuzzlefin')playSfx('brrCocky')}
+  blip(600,'triangle');buildWardrobe();draw();save()});
 
 /* ---------- sharknos ---------- */
 $('prestigeBtn').onclick=()=>{if(S.run<need())return;$('paths').hidden=false;$('prestigeBtn').hidden=true};
@@ -850,9 +897,12 @@ function draw(){
   if(si>stageIdx){if(stageIdx>=0){toast('New size: '+st[1]+'!');announce('Jeff grew to '+st[1]);jingle([523,659,784,1047])}stageIdx=si}
   if($('runFill')){$('runFill').style.width=(Math.min(1,S.run/need())*100)+'%';
     $('runTxt').textContent=`${fmt(S.run)} / ${fmt(need())} heroes for the next gem`;$('nextTxt').textContent=nextTip()}
-  const sk=eqSkin(),g=Math.min(S.gems,6);
-  art.style.filter=[sk.fx,g?`hue-rotate(${g*11}deg) saturate(${1+g*.08})`:''].filter(Boolean).join(' ')||'';
-  $('jeff').style.setProperty('--ring',sk.ring);$('acc').textContent=sk.id==='littleguy'?'':sk.g;
+  const sk=artSkin(),g=Math.min(S.gems,6),real=S.art!=='default';
+  applyArt();
+  art.style.filter=real?(g?`saturate(${(1+g*.05).toFixed(2)}) hue-rotate(${g*2}deg)`:'')
+    :[sk.fx,g?`hue-rotate(${g*11}deg) saturate(${1+g*.08})`:''].filter(Boolean).join(' ');
+  $('jeff').style.setProperty('--ring',real?(g?`rgba(155,71,230,${(.12+g*.1).toFixed(2)})`:'rgba(255,255,255,.18)'):(sk.ring||'rgba(255,255,255,.2)'));
+  $('acc').textContent='';
   $('skinPill').textContent=sk.nm;
   const al=S.align,ap=$('alignPill');const neutral=Math.abs(al)<=20;ap.hidden=neutral;
   ap.textContent=al>20?'Goodest Boy':"Satan's Greatest Soldier";ap.className='pill '+(al>20?'good':'menace');
@@ -867,12 +917,14 @@ function draw(){
   // capsules
   $('pull1').disabled=S.tok<10;$('pull10').disabled=S.tok<90;const tc=tokCost();$('buyTok').textContent=`Trade ${fmt(tc)} heroes for 10 tokens`;$('buyTok').disabled=S.eaten<tc;
   $('pityTxt').textContent=`Legendary guaranteed in ${60-S.pity} pulls`;$('capDot').hidden=S.tok<10;
-  const wk=JSON.stringify(S.skins)+S.equip;if(wk!==wardKey){wardKey=wk;if(!document.querySelector('[data-pane="ward"]').hidden)buildWardrobe()}
+  const wk=JSON.stringify(S.skins)+S.art+S.perk;
+  if(wk!==wardKey){wardKey=wk;document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===S.wardMode));
+    if(!document.querySelector('[data-pane="ward"]').hidden)buildWardrobe()}
   $('sLife').textContent=fmt(S.life);$('sWipes').textContent=S.st.wipes;$('sMates').textContent=S.st.mates;$('sUlts').textContent=S.st.ults;$('sEvents').textContent=S.st.events;$('sPulls').textContent=S.st.pulls;$('sPops').textContent=S.st.pops;
   $('shareTxt').textContent=brag();
 }
 function brag(){const legs=SKINS.filter(s=>s.r==='L'&&S.skins[s.id]).length;
-  return`My Jeff has eaten ${fmt(S.life)} heroes in Jeff Clicker: ${S.st.wipes} team wipes, ${S.st.mates} teammates swallowed out of spite, ${Object.keys(S.skins).length}/${SKINS.length} costumes (${legs} Legendary), ${S.gems} Sharknos gems. Wearing: ${eqSkin().nm}. Vibe: ${$('alignPill').textContent}.`}
+  return`My Jeff has eaten ${fmt(S.life)} heroes in Jeff Clicker: ${S.st.wipes} team wipes, ${S.st.mates} teammates swallowed out of spite, ${Object.keys(S.skins).length}/${SKINS.length} costumes (${legs} Legendary), ${S.gems} Sharknos gems. Wearing: ${artSkin().nm}, ability: ${perkSkin().nm}. Vibe: ${$('alignPill').textContent}.`}
 $('copyBtn').onclick=()=>{const t=brag();try{navigator.clipboard.writeText(t).then(()=>toast('Copied. Go brag.'),sel)}catch(e){sel()}
   function sel(){const r=document.createRange();r.selectNodeContents($('shareTxt'));const s=getSelection();s.removeAllRanges();s.addRange(r);toast('Text selected. Copy it from here.')}};
 $('muteBtn').onclick=()=>{S.muted=!S.muted;$('muteBtn').textContent='Sound: '+(S.muted?'off':'on');updateMusic()};
