@@ -57,7 +57,7 @@ manifest.webmanifest        install-on-home-screen details
 sw.js                       offline cache; art is precached, the theme song caches on first play
 assets/img/                 Jeff art, bubble, ult icon, Jeff emblem, app icons
 assets/img/skins/           one WebP per costume, plus 160px thumbnails for The Bubble
-assets/audio/               ult sounds and the theme song
+assets/audio/               ult sounds, the theme song and boss-theme.mp3 (boss fights)
 assets/audio/voice/         Jeff voice lines
 ```
 
