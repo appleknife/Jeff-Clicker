@@ -6,7 +6,7 @@ An unofficial fan-made clicker game starring Jeff the Land Shark from Marvel Riv
 
 ## Features
 
-- **Chomp and upgrade:** 10 upgrades, tiered one-time upgrades at 10/25/50/100 owned, plus special unlocks like Chomp Crits, Golden Belly, Fin Radar and Bottomless Tank. Buy ×1, ×10 or max, and hold a row to buy repeatedly.
+- **Chomp and upgrade:** 10 upgrades, tiered one-time upgrades at 10/25/50/100 owned, plus special unlocks like Chomp Crits, Golden Belly, Fin Radar and Bottomless Tank. Buy ×1, ×10 or max, and hold a row to buy repeatedly — with ×10 or max selected each row shows what the batch costs, and how many you can afford right now if it is not all of them.
 - **Auto-Chomp:** up to 10 levels of Jeff tapping for himself, so you can put the phone down and still keep the ult coming. It is deliberately worse than a real tap — 60% of your per-chomp damage, half the ult charge, half a token — so mashing still wins. Boss fights stay hand-played, and it survives the gem reset.
 - **Two counters:** "Total eaten" is a lifetime tally that never goes down; "Heroes to spend" is the balance upgrades and capsules actually drain.
 - **The ult:** charge the meter, hit **IT'S JEFF!**, then choose where to spit the heroes: off the cliff, into spawn, or back on point.
@@ -89,10 +89,10 @@ five-minute save and a five-hour save get the same fight. Tap fast to build a co
 - First clear: **+2% to everything, permanently**, and unlocks that hero's element.
 - Elements cycle: cosmic beats earth beats lightning beats cosmic. They only matter in fights,
   so the costume you *wear* stays purely cosmetic.
-- Trophies: 3 for a first kill, 2 for a recruit, 1 for a repeat. A tally for now.
-- `?deep=1` on the URL reveals the tab for testing without unlocking it in your save; `?ex=1` also adds
-  **EX** buttons to each boss card. Those start the fight at 42% HP so the transformation fires on your
-  first couple of taps; in that mode any fight triggers it at 40%. The EX *mode* itself is not built yet.
+- Trophies: 3 for a first kill, 2 for a recruit, 1 for a repeat, **5 for an EX clear** — and they buy element mastery.
+- `?deep=1` on the URL reveals the tab for testing without unlocking it in your save. `?ex=1` also
+  previews the form change on bosses you have not recruited: it adds an **EX** button that starts the
+  fight at 60% so the transformation fires naturally.
 
 ### Recruiting
 
@@ -125,7 +125,29 @@ Adam's *"Born again!"* line plays from `assets/audio/voice/adam-born-again.mp3` 
 1.66s) and the boss theme ducks to 30% underneath it. A missing file falls back to a chord.
 
 The roster appears under the boss list once you have a first kill, and a recruit takes a free
-team slot automatically. Team fights are **not** built yet.
+team slot automatically.
+
+### EX form
+
+Recruit a boss and an **EX** button appears on their card. EX is the peak of the ladder: roughly
+1.5x the HP of a normal fight, the fastest mechanics, and **FINISH IT only shows at 10%**, so you
+tap almost all of it yourself.
+
+At 40% the boss changes form: about three seconds of heartbeat, a rising drain, a beat of total
+silence, a heavy three-layer hit, then the new form rising out of a black shadow. The arena keeps
+a violet tint and the music stays quieter for the rest of the fight. It plays in full once per
+boss; after that it is an instant change with just the impact.
+
+Each boss fights differently in EX: **Adam** channels twice, **Storm** throws her rings in pairs,
+**Hulk** chains his stomps. A clear pays **+5 trophies**, **+1 element mastery**, and the third
+star on the boss card.
+
+### Element mastery
+
+Five levels per element, each worth **+5% damage** with that element on top of the +35% counter
+bonus. Levels come from a hero's first kill (+1 in their element), an EX clear (+1), and trophies
+(20 for the first level, then +20 each). At **cosmic 5** you get a second on the clock, at
+**lightning 3** telegraph windows widen, and at **earth 3** the stomp grace grows.
 
 ## Disclaimer
 
