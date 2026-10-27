@@ -77,12 +77,17 @@ five-minute save and a five-hour save get the same fight. Tap fast to build a co
   or he heals to 42%.
 - **Storm** throws red rings. Tap inside one before it closes to counter for +14 damage.
 - **The Hulk** glows for a full second before his quiet window. Stop tapping through it.
-- **Groot** puts roots up in a ring. Same deal as Storm, slower and wider.
+- **Groot** puts up **three small roots at once** — all three have to be cleared.
 - **Human Torch** flares before he burns. Hulk's rule with less warning.
-- **Luna Snow** throws ice rings, closer together than Storm's.
+- **Luna Snow** throws a single **fast, small** ice ring.
 - **Thor** brings the hammer down. Tighter windows than Hulk.
-- **Iron Man** fires missiles, faster than anything above him.
+- **Iron Man** fires missiles **in pairs from the first second**.
 - **Scarlet Witch** rewrites the fight — a channel you have to out-tap, like Adam's, but hers hits hard.
+
+Every telegraph is tinted by the boss's element, and the arena takes a wash of that colour for the
+whole fight, so nine bosses do not look like one. At half health every boss **stops going easy**:
+mechanics close up by a fifth and the next one arrives early. If the element you are wearing counters
+the boss, the HP bar says so (`ICE ×1.35`) — the loadout choice is visible instead of implied.
 
 - **The finisher:** under 20% HP the **FINISH IT** button appears, and it is now a full
   two-and-a-half-second beat: letterbox bars close in and the edges darken, a riser builds while
