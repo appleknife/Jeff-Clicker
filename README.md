@@ -115,6 +115,10 @@ the boss, the HP bar says so (`ICE ×1.35`) — the loadout choice is visible in
 fight against the same hero is a **rematch**: half again the HP, mechanics 32% faster again, and
 **no FINISH IT button** — you tap the last fifth yourself. Win that and they join you.
 
+**Difficulty ceiling:** Scarlet Witch is the bench mark — 150 HP, a 16s clock, and a 30% channel that
+only falls to a crit build. That is "very hard, barely possible": the numbers to match if another
+fight should sit at the top of the ladder, and not to exceed.
+
 The element you earn on the first kill is worth +35% damage and is what makes a rematch fair;
 trying one without it is meant to hurt.
 
