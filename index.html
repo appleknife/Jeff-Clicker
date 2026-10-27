@@ -1326,7 +1326,7 @@ const ELS={cosmic:{nm:'Cosmic',c:'#9b47e6'},lightning:{nm:'Lightning',c:'#f7bd2e
 const STRONG={lightning:'cosmic',earth:'lightning',cosmic:'earth',fire:'ice',ice:'tech',tech:'fire'};
 const BOSSES=[
   {id:'adam-warlock',nm:'ADAM WARLOCK',el:'cosmic',role:'Strategist',hp:90,clock:24,
-   channel:{at:.22,time:3.5,healTo:.42},
+   channel:{at:.22,time:3.5,healTo:.42},cry:'BORN AGAIN',voice:'adam-born-again',
    taunt:'He has already seen how this ends.',
    teach:'When he glows gold he is coming back. Keep tapping.',
    rec:{pas:'Mercy',ds:'your first mistake in a fight costs no time',pasType:'mercy',act:'Born Again',actDs:'+5s on the clock',actType:'addtime',actV:5},
@@ -1366,7 +1366,7 @@ const BOSSES=[
    teach:'Missiles first. Tap the ring.',
    rec:{pas:'Repulsors',ds:'+0.15s on telegraph windows',pasType:'telewin',pasV:.15,act:'Unibeam',actDs:'3s with no mechanics',actType:'quiet'},
    ex:{hp:203,pair:true,teach:'He fires in salvos.'}},
-  {id:'scarlet-witch',nm:'SCARLET WITCH',el:'fire',role:'Duelist',hp:150,clock:20,channel:{at:.3,time:3,healTo:.45},
+  {id:'scarlet-witch',nm:'SCARLET WITCH',el:'fire',role:'Duelist',hp:150,clock:20,channel:{at:.3,time:3,healTo:.45},cry:'CHAOS UNLEASHED',voice:'scarlet-chaos',
    taunt:'Chaos is a ladder.',
    teach:'She rewrites the fight. Out-tap her before it lands.',
    rec:{pas:'Hex Field',ds:'your first mistake is free',pasType:'mercy',act:'Chaos Bolt',actDs:'+5s on the clock',actType:'addtime',actV:5},
@@ -1560,19 +1560,20 @@ function hitBoss(d,e){
   if(f.chPlan.length&&!f.channeling&&f.hp<=f.max*f.chPlan[0].at)beginChannel();
   else if(!f.channeling&&f.finishAt&&f.hp<=f.max*f.finishAt&&!f.finish){f.finish=true;showFinish()}
 }
-// Adam's ult: a channel you can beat by out-tapping it, not an instant free revive.
+// A channel you beat by out-tapping it, not an instant free revive. Adam and Scarlet both use
+// it, so the banner, the voice line and the log text all come from the boss.
 function beginChannel(){
   const f=fight;if(!f||!f.chPlan||!f.chPlan.length)return;
-  const ch=f.chPlan.shift();
+  const ch=f.chPlan.shift(),b=f.b,cry=b.cry||'CHANNEL';
   f.channeling=true;f.channelEnd=nowMs()+ch.time*1000;f.channelTime=ch.time;
   const bo=$('bfBoss');if(bo)bo.classList.add('golden');
   const bar=$('bfChannel');if(bar)bar.hidden=false;
-  const t=document.createElement('div');t.className='bf-cry';t.textContent='BORN AGAIN';
+  const t=document.createElement('div');t.className='bf-cry';t.textContent=cry;
   stage.appendChild(t);setTimeout(()=>t.remove(),1000);
-  playVoice('adam-born-again');
+  if(b.voice)playVoice(b.voice);
   jingle([392,523,659,784]);
-  toast('BORN AGAIN — finish him');
-  log('Adam Warlock: "Born again!" Finish him before it lands.');
+  toast(cry+' — finish it');
+  log(b.nm+': "'+cry+'" — finish it before it lands.');
 }
 function endChannel(healed){
   const f=fight;if(!f||!f.channeling)return;
@@ -1582,14 +1583,14 @@ function endChannel(healed){
   if(healed&&f.b.channel){
     f.hp=Math.max(f.hp,f.max*f.b.channel.healTo);paintBars();
     toast('HE CAME BACK');playSfx('brrPowerful');
-    log('Adam Warlock came back. Golden light, brand new.');
+    log(f.b.nm+' came back. The channel landed.');
     if(!reduce){stage.classList.add('shake');setTimeout(()=>stage.classList.remove('shake'),300)}
   }
 }
 function penalty(msg){
   const f=fight;if(!f||f.phase!=='fight')return;
   // Adam's passive: the first slip of the fight is forgiven outright.
-  if(f.mercy){f.mercy=false;f.pendingHold=false;toast('MERCY · nothing lost');log('Adam Warlock quietly took that one for you.');blip(520,'triangle',.09,.05);return}
+  if(f.mercy){f.mercy=false;f.pendingHold=false;toast('MERCY · nothing lost');log(f.b.nm+' quietly took that one for you.');blip(520,'triangle',.09,.05);return}
   f.left-=3;f.combo=1;f.pendingHold=false;
   const c=$('bfCombo');if(c)c.textContent='×1.00';
   const m=$('bfMeter');if(m)m.style.width='0%';

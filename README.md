@@ -83,7 +83,8 @@ five-minute save and a five-hour save get the same fight. Tap fast to build a co
 - **Luna Snow** throws a single **fast, small** ice ring.
 - **Thor** brings the hammer down. Tighter windows than Hulk.
 - **Iron Man** fires missiles **in pairs from the first second**.
-- **Scarlet Witch** rewrites the fight — a channel you have to out-tap, like Adam's, but hers hits hard.
+- **Scarlet Witch** rewrites the fight — a channel you have to out-tap, like Adam's, but hers hits hard
+  and announces itself as **CHAOS UNLEASHED**.
 
 Every telegraph is tinted by the boss's element, and the arena takes a wash of that colour for the
 whole fight, so nine bosses do not look like one. At half health every boss **stops going easy**:
@@ -136,6 +137,10 @@ can't be melted by your own roster:*
 
 Adam's *"Born again!"* line plays from `assets/audio/voice/adam-born-again.mp3` (mono, 64 kbps,
 1.66s) and the boss theme ducks to 30% underneath it. A missing file falls back to a chord.
+
+Each channel boss names its own line in the `BOSSES` table (`cry` for the banner, `voice` for the
+file), so adding one means dropping an MP3 in `assets/audio/voice/` and naming it — Scarlet's is
+`scarlet-chaos.mp3`, and she stays silent-but-harmonious until that file exists.
 
 The roster appears under the boss list once you have a first kill, and a recruit takes a free
 team slot automatically.
