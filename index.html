@@ -1344,7 +1344,7 @@ const BOSSES=[
    teach:'Tap the red ring before it closes to counter.',
    rec:{pas:'Tailwind',ds:'telegraph rings last 0.35s longer',pasType:'telewin',pasV:.35,act:'Eye of the Storm',actDs:'3s with no boss mechanics',actType:'quiet'},
    ex:{hp:200,pair:true,teach:'The rings come in pairs.'}},
-  {id:'hulk',nm:'THE HULK',el:'earth',role:'Vanguard',hp:110,clock:20,stomp:{every:5.5,warn:1,window:.6,grace:.2},
+  {id:'hulk',nm:'THE HULK',el:'earth',role:'Vanguard',hp:110,clock:20,stomp:{every:5.5,warn:1,window:.6,grace:.2,up:'HULK IS WINDING UP'},
    taunt:'Hulk hates little shark.',
    teach:'Stop tapping the moment he glows.',
    rec:{pas:'Thick Hide',ds:'+4s on the clock',pasType:'clock',pasV:4,act:'Hulk Smash',actDs:'20 damage, instantly',actType:'smash',actV:20},
@@ -1354,7 +1354,7 @@ const BOSSES=[
    teach:'Three roots at once. Clearing one buys the others time.',
    rec:{pas:'Deep Roots',ds:'+0.2s on telegraph windows',pasType:'telewin',pasV:.2,act:'Regrow',actDs:'+4s on the clock',actType:'addtime',actV:4},
    ex:{hp:174,pair:true,teach:'The roots split in two.'}},
-  {id:'human-torch',nm:'HUMAN TORCH',el:'fire',role:'Duelist',hp:125,clock:20,stomp:{every:5,warn:.9,window:.55,grace:.2},
+  {id:'human-torch',nm:'HUMAN TORCH',el:'fire',role:'Duelist',hp:125,clock:20,stomp:{every:5,warn:.9,window:.55,grace:.2,up:'TORCH IS FLARING'},
    taunt:'Flame on.',
    teach:'When he flares, let go of the screen.',
    rec:{pas:'Heat Haze',ds:'+0.12s of stomp grace',pasType:'grace',pasV:.12,act:'Nova Flare',actDs:'22 damage, instantly',actType:'smash',actV:22},
@@ -1364,7 +1364,7 @@ const BOSSES=[
    teach:'Ice rings shatter if you reach them in time.',
    rec:{pas:'Cold Snap',ds:'+0.15s on telegraph windows',pasType:'telewin',pasV:.15,act:'Ice Wall',actDs:'your next mistake is free',actType:'shield'},
    ex:{hp:189,pair:true,teach:'Two rings, one chance.'}},
-  {id:'thor',nm:'THOR',el:'lightning',role:'Vanguard',hp:135,clock:20,stomp:{every:4.6,warn:.85,window:.5,grace:.18},
+  {id:'thor',nm:'THOR',el:'lightning',role:'Vanguard',hp:135,clock:20,stomp:{every:4.6,warn:.85,window:.5,grace:.18,up:'THOR RAISES THE HAMMER'},
    taunt:'For Asgard.',
    teach:'The hammer falls. Do not tap through it.',
    rec:{pas:'Asgardian',ds:'+3s on the clock',pasType:'clock',pasV:3,act:'Thunderclap',actDs:'22 damage, instantly',actType:'smash',actV:22},
@@ -1657,7 +1657,7 @@ function doStomp(short){
   f.nextStomp=now+b.stomp.every*1000*f.mechScale;
   const bo=$('bfBoss');if(bo)bo.classList.add('golden');
   const w=document.createElement('div');w.className='bf-warn warn';
-  w.innerHTML='<b>HULK IS WINDING UP</b><small>stop tapping</small>';
+  w.innerHTML='<b>'+(b.stomp.up||(b.nm+' IS WINDING UP'))+'</b><small>stop tapping</small>';
   stage.appendChild(w);
   blip(150,'sawtooth',.22,.05);
   setTimeout(()=>{
