@@ -68,7 +68,7 @@ To tune balance, edit the `UP` (upgrades), `SKINS` (costume rarities and abiliti
 
 ## Spoilers: The Deep
 
-Past the sixth gem a fourth tab appears: three Marvel Rivals heroes to fight, one at a time.
+Past the sixth gem a fourth tab appears: nine Marvel Rivals heroes to fight, one at a time.
 
 It is a **skill mode, not a numbers mode** — bosses are defined in *taps*, not damage, so a
 five-minute save and a five-hour save get the same fight. Tap fast to build a combo (up to ×2).
@@ -77,6 +77,12 @@ five-minute save and a five-hour save get the same fight. Tap fast to build a co
   or he heals to 42%.
 - **Storm** throws red rings. Tap inside one before it closes to counter for +14 damage.
 - **The Hulk** glows for a full second before his quiet window. Stop tapping through it.
+- **Groot** puts roots up in a ring. Same deal as Storm, slower and wider.
+- **Human Torch** flares before he burns. Hulk's rule with less warning.
+- **Luna Snow** throws ice rings, closer together than Storm's.
+- **Thor** brings the hammer down. Tighter windows than Hulk.
+- **Iron Man** fires missiles, faster than anything above him.
+- **Scarlet Witch** rewrites the fight — a channel you have to out-tap, like Adam's, but hers hits hard.
 
 - **The finisher:** under 20% HP the **FINISH IT** button appears, and it is now a full
   two-and-a-half-second beat: letterbox bars close in and the edges darken, a riser builds while
@@ -87,8 +93,9 @@ five-minute save and a five-hour save get the same fight. Tap fast to build a co
   animation files, no canvas.
 
 - First clear: **+2% to everything, permanently**, and unlocks that hero's element.
-- Elements cycle: cosmic beats earth beats lightning beats cosmic. They only matter in fights,
-  so the costume you *wear* stays purely cosmetic.
+- Elements are two triangles: **cosmic beats earth beats lightning** beats cosmic, and
+  **fire beats ice beats tech** beats fire. They only matter in fights, so the costume you
+  *wear* stays purely cosmetic.
 - Trophies: 3 for a first kill, 2 for a recruit, 1 for a repeat, **5 for an EX clear** — and they buy element mastery.
 - `?deep=1` on the URL reveals the tab for testing without unlocking it in your save. `?ex=1` also
   previews the form change on bosses you have not recruited: it adds an **EX** button that starts the

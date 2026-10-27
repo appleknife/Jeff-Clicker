@@ -622,6 +622,7 @@ footer p{margin:0;max-width:62ch}
         <h2 style="margin-bottom:2px">The Deep</h2>
         <p class="hint">They were down here the whole time. Trophies: <b id="bossTrophies">0</b></p>
         <div class="els" id="bossEls"></div>
+        <p class="hint" id="cycleTxt" hidden></p>
         <div id="bossMastery"></div>
         <div class="bossrow" id="bossList"></div>
         <div id="bossTeamWrap" hidden>
@@ -1315,27 +1316,58 @@ $('saveIn').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return
 
 /* ---------- the deep: boss fights (endgame) ---------- */
 const BOSS_THEME='assets/audio/boss-theme.mp3';
-const ELS={cosmic:{nm:'Cosmic',c:'#9b47e6'},lightning:{nm:'Lightning',c:'#f7bd2e'},earth:{nm:'Earth',c:'#1f9e63'}};
-// element -> what it beats. cosmic > earth > lightning > cosmic, so the first three
-// bosses quietly teach you the cycle: beat one, wear its element on the next.
-const STRONG={lightning:'cosmic',earth:'lightning',cosmic:'earth'};
+const ELS={cosmic:{nm:'Cosmic',c:'#9b47e6'},lightning:{nm:'Lightning',c:'#f7bd2e'},earth:{nm:'Earth',c:'#1f9e63'},
+  fire:{nm:'Fire',c:'#ff6a3d'},ice:{nm:'Ice',c:'#7fd8ff'},tech:{nm:'Tech',c:'#c3ccd8'}};
+// element -> what it beats. Two separate triangles, so learning the first three bosses
+// carries over: cosmic > earth > lightning > cosmic, and fire > ice > tech > fire.
+const STRONG={lightning:'cosmic',earth:'lightning',cosmic:'earth',fire:'ice',ice:'tech',tech:'fire'};
 const BOSSES=[
   {id:'adam-warlock',nm:'ADAM WARLOCK',el:'cosmic',role:'Strategist',hp:90,clock:24,
    channel:{at:.22,time:3.5,healTo:.42},
    taunt:'He has already seen how this ends.',
    teach:'When he glows gold he is coming back. Keep tapping.',
-   rec:{pas:'Mercy',ds:'your first mistake in a fight costs no time',act:'Born Again',actDs:'+5s on the clock'},
+   rec:{pas:'Mercy',ds:'your first mistake in a fight costs no time',pasType:'mercy',act:'Born Again',actDs:'+5s on the clock',actType:'addtime',actV:5},
    ex:{hp:150,channels:[.44,.16],times:[3.2,2.4],teach:'He was never going to stay down.'}},
   {id:'storm',nm:'STORM',el:'lightning',role:'Duelist',hp:120,clock:20,tele:{every:4,window:1.4,icon:'storm-move'},
    taunt:'The sky answers to her.',
    teach:'Tap the red ring before it closes to counter.',
-   rec:{pas:'Tailwind',ds:'telegraph rings last 25% longer',act:'Eye of the Storm',actDs:'3s with no boss mechanics'},
+   rec:{pas:'Tailwind',ds:'telegraph rings last 0.35s longer',pasType:'telewin',pasV:.35,act:'Eye of the Storm',actDs:'3s with no boss mechanics',actType:'quiet'},
    ex:{hp:200,pair:true,teach:'The rings come in pairs.'}},
   {id:'hulk',nm:'THE HULK',el:'earth',role:'Vanguard',hp:110,clock:20,stomp:{every:5.5,warn:1,window:.6,grace:.2},
    taunt:'Hulk hates little shark.',
    teach:'Stop tapping the moment he glows.',
-   rec:{pas:'Thick Hide',ds:'+4s on the clock',act:'Hulk Smash',actDs:'20 damage, instantly'},
+   rec:{pas:'Thick Hide',ds:'+4s on the clock',pasType:'clock',pasV:4,act:'Hulk Smash',actDs:'20 damage, instantly',actType:'smash',actV:20},
    ex:{hp:180,chain:2,teach:'He stops holding back.'}},
+  {id:'groot',nm:'GROOT',el:'earth',role:'Vanguard',hp:120,clock:20,tele:{every:5,window:1.6},
+   taunt:'I am Groot.',
+   teach:'Roots come up fast. Tap the ring to tear free.',
+   rec:{pas:'Deep Roots',ds:'+0.2s on telegraph windows',pasType:'telewin',pasV:.2,act:'Regrow',actDs:'+4s on the clock',actType:'addtime',actV:4},
+   ex:{hp:174,pair:true,teach:'The roots split in two.'}},
+  {id:'human-torch',nm:'HUMAN TORCH',el:'fire',role:'Duelist',hp:125,clock:20,stomp:{every:5,warn:.9,window:.55,grace:.2},
+   taunt:'Flame on.',
+   teach:'When he flares, let go of the screen.',
+   rec:{pas:'Heat Haze',ds:'+0.12s of stomp grace',pasType:'grace',pasV:.12,act:'Nova Flare',actDs:'22 damage, instantly',actType:'smash',actV:22},
+   ex:{hp:181,chain:2,teach:'He does not cool down.'}},
+  {id:'luna-snow',nm:'LUNA SNOW',el:'ice',role:'Strategist',hp:130,clock:20,tele:{every:3.6,window:1.3},
+   taunt:'Absolute zero.',
+   teach:'Ice rings shatter if you reach them in time.',
+   rec:{pas:'Cold Snap',ds:'+0.15s on telegraph windows',pasType:'telewin',pasV:.15,act:'Ice Wall',actDs:'your next mistake is free',actType:'shield'},
+   ex:{hp:189,pair:true,teach:'Two rings, one chance.'}},
+  {id:'thor',nm:'THOR',el:'lightning',role:'Vanguard',hp:135,clock:20,stomp:{every:4.6,warn:.85,window:.5,grace:.18},
+   taunt:'For Asgard.',
+   teach:'The hammer falls. Do not tap through it.',
+   rec:{pas:'Asgardian',ds:'+3s on the clock',pasType:'clock',pasV:3,act:'Thunderclap',actDs:'22 damage, instantly',actType:'smash',actV:22},
+   ex:{hp:196,chain:2,teach:'He raises it twice.'}},
+  {id:'iron-man',nm:'IRON MAN',el:'tech',role:'Duelist',hp:140,clock:20,tele:{every:3.2,window:1.2},
+   taunt:'Revenge for every flyover.',
+   teach:'Missiles first. Tap the ring.',
+   rec:{pas:'Repulsors',ds:'+0.15s on telegraph windows',pasType:'telewin',pasV:.15,act:'Unibeam',actDs:'3s with no mechanics',actType:'quiet'},
+   ex:{hp:203,pair:true,teach:'He fires in salvos.'}},
+  {id:'scarlet-witch',nm:'SCARLET WITCH',el:'fire',role:'Duelist',hp:150,clock:20,channel:{at:.3,time:3,healTo:.45},
+   taunt:'Chaos is a ladder.',
+   teach:'She rewrites the fight. Out-tap her before it lands.',
+   rec:{pas:'Hex Field',ds:'your first mistake is free',pasType:'mercy',act:'Chaos Bolt',actDs:'+5s on the clock',actType:'addtime',actV:5},
+   ex:{hp:218,channels:[.5,.22],times:[3.2,2.4],teach:'She does it twice.'}},
 ];
 // Boss voice lines live in assets/audio/voice/. Missing files fail silently.
 const VOX={};
@@ -1390,7 +1422,11 @@ function startFight(id,mode){
   const hp=exMode?b.ex.hp:Math.round(b.hp*(rematch?1.5:1.3));
   // mastery quirks: cosmic 5 adds a second on the clock, lightning 3 widens telegraph windows,
   // earth 3 gives a longer stomp grace
-  const clockMax=b.clock*(exMode?.9:.8)+(isRec('hulk')?4:0)+(mLevel('cosmic')>=5?1:0);
+  // recruited passives are type-driven, so a new boss only needs a pasType in the table
+  const pasOf=t=>BOSSES.filter(x=>isRec(x.id)&&x.rec&&x.rec.pasType===t);
+  const sumPas=(t,d)=>pasOf(t).reduce((s,x)=>s+(x.rec.pasV||d),0);
+  const clockBonus=sumPas('clock',3),teleBonus=sumPas('telewin',.15),graceBonus=sumPas('grace',.12);
+  const clockMax=b.clock*(exMode?.9:.8)+clockBonus+(mLevel('cosmic')>=5?1:0);
   const chPlan=exMode&&b.ex.channels
     ? b.ex.channels.map((at,i)=>({at,time:b.ex.times[i]}))
     : (b.channel?[{at:b.channel.at,time:b.channel.time}]:[]);
@@ -1399,10 +1435,11 @@ function startFight(id,mode){
   fight={b,rematch,exMode,hp:startHp,max:hp,clockMax,combo:1,lastTap:0,maxCombo:1,left:clockMax,elapsed:0,phase:'intro',teles:[],
     nextTele:0,nextStomp:0,quietUntil:0,pendingHold:false,finish:false,
     mechScale:exMode?.62:(rematch?.68:.8),
-    teleWin:b.tele?b.tele.window*(isRec('storm')?1.25:1)+(mLevel('lightning')>=3?.3:0):0,
+    teleWin:b.tele?b.tele.window+teleBonus+(mLevel('lightning')>=3?.3:0):0,
+    graceBonus,
     finishAt:exMode?.1:(rematch?0:.2),
     chPlan,chainLeft:exMode&&b.ex.chain?b.ex.chain-1:0,
-    mercy:isRec('adam-warlock'),used:{},exPreview:preview,exOn:false};
+    mercy:pasOf('mercy').length>0,used:{},exPreview:preview,exOn:false};
   const el=$('bf');el.hidden=false;
   // On a phone the Deep tab sits below the stage, so the fight can open off-screen above you.
   try{stage.scrollIntoView({block:'start',behavior:'auto'})}catch(e){try{stage.scrollIntoView()}catch(e2){}}
@@ -1478,7 +1515,7 @@ function bossHit(e){
   const f=fight;if(!f||f.phase!=='fight')return;
   const t=nowMs();
   if(f.quietUntil&&t>=f.warnUntil&&t<f.quietUntil){
-    const grace=((f.b.stomp?f.b.stomp.grace:0)+(mLevel('earth')>=3?.12:0))*1000;
+    const grace=((f.b.stomp?f.b.stomp.grace:0)+(f.graceBonus||0)+(mLevel('earth')>=3?.12:0))*1000;
     if(t<f.warnUntil+grace){toast('too early');return}
     penalty('SMASHED');return;
   }
@@ -1795,13 +1832,15 @@ function useActive(id){
   const f=fight;if(!f||f.phase!=='fight'||f.used[id]||!isRec(id))return;
   const b=BOSSES.find(x=>x.id===id);if(!b||!b.rec)return;
   f.used[id]=true;
-  if(id==='adam-warlock'){f.left=Math.min(f.clockMax,f.left+5);toast('BORN AGAIN · +5s');jingle([392,523,659])}
-  else if(id==='storm'){
+  const t=b.rec.actType||'',v=b.rec.actV||0,nm=(b.rec.act||'').toUpperCase();
+  if(t==='addtime'){f.left=Math.min(f.clockMax,f.left+(v||5));toast(nm+' · +'+(v||5)+'s');jingle([392,523,659]);blip(700,'triangle')}
+  else if(t==='quiet'){
     if(f.teles.length){f.teles.forEach(tl=>{tl.el.classList.add('pop');setTimeout(()=>tl.el.remove(),220)});f.teles=[]}
     if(f.nextTele)f.nextTele+=3000;if(f.nextStomp)f.nextStomp+=3000;
-    toast('EYE OF THE STORM · 3s of quiet');blip(1200,'sine',.12,.05);
+    toast(nm+' · 3s of quiet');blip(1200,'sine',.12,.05);
   }
-  else if(id==='hulk'){toast('HULK SMASH');hitBoss(20,null)}
+  else if(t==='smash'){toast(nm);hitBoss(v||20,null)}
+  else if(t==='shield'){f.mercy=true;toast(nm+' · a free mistake');blip(520,'triangle',.1,.05)}
   paintActives();paintBars();
 }
 function fightTick(dt){
@@ -1897,6 +1936,8 @@ function renderBossTab(){
       <div class="taunt">${b.taunt}</div></div>
       <div style="display:flex;gap:6px;align-items:center">${rec?`<button class="btn hot" data-exfight="${b.id}" title="EX form: harder, no early finisher, pays element mastery">EX</button>`:(EX_PREVIEW?`<button class="btn alt" data-exprev="${b.id}" title="Preview: fight from 60% so the form change fires naturally">EX</button>`:'')}<button class="btn ${done?'alt':'hot'}" data-fight="${b.id}">${label}</button></div></div>`;
   }).join('');
+  const cy=$('cycleTxt');
+  if(cy){const has=Object.keys(st.els||{}).length>0;cy.hidden=!has;cy.textContent='Cosmic beats Earth beats Lightning · Fire beats Ice beats Tech'}
   const mkEl=$('bossMastery');
   if(mkEl){
     const keys=Object.keys(st.els||{});
