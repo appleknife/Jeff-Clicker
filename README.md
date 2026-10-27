@@ -77,7 +77,8 @@ five-minute save and a five-hour save get the same fight. Tap fast to build a co
   or he heals to 42%.
 - **Storm** throws red rings. Tap inside one before it closes to counter for +14 damage.
 - **The Hulk** glows for a full second before his quiet window. Stop tapping through it.
-- **Groot** puts up **three small roots at once** — all three have to be cleared.
+- **Groot** puts up **three small roots at once**, and every root you clear **extends the others by
+  half a second** — work them in order. A missed volley costs one penalty, not one per root.
 - **Human Torch** flares before he burns. Hulk's rule with less warning.
 - **Luna Snow** throws a single **fast, small** ice ring.
 - **Thor** brings the hammer down. Tighter windows than Hulk.

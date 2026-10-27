@@ -1343,7 +1343,7 @@ const BOSSES=[
    ex:{hp:180,chain:2,teach:'He stops holding back.'}},
   {id:'groot',nm:'GROOT',el:'earth',role:'Vanguard',hp:120,clock:20,tele:{every:5,window:1.6,n:3,scale:.82},
    taunt:'I am Groot.',
-   teach:'Roots come up fast. Tap the ring to tear free.',
+   teach:'Three roots at once. Clearing one buys the others time.',
    rec:{pas:'Deep Roots',ds:'+0.2s on telegraph windows',pasType:'telewin',pasV:.2,act:'Regrow',actDs:'+4s on the clock',actType:'addtime',actV:4},
    ex:{hp:174,pair:true,teach:'The roots split in two.'}},
   {id:'human-torch',nm:'HUMAN TORCH',el:'fire',role:'Duelist',hp:125,clock:20,stomp:{every:5,warn:.9,window:.55,grace:.2},
@@ -1604,6 +1604,7 @@ function spawnTele(){
   const size=Math.round(base*(b.tele.scale||1)*(n>2?.84:1));
   const spots=({1:[[18,40]],2:[[7,37],[54,37]],3:[[3,29],[53,29],[28,56]],4:[[2,25],[50,25],[22,53],[64,53]]})[Math.min(n,4)];
   const telCol=ELS[b.el].c;
+  f.volley=(f.volley||0)+1;   // rings thrown together share a volley, and a volley costs one penalty
   for(let i=0;i<n;i++){
     const spot=spots[i%spots.length];
     const el=document.createElement('button');
@@ -1614,7 +1615,7 @@ function spawnTele(){
     el.style.top=(spot[1]+(Math.random()*8-4))+'%';
     if(b.tele.icon)el.innerHTML=`<img src="assets/img/heroes/${b.tele.icon}.webp" alt="">`;
     stage.appendChild(el);
-    f.teles.push({el,size,end:nowMs()+f.teleWin*1000,window:f.teleWin});
+    f.teles.push({el,size,end:nowMs()+f.teleWin*1000,window:f.teleWin,volley:f.volley});
   }
   f.nextTele=nowMs()+b.tele.every*1000*f.mechScale+Math.random()*800;
   blip(880,'sine',.06,.05);
@@ -1624,6 +1625,12 @@ function interrupt(tl){
   const i=f.teles.indexOf(tl);if(i>-1)f.teles.splice(i,1);
   const r=tl.el.getBoundingClientRect();
   f.left+=f.exMode?.7:1.4;
+  // clearing one ring buys the others time, so a 3-ring volley can be worked through in order
+  f.teles.forEach(o=>{
+    o.end+=550;o.window+=.55;
+    // the remaining rings visibly relax, so the gift of time is readable and not just felt
+    if(!reduce)o.el.animate([{transform:'scale(1)'},{transform:'scale(1.16)'},{transform:'scale(1)'}],{duration:240,easing:'ease-out'});
+  });
   tl.el.classList.add('pop');setTimeout(()=>tl.el.remove(),220);
   floatText('COUNTER!',r.left+r.width/2,r.top+r.height/2,'crit');
   blip(1400,'sine',.07,.05);setTimeout(()=>blip(1900,'sine',.09,.04),70);
@@ -1879,10 +1886,15 @@ function fightTick(dt){
   if(f.pendingHold&&t>f.quietUntil){f.pendingHold=false;f.left+=.6;hitBoss(12,null);toast('HELD IT')}
   for(let i=f.teles.length-1;i>=0;i--){
     const tl=f.teles[i];
-    if(t>=tl.end){f.teles.splice(i,1);tl.el.remove();penalty('TOO SLOW')}
+    if(t>=tl.end){
+      f.teles.splice(i,1);tl.el.remove();
+      // one mistake per volley, not one per ring: three roots missing should sting, not end the fight
+      f.penVol=f.penVol||{};
+      if(!f.penVol[tl.volley]){f.penVol[tl.volley]=1;penalty('TOO SLOW')}
+    }
     else{
       const frac=(tl.end-t)/(tl.window*1000);
-      const sz=Math.max(34,tl.size*Math.max(.28,frac));
+      const sz=Math.max(20,tl.size*Math.max(.16,frac));
       tl.el.style.width=sz+'px';tl.el.style.height=sz+'px';
     }
   }
