@@ -375,6 +375,10 @@ footer p{margin:0;max-width:62ch}
 .bf-combo .m i{display:block;height:100%;background:var(--sun);width:0;transition:width .1s linear}
 .tele{--tel:#ff5a4a;position:absolute;z-index:9;border-radius:50%;border:3px solid var(--tel);background:radial-gradient(circle,color-mix(in srgb,var(--tel) 30%,transparent),transparent 72%);display:grid;place-items:center;pointer-events:auto;touch-action:manipulation;animation:telePulse .45s ease-in-out infinite alternate}
 .tele img{width:58%;height:58%;object-fit:contain;opacity:.95;pointer-events:none}
+/* plated rings: a second ring inside, and a counter so "twice" is readable at a glance */
+.tele[data-hits="2"]{border-style:double;border-width:7px}
+.tele .ticks{position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);font:900 11px/1 var(--body);letter-spacing:.08em;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9);pointer-events:none;white-space:nowrap}
+.tele.crack{animation:none;border-color:#fff;filter:brightness(1.9);transition:filter .1s,border-color .1s}
 @keyframes telePulse{to{box-shadow:0 0 0 6px color-mix(in srgb,var(--tel) 20%,transparent)}}
 /* element identity: a wash of the boss colour, and the counter chip on the HP bar */
 .bf-tint{position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(circle at 50% 34%,color-mix(in srgb,var(--el,#fff) 16%,transparent),transparent 74%)}
@@ -1368,11 +1372,36 @@ const BOSSES=[
    teach:'Ice rings shatter if you reach them in time.',
    rec:{pas:'Cold Snap',ds:'+0.15s on telegraph windows',pasType:'telewin',pasV:.15,act:'Ice Wall',actDs:'your next mistake is free',actType:'shield'},
    ex:{hp:189,pair:true,teach:'Two rings, one chance.'}},
+  // The first boss with two ideas at once: drones to swat, and a repair you have to out-tap.
+  // Rings stop spawning while he channels, so the repair is a clean check and never a coin flip.
+  {id:'ultron',nm:'ULTRON',el:'tech',role:'Strategist',hp:132,clock:20,tele:{every:3.5,window:1.4,scale:.86},
+   channel:{at:.33,time:3.2,healTo:.5},cry:'THERE ARE NO STRINGS ON ME',
+   taunt:'Your peace is a flaw in the design.',
+   teach:'Swat the drones. At a third he stops to repair \u2014 out-tap him.',
+   rec:{pas:'Backup Body',ds:'your first mistake in a fight costs no time',pasType:'mercy',act:'Drone Swarm',actDs:'18 damage, instantly',actType:'smash',actV:18},
+   ex:{hp:190,channels:[.45,.15],times:[3.2,2.4],teach:'He rebuilds himself twice.'}},
   {id:'thor',nm:'THOR',el:'lightning',role:'Vanguard',hp:135,clock:20,stomp:{every:4.6,warn:.85,window:.5,grace:.18,up:'THOR RAISES THE HAMMER'},
    taunt:'For Asgard.',
    teach:'The hammer falls. Do not tap through it.',
    rec:{pas:'Asgardian',ds:'+3s on the clock',pasType:'clock',pasV:3,act:'Thunderclap',actDs:'22 damage, instantly',actType:'smash',actV:22},
    ex:{hp:196,chain:2,teach:'He raises it twice.'}},
+  // Two bargains instead of rings: the whole fight is a sustained out-tap, and beating one pays
+  // time back. The only boss where clearing a channel is a reward, not just a dodged penalty.
+  {id:'doctor-strange',nm:'DOCTOR STRANGE',el:'cosmic',role:'Strategist',hp:136,clock:20,cry:'I HAVE COME TO BARGAIN',
+   channels:[{at:.34,time:3.2,effect:'damage',hurt:4,reward:2,breakDmg:28,
+              prompt:'Break the bargain before it lands'},
+             {at:.14,time:2.6,effect:'damage',hurt:5,reward:2,breakDmg:16,prompt:'Break the bargain before it lands'}],
+   taunt:'I have seen every way this ends.',
+   teach:'Two bargains. Beat one and you take the seconds off him.',
+   rec:{pas:'Time Stone',ds:'+0.3s on channel windows',pasType:'chantime',pasV:.3,act:'Time Loop',actDs:'+5s on the clock',actType:'addtime',actV:5},
+   ex:{hp:200,channels:[{at:.5,time:3.2,effect:'damage',hurt:4,reward:2,breakDmg:34},{at:.28,time:2.8,effect:'damage',hurt:5,reward:2,breakDmg:26},{at:.1,time:2.4,effect:'damage',hurt:6,reward:2,breakDmg:18}],teach:'He has all the time in the world.'}},
+  // Diamond plates: each ring takes two taps, and it stops shrinking at a third of its size so
+  // the second tap is still a target on a phone.
+  {id:'emma-frost',nm:'EMMA FROST',el:'ice',role:'Vanguard',hp:138,clock:20,tele:{every:3.8,window:1.7,n:2,scale:.9,hits:2},
+   taunt:'Do try to keep up, darling.',
+   teach:'Diamond takes two taps. Break both plates before they close.',
+   rec:{pas:'Telepath',ds:'+0.2s on telegraph windows',pasType:'telewin',pasV:.2,act:'Diamond Form',actDs:'your next mistake is free',actType:'shield'},
+   ex:{hp:195,pair:true,teach:'Three plates, two taps each.'}},
   {id:'iron-man',nm:'IRON MAN',el:'tech',role:'Duelist',hp:140,clock:20,tele:{every:3.2,window:1.2,n:2,scale:.85},
    taunt:'Revenge for every flyover.',
    teach:'Missiles first. Tap the ring.',
@@ -1443,16 +1472,24 @@ function startFight(id,mode){
   const sumPas=(t,d)=>pasOf(t).reduce((s,x)=>s+(x.rec.pasV||d),0);
   const clockBonus=sumPas('clock',3),teleBonus=sumPas('telewin',.15),graceBonus=sumPas('grace',.12);
   const clockMax=b.clock*(exMode?.9:.8)+clockBonus+(mLevel('cosmic')>=5?1:0);
-  const chPlan=exMode&&b.ex.channels
-    ? b.ex.channels.map((at,i)=>({at,time:b.ex.times[i]}))
-    : (b.channel?[{at:b.channel.at,time:b.channel.time}]:[]);
+  // Channel plan. A boss can channel once (b.channel) or several times (b.channels), and an EX
+  // form can bring its own plan (b.ex.channels). An entry is either a bare HP fraction, timed
+  // from b.ex.times / b.times, or a full object — so a later bargain can hurt differently, or
+  // pay time back instead of just threatening it.
+  const chanBase=Array.isArray(b.channel)||!b.channel?null:b.channel;
+  const chSrc=exMode&&b.ex.channels?b.ex.channels:(b.channels||(b.channel?[b.channel.at]:[]));
+  const chTimes=(exMode&&b.ex.times)||b.times||[];
+  const chPlan=chSrc.map((e,i)=>(typeof e==='number'
+    ? Object.assign({},chanBase,{at:e,time:(chTimes[i]||(chanBase&&chanBase.time))})
+    : Object.assign({},chanBase,e)));
+  const chanBonus=sumPas('chantime',0);
   // preview starts at 60% of a base fight, so it plays like a real one
   const startHp=preview?Math.round(Math.round(b.hp*1.3)*.6):hp;
   fight={b,rematch,exMode,hp:startHp,max:hp,clockMax,combo:1,lastTap:0,maxCombo:1,left:clockMax,elapsed:0,phase:'intro',teles:[],
     nextTele:0,nextStomp:0,quietUntil:0,pendingHold:false,finish:false,
     mechScale:exMode?.62:(rematch?.68:.8),
     teleWin:b.tele?b.tele.window+teleBonus+(mLevel('lightning')>=3?.3:0):0,
-    graceBonus,
+    graceBonus,chanBonus,
     finishAt:exMode?.1:(rematch?0:.2),
     chPlan,chainLeft:exMode&&b.ex.chain?b.ex.chain-1:0,
     mercy:pasOf('mercy').length>0,used:{},exPreview:preview,exOn:false};
@@ -1549,6 +1586,7 @@ function bossHit(e){
 function hitBoss(d,e){
   const f=fight;if(!f||f.phase!=='fight')return;
   f.hp=Math.max(0,f.hp-d);
+  if(f.channeling)f.chanDmg=(f.chanDmg||0)+d;
   const r=$('jeff').getBoundingClientRect();
   const x=(e&&e.clientX)||r.left+r.width/2,y=(e&&e.clientY)||r.top+r.height/3;
   floatText('-'+d.toFixed(0),x+(Math.random()*24-12),y,f.combo>=1.9?'crit':'');
@@ -1558,6 +1596,8 @@ function hitBoss(d,e){
   const c=$('bfCombo');if(c)c.textContent='×'+f.combo.toFixed(2);
   const m=$('bfMeter');if(m)m.style.width=Math.min(100,(f.combo-1)*100)+'%';
   paintBars();
+  // Enough damage inside a bargain breaks it early — that is how a reward channel is won
+  if(f.channeling&&f.ch&&f.ch.breakDmg&&(f.chanDmg||0)>=f.ch.breakDmg&&f.hp>0){endChannel(false);return}
   if(f.hp<=0){endChannel(false);finisher();return}
   // the form change fires at 40%, once per fight
   // halfway: he stops going easy. Every fight gets an arc, not just EX ones.
@@ -1569,32 +1609,44 @@ function hitBoss(d,e){
     if(!reduce){stage.classList.add('shake');setTimeout(()=>stage.classList.remove('shake'),180)}
     blip(140,'sawtooth',.24,.05);
   }
-  if((f.exMode||EX_PREVIEW)&&!f.exOn&&f.hp<=f.max*.4)exForm();
+  // the form change waits for an open channel: a cutscene in the middle of a repair is nonsense
+  maybeExForm();
   if(f.chPlan.length&&!f.channeling&&f.hp<=f.max*f.chPlan[0].at)beginChannel();
   else if(!f.channeling&&f.finishAt&&f.hp<=f.max*f.finishAt&&!f.finish){f.finish=true;showFinish()}
+}
+// The form change is armed by damage, but it can also land the moment a channel closes, so a
+// repair or a bargain that covered the 40% line cannot swallow the cutscene entirely.
+function maybeExForm(){
+  const f=fight;if(!f||f.phase!=='fight'||f.exOn||f.channeling)return;
+  if((f.exMode||EX_PREVIEW)&&f.hp<=f.max*.4)exForm();
 }
 // A channel you beat by out-tapping it, not an instant free revive. Adam and Scarlet both use
 // it, so the banner, the voice line and the log text all come from the boss.
 function beginChannel(){
   const f=fight;if(!f||!f.chPlan||!f.chPlan.length)return;
-  const ch=f.chPlan.shift(),b=f.b,cry=b.cry||'CHANNEL';
-  f.channeling=true;f.channelEnd=nowMs()+ch.time*1000;f.channelTime=ch.time;
+  const ch=f.chPlan.shift(),b=f.b,cry=ch.cry||b.cry||'CHANNEL';
+  f.ch=ch;
+  // Time Stone, and anything else of that type, buys you longer to out-tap the bar
+  const win=(ch.time||3.5)+(f.chanBonus||0);
+  f.channeling=true;f.channelEnd=nowMs()+win*1000;f.channelTime=win;f.chanDmg=0;
   const bo=$('bfBoss');if(bo)bo.classList.add('golden');
   const bar=$('bfChannel');if(bar)bar.hidden=false;
   const t=document.createElement('div');t.className='bf-cry';t.textContent=cry;
   stage.appendChild(t);setTimeout(()=>t.remove(),1000);
   if(b.voice)playVoice(b.voice);
   jingle([392,523,659,784]);
-  toast(cry+' — finish it');
-  log(b.nm+': "'+cry+'" — finish it before it lands.');
+  // A bargain is broken by damage, a heal/clock channel by killing the boss behind it
+  const prompt=ch.prompt;
+  toast(prompt||(cry+' — finish it'));
+  log(b.nm+': "'+cry+'" — '+(prompt||'finish it before it lands')+'.');
 }
 function endChannel(healed){
   const f=fight;if(!f||!f.channeling)return;
   f.channeling=false;
   const bo=$('bfBoss');if(bo)bo.classList.remove('golden');
   const bar=$('bfChannel');if(bar)bar.hidden=true;
-  if(healed&&f.b.channel){
-    const ch=f.b.channel;
+  const ch=f.ch||{};
+  if(healed){
     if(ch.effect==='damage'){
       // Scarlet's ult does not heal her, it erases the clock. Massive, and it costs you the fight
       // if you were already behind.
@@ -1611,7 +1663,13 @@ function endChannel(healed){
       log(f.b.nm+' came back. The channel landed.');
       if(!reduce){stage.classList.add('shake');setTimeout(()=>stage.classList.remove('shake'),300)}
     }
+  }else if(ch.reward&&f.hp>0){
+    // A bargain you beat pays time back instead of merely avoiding a loss.
+    f.left=Math.min(f.clockMax,f.left+ch.reward);paintBars();
+    toast('BARGAIN KEPT · +'+ch.reward+'s');jingle([659,880,1047]);
+    log(f.b.nm+' lost the bargain. You took '+ch.reward+' seconds back.');
   }
+  maybeExForm();
 }
 function penalty(msg){
   const f=fight;if(!f||f.phase!=='fight')return;
@@ -1643,16 +1701,31 @@ function spawnTele(){
     el.style.left=Math.max(1,spot[0]+(Math.random()*8-4))+'%';
     el.style.top=(spot[1]+(Math.random()*8-4))+'%';
     if(b.tele.icon)el.innerHTML=`<img src="assets/img/heroes/${b.tele.icon}.webp" alt="">`;
+    // Armour-plated rings (tele.hits): the first tap cracks the plate, the second clears it.
+    const hits=b.tele.hits||1;
+    if(hits>1){el.dataset.hits=String(hits);const tk=document.createElement('b');tk.className='ticks';tk.textContent=hits+'\u00d7';el.appendChild(tk)}
     stage.appendChild(el);
-    f.teles.push({el,size,end:nowMs()+f.teleWin*1000,window:f.teleWin,volley:f.volley});
+    f.teles.push({el,size,hits,end:nowMs()+f.teleWin*1000,window:f.teleWin,volley:f.volley});
   }
   f.nextTele=nowMs()+b.tele.every*1000*f.mechScale+Math.random()*800;
   blip(880,'sine',.06,.05);
 }
 function interrupt(tl){
   const f=fight;if(!f||!tl||f.phase!=='fight')return;
-  const i=f.teles.indexOf(tl);if(i>-1)f.teles.splice(i,1);
   const r=tl.el.getBoundingClientRect();
+  // A plated ring survives the first tap. It keeps shrinking (down to a third), so the second
+  // tap is still a target rather than a pixel hunt.
+  if(tl.hits>1){
+    tl.hits--;
+    tl.el.dataset.hits=String(tl.hits);
+    tl.el.classList.add('crack');setTimeout(()=>tl.el.classList.remove('crack'),130);
+    const tk=tl.el.querySelector('.ticks');if(tk)tk.textContent=tl.hits+'\u00d7';
+    floatText('PLATE',r.left+r.width/2,r.top+r.height/2,'');
+    blip(950,'square',.05,.04);
+    hitBoss(6*f.combo,null);
+    return;
+  }
+  const i=f.teles.indexOf(tl);if(i>-1)f.teles.splice(i,1);
   f.left+=f.exMode?.7:1.4;
   // clearing one ring buys the others time, so a 3-ring volley can be worked through in order
   f.teles.forEach(o=>{
@@ -1923,11 +1996,12 @@ function fightTick(dt){
     }
     else{
       const frac=(tl.end-t)/(tl.window*1000);
-      const sz=Math.max(20,tl.size*Math.max(.16,frac));
+      const sz=Math.max(20,tl.size*Math.max(tl.hits>1?.32:.16,frac));
       tl.el.style.width=sz+'px';tl.el.style.height=sz+'px';
     }
   }
-  if(f.b.tele&&!f.teles.length&&t>=f.nextTele)spawnTele();
+  // rings hold while a boss channels: a repair or a bargain is a clean out-tap, not a juggle
+  if(f.b.tele&&!f.channeling&&!f.teles.length&&t>=f.nextTele)spawnTele();
   if(f.b.stomp&&t>=f.nextStomp)doStomp();
   paintBars();
   if(f.left<=0)loseFight();

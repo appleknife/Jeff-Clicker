@@ -69,7 +69,7 @@ To tune balance, edit the `UP` (upgrades), `SKINS` (costume rarities and abiliti
 
 ## Spoilers: The Deep
 
-Past the sixth gem a fourth tab appears: nine Marvel Rivals heroes to fight, one at a time.
+Past the sixth gem a fourth tab appears: twelve Marvel Rivals heroes to fight, one at a time.
 
 It is a **skill mode, not a numbers mode** — bosses are defined in *taps*, not damage, so a
 five-minute save and a five-hour save get the same fight. Tap fast to build a combo (up to ×2).
@@ -82,13 +82,21 @@ five-minute save and a five-hour save get the same fight. Tap fast to build a co
   half a second** — work them in order. A missed volley costs one penalty, not one per root.
 - **Human Torch** flares before he burns. Hulk's rule with less warning.
 - **Luna Snow** throws a single **fast, small** ice ring.
+- **Ultron** is the first boss with two ideas at once: drones to swat, then a **repair** at a third
+  of his health. Rings hold while he channels, so the repair is a clean out-tap and never a juggle
+  — miss it and he is back to half.
 - **Thor** brings the hammer down. Tighter windows than Hulk.
+- **Doctor Strange** has no rings at all. He offers **two bargains**, and the only way to win one is
+  to put enough damage into it inside the window — break it and you **take two seconds off him**.
+  It is the one channel in the game that pays you for winning instead of just avoiding a loss.
+- **Emma Frost** covers the arena in **diamond plates**: two rings at a time, and each takes **two
+  taps**. They stop shrinking at a third of their size, so the second tap is still a real target.
 - **Iron Man** fires missiles **in pairs from the first second**.
 - **Scarlet Witch** rewrites the fight — a channel you have to out-tap, like Adam's, but hers does
   not heal her: landing it **erases six seconds** of your clock. It announces itself as **PURE CHAOS**.
 
 Every telegraph is tinted by the boss's element, and the arena takes a wash of that colour for the
-whole fight, so nine bosses do not look like one. At half health every boss **stops going easy**:
+whole fight, so twelve bosses do not look like one. At half health every boss **stops going easy**:
 mechanics close up by a fifth and the next one arrives early. If the element you are wearing counters
 the boss, the HP bar says so (`ICE ×1.35`) — the loadout choice is visible instead of implied.
 
@@ -130,8 +138,17 @@ can't be melted by your own roster:*
 | Hero | Passive |
 |---|---|
 | Adam Warlock | **Mercy** — your first mistake in a fight costs no time |
-| Storm | **Tailwind** — telegraph rings last 25% longer |
+| Storm | **Tailwind** — telegraph rings last 0.35s longer |
 | The Hulk | **Thick Hide** — +4s on the clock |
+| Groot | **Deep Roots** — +0.2s on telegraph windows |
+| Human Torch | **Heat Haze** — +0.12s of stomp grace |
+| Luna Snow | **Cold Snap** — +0.15s on telegraph windows |
+| Ultron | **Backup Body** — your first mistake costs no time |
+| Thor | **Asgardian** — +3s on the clock |
+| Doctor Strange | **Time Stone** — +0.3s on channel windows |
+| Emma Frost | **Telepath** — +0.2s on telegraph windows |
+| Iron Man | **Repulsors** — +0.15s on telegraph windows |
+| Scarlet Witch | **Hex Field** — your first mistake is free |
 
 *Actives need one of three team slots and work once per fight:*
 
@@ -140,6 +157,15 @@ can't be melted by your own roster:*
 | Adam Warlock | **Born Again** — +5s on the clock |
 | Storm | **Eye of the Storm** — 3s with no boss mechanics |
 | The Hulk | **Hulk Smash** — 20 damage, instantly |
+| Groot | **Regrow** — +4s on the clock |
+| Human Torch | **Nova Flare** — 22 damage, instantly |
+| Luna Snow | **Ice Wall** — your next mistake is free |
+| Ultron | **Drone Swarm** — 18 damage, instantly |
+| Thor | **Thunderclap** — 22 damage, instantly |
+| Doctor Strange | **Time Loop** — +5s on the clock |
+| Emma Frost | **Diamond Form** — your next mistake is free |
+| Iron Man | **Unibeam** — 3s with no boss mechanics |
+| Scarlet Witch | **Chaos Bolt** — +5s on the clock |
 
 Adam's *"Born again!"* line plays from `assets/audio/voice/adam-born-again.mp3` (mono, 64 kbps,
 1.66s) and the boss theme ducks to 30% underneath it. A missing file falls back to a chord.
@@ -148,6 +174,12 @@ Each channel boss names its own line in the `BOSSES` table (`cry` for the banner
 file), so adding one means dropping an MP3 in `assets/audio/voice/` and naming it. Scarlet's is
 `scarlet-chaos.mp3` — her "Pure Chaos" line, trimmed to the first 1.55s and matched to the same
 loudness as Adam's.
+
+A channel entry can also carry `breakDmg` (damage inside the window that ends it early — Strange's
+bargains), `reward` (seconds handed back when you win it instead of just avoiding a loss), and
+`prompt` (the toast text). A boss can channel more than once via a `channels` array, and each
+entry may set its own numbers. Likewise `tele.hits: 2` makes every ring in a volley armoured:
+first tap cracks the plate, second clears it. Both are table rows, not new code.
 
 The roster appears under the boss list once you have a first kill, and a recruit takes a free
 team slot automatically.
@@ -164,7 +196,8 @@ a violet tint and the music stays quieter for the rest of the fight. It plays in
 boss; after that it is an instant change with just the impact.
 
 Each boss fights differently in EX: **Adam** channels twice, **Storm** throws her rings in pairs,
-**Hulk** chains his stomps. A clear pays **+5 trophies**, **+1 element mastery**, and the third
+**Hulk** chains his stomps, **Ultron** repairs twice, **Emma** adds a third plate, and
+**Strange** offers three bargains. A clear pays **+5 trophies**, **+1 element mastery**, and the third
 star on the boss card.
 
 ### Element mastery
