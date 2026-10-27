@@ -1445,7 +1445,9 @@ function startFight(id,mode){
     mercy:pasOf('mercy').length>0,used:{},exPreview:preview,exOn:false};
   const el=$('bf');el.hidden=false;
   // On a phone the Deep tab sits below the stage, so the fight can open off-screen above you.
-  try{stage.scrollIntoView({block:'start',behavior:'auto'})}catch(e){try{stage.scrollIntoView()}catch(e2){}}
+  // All the way to the top: the header and counters are part of the view, and it looks better.
+  try{window.scrollTo(0,0)}catch(e){}
+  try{document.documentElement.scrollTop=0;document.body.scrollTop=0}catch(e){}
   // element identity: the arena takes a wash of the boss's colour, and if your element counters
   // it the HP bar says so instead of leaving a hidden +35% to guess at
   const adv=elMultFor(b),elCol=ELS[b.el].c;
