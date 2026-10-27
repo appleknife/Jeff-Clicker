@@ -712,16 +712,17 @@ const UP=[
   {id:'bubble',nm:'Healing Bubble',     ds:'+1 per second',               base:100,    g:1.15, kind:'ps', v:1},
   {id:'dig',   nm:'Hide and Seek',      ds:'+8 per second',               base:1100,   g:1.15, kind:'ps', v:8},
   {id:'jaws',  nm:'Bigger Jaws',        ds:'Chomps add 5% of per-second', base:3000,   g:1.6,  kind:'jaws'},
-  // Comfort upgrade: Jeff taps for you. Deliberately worse per chomp than a real tap
-  // (60% damage, half the ult charge) so mashing still wins — this just means you can put
-  // the phone down and still keep the ult coming. Survives the gem reset.
-  {id:'auto',  nm:'Auto-Chomp',         ds:'Jeff chomps for you',         base:8000,   g:1.55, kind:'auto', v:.35, max:10, dyn:()=>own('auto')?autoRate().toFixed(1)+' chomps/sec':''},
-  {id:'whirl', nm:'Deeper Whirlpool',   ds:'Ult charges 20% faster',      base:2500,   g:2,    kind:'whirl', max:10},
   {id:'splash',nm:'Joyful Splash',      ds:'+47 per second',              base:12000,  g:1.15, kind:'ps', v:47},
   {id:'teamup',nm:'Team-Up Combo',      ds:'+260 per second',             base:130000, g:1.15, kind:'ps', v:260},
   {id:'lobby', nm:'Lobby Full of Jeffs',ds:'+1,400 per second',           base:1.4e6,  g:1.15, kind:'ps', v:1400},
   {id:'mcu',   nm:'Movie Deal',         ds:'+7,800 per second',           base:2e7,    g:1.15, kind:'ps', v:7800},
   {id:'merch', nm:'Plushie Empire',     ds:'+44,000 per second',          base:3.3e8,  g:1.15, kind:'ps', v:44000},
+  // The two capped, single-track upgrades sit at the bottom: they are not part of the
+  // per-second ladder, so they would keep interrupting it in the middle of the list.
+  // Auto-Chomp: Jeff taps for you. Deliberately worse per chomp than a real tap (60% of the
+  // damage, half the ult charge) so mashing still wins. Survives the gem reset.
+  {id:'auto',  nm:'Auto-Chomp',         ds:'Jeff chomps for you',         base:8000,   g:1.55, kind:'auto', v:.35, max:10, dyn:()=>own('auto')?autoRate().toFixed(1)+' chomps/sec':''},
+  {id:'whirl', nm:'Deeper Whirlpool',   ds:'Ult charges 20% faster',      base:2500,   g:2,    kind:'whirl', max:10},
 ];
 const TIER_AT=[10,25,50,100], TIER_COST=[20,150,1500,20000], TIER_NM=['Extra','Super','Mega','Ultra'];
 const ONE=[];
