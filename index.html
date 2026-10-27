@@ -636,6 +636,7 @@ footer p{margin:0;max-width:62ch}
         <h2>Sharknos</h2>
         <p class="small">Fill this run's belly to earn a gem. Each gem resets your heroes and upgrades (costumes, tokens and mastery upgrades stay), adds +25% to everything and turns Jeff a little more purple. Six gems unlocks the Snap.</p>
         <div class="gems" id="gems"></div>
+        <p class="small num" id="bonusTxt" hidden></p>
         <div class="prog"><i id="progFill"></i></div>
         <p class="small num" id="progTxt"></p>
         <button class="btn hot" id="prestigeBtn" disabled>Claim gem</button>
@@ -1226,6 +1227,9 @@ function draw(){
   const nd=need(),pr=Math.min(1,S.run/nd);$('progFill').style.width=(pr*100)+'%';
   $('progTxt').textContent=`This run: ${fmt(S.run)} / ${fmt(nd)} heroes`+(S.good||S.menace?`  ·  Goodest Boy ×${S.good}, Menace ×${S.menace}`:'');
   $('prestigeBtn').disabled=S.run<nd;$('prestigeBtn').textContent=S.gems<6?`Claim ${GEMS[S.gems][0]} gem`:'Claim bonus gem';
+  // every gem past the sixth is a bonus gem, worth +10% on top of the six at +25%
+  const bg=S.gems-6,bt=$('bonusTxt');
+  if(bt){bt.hidden=bg<=0;if(bg>0)bt.textContent=`Bonus gems: ${bg} · +${bg*10}% to everything`}
   $('snapBtn').hidden=!(S.gems>=6&&!S.snap);
   const bTab=$('tab-boss');if(bTab)bTab.hidden=!(bs().unlocked||DEEP_PREVIEW||EX_PREVIEW);
   const finEl=$('fin');if(finEl)finEl.hidden=!(S.gems>=5&&!bs().unlocked);
