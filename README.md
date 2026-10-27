@@ -12,7 +12,8 @@ An unofficial fan-made clicker game starring Jeff the Land Shark from Marvel Riv
 - **The ult:** charge the meter, hit **IT'S JEFF!**, then choose where to spit the heroes: off the cliff, into spawn, or back on point.
 - **Costume Capsules:** a gacha with all 26 official Jeff costumes, using Marvel Rivals' own rarities — Rare 30%, Epic 52%, Legendary 18%. Pity guarantees a Legendary by pull 60, and every 10-pull includes an Epic or better. Duplicates add stars (max 5) and strengthen that costume's ability; a dupe on a costume already at five stars feeds the **collection bonus** instead (+1% chomps and per second, permanently). The default costume carries a small +3% perk so a new save never starts at zero.
 - **The Bubble (transmog):** the costume you **wear** and the ability you **slip** are picked separately. Own a Legendary for its +70% perk, then wear the Rare one you actually like the look of. Two buttons — *Set the look* / *Set the ability* — decide what tapping a costume does.
-- **Sharknos gems:** prestige for six gems. Each one turns Jeff more purple and lets you pick Goodest Boy (+50% per second) or Satan's Greatest Soldier (+50% chomps). All six unlock the Snap. Gems past the sixth are **bonus gems**, worth +10% each, and the Sharknos panel counts how many you have earned. Chomp Crits and Fin Radar are mastery upgrades and survive the reset.
+- **Sharknos gems:** prestige for six gems. Each one turns Jeff more purple and lets you pick Goodest Boy (+50% per second) or Satan's Greatest Soldier (+50% chomps). All six unlock the Snap. There are only six stones, so past the sixth you are not collecting more
+  gems — you **deepen your Infinity**, +10% each, and the panel counts how far. Chomp Crits and Fin Radar are mastery upgrades and survive the reset.
 - **Alignment:** every spit and every event nudges Jeff toward menace (up to +40% chomps) or goodest boy (up to +40% per second). It's the third currency: the cliff pays heroes now, spawn refunds 40 ult charge so you can chain, and back-on-point buys alignment and a ×2 buff.
 - **Chunky Jeff:** Jeff gets visibly wider as he eats, from Snack Size to Planet Jeff, with a fanfare each time he grows.
 - **Events:** Iron Man flyovers (pick Chill 5.5s, Normal 3.8s or Spicy 2.5s — slower is easier to catch, faster pays ×0.8 / ×1 / ×1.5), the cheese heist, the Deadpool vs. Emma Frost custody battle, Hulk the Hater, teammates flaming you, and a Loki copycat.
@@ -116,7 +117,8 @@ fight against the same hero is a **rematch**: half again the HP, mechanics 32% f
 **no FINISH IT button** — you tap the last fifth yourself. Win that and they join you.
 
 **Difficulty ceiling:** Scarlet Witch is the bench mark — 150 HP, a 16s clock, and a 30% channel that
-costs 6 seconds if it lands. That is "very hard, barely possible": the numbers to match if another
+costs 6 seconds if it lands. Owner-verified as winnable wearing **Tech at mastery 1**, and a coin flip
+without the counter element. That is "very hard, barely possible": the numbers to match if another
 fight should sit at the top of the ladder, and not to exceed.
 
 The element you earn on the first kill is worth +35% damage and is what makes a rematch fair;

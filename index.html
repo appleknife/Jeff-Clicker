@@ -1105,12 +1105,12 @@ $('wardrobe').addEventListener('click',e=>{const b=e.target.closest('[data-skin]
 $('prestigeBtn').onclick=()=>{if(S.run<need())return;$('paths').hidden=false;$('prestigeBtn').hidden=true};
 $('paths').addEventListener('click',e=>{const b=e.target.closest('[data-path]');if(!b)return;
   S[b.dataset.path==='good'?'good':'menace']++;S.gems++;playSfx('brrPowerful');
-  const gname=S.gems<=6?GEMS[S.gems-1][0]+' gem':'Bonus gem';
+  const gname=S.gems<=6?GEMS[S.gems-1][0]+' gem':'Infinity';
   const keep={};PERM.forEach(k=>{if(S.bought[k])keep[k]=true});
   const autoLv=own('auto'); // comfort, not economy: Auto-Chomp survives every gem
   S.eaten=0;S.run=0;S.owned=autoLv?{auto:autoLv}:{};S.bought=keep;S.ult=0;S.buffs=[];S.snap=false;S.tok+=25;upsKey='';autoAcc=0;
   $('paths').hidden=true;$('prestigeBtn').hidden=false;jingle();
-  log(S.gems===6?'All six gems. Sharknos is complete. The Snap is ready.':`${gname} claimed (+25 tokens). Jeff is a little more purple now.`);toast(S.gems===6?'SHARKNOS COMPLETE':gname+' claimed');
+  log(S.gems===6?'All six gems. Sharknos is complete. The Snap is ready.':`${gname} deepened (+25 tokens). Jeff is a little more purple now.`);toast(S.gems===6?'SHARKNOS COMPLETE':(gname==='Infinity'?'INFINITY DEEPENED':gname+' claimed'));
   if(S.gems===3)log('The water past the reef went quiet. Jeff did not like it.');
   if(S.gems===5)log('Something moved under the sandbar. It did not surface.');
   if(S.gems>=6)unlockBoss();
@@ -1230,10 +1230,11 @@ function draw(){
   $('alignVal').textContent=al>0?`Goodest: +${av}% per second`:al<0?`Menace: +${av}% chomps`:'Neutral: spit one way or the other to earn a bonus';
   const nd=need(),pr=Math.min(1,S.run/nd);$('progFill').style.width=(pr*100)+'%';
   $('progTxt').textContent=`This run: ${fmt(S.run)} / ${fmt(nd)} heroes`+(S.good||S.menace?`  ·  Goodest Boy ×${S.good}, Menace ×${S.menace}`:'');
-  $('prestigeBtn').disabled=S.run<nd;$('prestigeBtn').textContent=S.gems<6?`Claim ${GEMS[S.gems][0]} gem`:'Claim bonus gem';
-  // every gem past the sixth is a bonus gem, worth +10% on top of the six at +25%
+  $('prestigeBtn').disabled=S.run<nd;$('prestigeBtn').textContent=S.gems<6?`Claim ${GEMS[S.gems][0]} gem`:'Claim Infinity';
   const bg=S.gems-6,bt=$('bonusTxt');
-  if(bt){bt.hidden=bg<=0;if(bg>0)bt.textContent=`Bonus gems: ${bg} · +${bg*10}% to everything`}
+  // There are only six stones, so extra prestiges are not more gems — they deepen the Infinity
+  // you already hold.
+  if(bt){bt.hidden=bg<=0;if(bg>0)bt.textContent=`Infinity: ${bg} · +${bg*10}% to everything`}
   $('snapBtn').hidden=!(S.gems>=6&&!S.snap);
   const bTab=$('tab-boss');if(bTab)bTab.hidden=!(bs().unlocked||DEEP_PREVIEW||EX_PREVIEW);
   const finEl=$('fin');if(finEl)finEl.hidden=!(S.gems>=5&&!bs().unlocked);
@@ -1332,6 +1333,8 @@ const STRONG={lightning:'cosmic',earth:'lightning',cosmic:'earth',fire:'ice',ice
 // ×1.35 for the counter element (×1.69 at that element's mastery 5). Crits are hero income, not boss
 // HP. At full combo with mastery 5 a tap is 3.375, so her 58.5 HP channel wants ~17 taps in 3s —
 // about 5.8 taps/sec. That, not a crit build, is the "barely possible" window.
+// Owner-verified on 2026-10-27: winnable wearing Tech with Tech mastery 1; without the counter
+// element it is a coin flip. Treat "needs mastery 1 of the counter element" as part of the spec.
 // Everything below her on this ladder should feel like a step down, not a coin flip.
 const BOSSES=[
   {id:'adam-warlock',nm:'ADAM WARLOCK',el:'cosmic',role:'Strategist',hp:90,clock:24,
