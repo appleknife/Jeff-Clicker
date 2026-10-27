@@ -83,8 +83,8 @@ five-minute save and a five-hour save get the same fight. Tap fast to build a co
 - **Luna Snow** throws a single **fast, small** ice ring.
 - **Thor** brings the hammer down. Tighter windows than Hulk.
 - **Iron Man** fires missiles **in pairs from the first second**.
-- **Scarlet Witch** rewrites the fight — a channel you have to out-tap, like Adam's, but hers hits hard
-  and announces itself as **PURE CHAOS**.
+- **Scarlet Witch** rewrites the fight — a channel you have to out-tap, like Adam's, but hers does
+  not heal her: landing it **erases six seconds** of your clock. It announces itself as **PURE CHAOS**.
 
 Every telegraph is tinted by the boss's element, and the arena takes a wash of that colour for the
 whole fight, so nine bosses do not look like one. At half health every boss **stops going easy**:
@@ -116,7 +116,7 @@ fight against the same hero is a **rematch**: half again the HP, mechanics 32% f
 **no FINISH IT button** — you tap the last fifth yourself. Win that and they join you.
 
 **Difficulty ceiling:** Scarlet Witch is the bench mark — 150 HP, a 16s clock, and a 30% channel that
-only falls to a crit build. That is "very hard, barely possible": the numbers to match if another
+costs 6 seconds if it lands. That is "very hard, barely possible": the numbers to match if another
 fight should sit at the top of the ladder, and not to exceed.
 
 The element you earn on the first kill is worth +35% damage and is what makes a rematch fair;
@@ -167,8 +167,8 @@ star on the boss card.
 
 ### Element mastery
 
-Five levels per element, each worth **+5% damage** with that element on top of the +35% counter
-bonus. Levels come from a hero's first kill (+1 in their element), an EX clear (+1), and trophies
+Five levels per element, each worth **+5% damage** with that element (the one you are wearing, not
+the boss's) on top of the +35% counter bonus. Levels come from a hero's first kill (+1 in their element), an EX clear (+1), and trophies
 (20 for the first level, then +20 each). At **cosmic 5** you get a second on the clock, at
 **lightning 3** telegraph windows widen, and at **earth 3** the stomp grace grows.
 

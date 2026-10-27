@@ -1,6 +1,6 @@
 // Offline support. The art and the game itself are cached on install; the theme song
 // (2.9 MB) is cached the first time someone actually plays it, so install stays light.
-const CACHE = "jeff-clicker-v34";
+const CACHE = "jeff-clicker-v35";
 const CORE = [
   "./",
   "./index.html",

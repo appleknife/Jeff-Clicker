@@ -1326,11 +1326,12 @@ const ELS={cosmic:{nm:'Cosmic',c:'#9b47e6'},lightning:{nm:'Lightning',c:'#f7bd2e
 const STRONG={lightning:'cosmic',earth:'lightning',cosmic:'earth',fire:'ice',ice:'tech',tech:'fire'};
 // DIFFICULTY BENCHMARK — Scarlet Witch is the owner-verified gold standard for "very hard, but
 // barely possible". Match these numbers when building a peak fight, and treat anything above as broken:
-//   base hp 150 (195 after the ×1.3 every fight gets), clock 20 (16s), channel at 30% with a 3s
-//   window and healTo .45, FINISH IT at 20%, no ring or stop-tap mechanic.
-// That is ~185 damage of work in 16s: about 6.5 taps/sec bare, ~4.9/sec wearing the counter
-// element. Her channel only falls to a crit build (Chomp Crits + Lucky Bubble), which is the
-// intended "can I actually do this" moment — it is not meant to be won by tapping harder.
+//   base hp 150 (195 after the ×1.3 every fight gets), clock 20 (16s), a channel at 30% with a 3s
+//   window that costs 6 seconds if it lands, FINISH IT at 20%, no ring or stop-tap mechanic.
+// Boss damage is combo × element and nothing else: 1.0 per tap at combo 1, up to 2.0 at full combo,
+// ×1.35 for the counter element (×1.69 at that element's mastery 5). Crits are hero income, not boss
+// HP. At full combo with mastery 5 a tap is 3.375, so her 58.5 HP channel wants ~17 taps in 3s —
+// about 5.8 taps/sec. That, not a crit build, is the "barely possible" window.
 // Everything below her on this ladder should feel like a step down, not a coin flip.
 const BOSSES=[
   {id:'adam-warlock',nm:'ADAM WARLOCK',el:'cosmic',role:'Strategist',hp:90,clock:24,
@@ -1374,9 +1375,9 @@ const BOSSES=[
    teach:'Missiles first. Tap the ring.',
    rec:{pas:'Repulsors',ds:'+0.15s on telegraph windows',pasType:'telewin',pasV:.15,act:'Unibeam',actDs:'3s with no mechanics',actType:'quiet'},
    ex:{hp:203,pair:true,teach:'He fires in salvos.'}},
-  {id:'scarlet-witch',nm:'SCARLET WITCH',el:'fire',role:'Duelist',hp:150,clock:20,channel:{at:.3,time:3,healTo:.45},cry:'PURE CHAOS',voice:'scarlet-chaos',
+  {id:'scarlet-witch',nm:'SCARLET WITCH',el:'fire',role:'Duelist',hp:150,clock:20,channel:{at:.3,time:3,effect:'damage',hurt:6},cry:'PURE CHAOS',voice:'scarlet-chaos',
    taunt:'Chaos is a ladder.',
-   teach:'She rewrites the fight. Out-tap her before it lands.',
+   teach:'Out-tap her or she erases six seconds.',
    rec:{pas:'Hex Field',ds:'your first mistake is free',pasType:'mercy',act:'Chaos Bolt',actDs:'+5s on the clock',actType:'addtime',actV:5},
    ex:{hp:218,channels:[.5,.22],times:[3.2,2.4],teach:'She does it twice.'}},
 ];
@@ -1420,7 +1421,8 @@ const bossArt=b=>`assets/img/heroes/${b.id}.webp`;
 const bossArtSm=b=>`assets/img/heroes/${b.id}-sm.webp`;
 const nowMs=()=>performance.now();
 function bossMult(){return 1+.02*Object.keys(bs().cleared||{}).length}
-function elMultFor(b){return STRONG[bs().el]===b.el?1.35*(1+.05*mLevel(b.el)):1}
+// mastery is of the element YOU wear, not the boss's own element
+function elMultFor(b){return STRONG[bs().el]===b.el?1.35*(1+.05*mLevel(bs().el)):1}
 let fight=null,bossAudio=null;
 
 function startFight(id,mode){
@@ -1589,10 +1591,23 @@ function endChannel(healed){
   const bo=$('bfBoss');if(bo)bo.classList.remove('golden');
   const bar=$('bfChannel');if(bar)bar.hidden=true;
   if(healed&&f.b.channel){
-    f.hp=Math.max(f.hp,f.max*f.b.channel.healTo);paintBars();
-    toast('HE CAME BACK');playSfx('brrPowerful');
-    log(f.b.nm+' came back. The channel landed.');
-    if(!reduce){stage.classList.add('shake');setTimeout(()=>stage.classList.remove('shake'),300)}
+    const ch=f.b.channel;
+    if(ch.effect==='damage'){
+      // Scarlet's ult does not heal her, it erases the clock. Massive, and it costs you the fight
+      // if you were already behind.
+      f.left-=ch.hurt||6;paintBars();
+      toast('PURE CHAOS · −'+(ch.hurt||6)+'s');playSfx('sad');
+      log(f.b.nm+' landed it. '+(ch.hurt||6)+' seconds gone.');
+      const fl=document.createElement('div');fl.className='bf-flash';stage.appendChild(fl);
+      fl.animate([{opacity:0},{opacity:.85,offset:.12},{opacity:0}],{duration:440,easing:'ease-out'});
+      setTimeout(()=>fl.remove(),480);
+      if(!reduce){stage.classList.add('shake');setTimeout(()=>stage.classList.remove('shake'),320)}
+    }else{
+      f.hp=Math.max(f.hp,f.max*ch.healTo);paintBars();
+      toast('HE CAME BACK');playSfx('brrPowerful');
+      log(f.b.nm+' came back. The channel landed.');
+      if(!reduce){stage.classList.add('shake');setTimeout(()=>stage.classList.remove('shake'),300)}
+    }
   }
 }
 function penalty(msg){
